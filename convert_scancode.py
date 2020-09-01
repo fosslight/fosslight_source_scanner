@@ -129,7 +129,7 @@ def get_detected_licenses_from_scancode(scancode_json_file):
                         file_list.append(result_item)
     except:
         pass
-    print("|---Number of files detected: "+str(len(file_list)))
+    print("|---Number of files detected: " + str(len(file_list)))
     return file_list
 
 
@@ -165,9 +165,25 @@ def create_worksheet(workbook, sheet_name, header_row):
     return worksheet
 
 
-def main():
-    convert_json_to_excel("test_scancode_result")
+def print_help_msg():
+    print("* Required :\n -p path_of_scancode_json_result")
+    sys.exit()
 
 
-if __name__ == "__main__":
-    main()
+def main(argv):
+    path_to_find_bin = os.getcwd()
+    try:
+        opts, args = getopt.getopt(argv, 'hp:')
+        for opt, arg in opts:
+            if opt == "-h":
+                print_help_msg()
+            elif opt == "-p":
+                path_to_find_bin = arg
+    except:
+        pass
+
+    convert_json_to_excel(path_to_find_bin)
+
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
