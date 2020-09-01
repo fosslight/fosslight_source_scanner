@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: LicenseRef-LGE-Proprietary
 
 import getopt
-import hashlib
 import os
 import sys
 import json
