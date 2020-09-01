@@ -14,6 +14,7 @@ from datetime import datetime
 
 _replace_word = ["-only", "-old-style", "-or-later"]
 
+
 class ScanCodeItem:
     file = ""
     licenses = []
@@ -45,7 +46,8 @@ class ScanCodeItem:
             self.licenses = list(set(self.licenses))
 
     def get_row_to_print(self):
-        print_rows = [self.file, "", "", ','.join(self.licenses), "","",','.join(self.copyright), "", "", self.comment]
+        print_rows = [self.file, "", "", ','.join(self.licenses), "", "", ','.join(self.copyright), "", "",
+                      self.comment]
         return print_rows
 
 
@@ -55,8 +57,8 @@ def convert_json_to_excel(scancode_result_json):
         sheet_list = {}
         if os.path.isfile(scancode_result_json):
             file_list = get_detected_licenses_from_scancode(scancode_result_json)
-            if len(file_list) > 0 :
-                sheet_list["SRC"] =  file_list
+            if len(file_list) > 0:
+                sheet_list["SRC"] = file_list
         elif os.path.isdir(scancode_result_json):
             for root, dirs, files in os.walk(scancode_result_json):
                 for file in files:
@@ -66,11 +68,11 @@ def convert_json_to_excel(scancode_result_json):
                             file_list = get_detected_licenses_from_scancode(result_file)
                             if len(file_list) > 0:
                                 file_name = os.path.basename(file)
-                                sheet_list["SRC_"+file_name] = file_list
+                                sheet_list["SRC_" + file_name] = file_list
                         except:
                             pass
 
-        if len(sheet_list) > 0 :
+        if len(sheet_list) > 0:
             oss_report_name = "OSS_Report-" + start_time + ".xlsx"
             write_result_to_excel(oss_report_name, sheet_list)
         else:
@@ -81,11 +83,10 @@ def convert_json_to_excel(scancode_result_json):
         print(str(ex))
 
 
-
 def get_detected_licenses_from_scancode(scancode_json_file):
     file_list = []
     try:
-        print("Start parsing "+scancode_json_file)
+        print("Start parsing " + scancode_json_file)
         with open(scancode_json_file, "r") as st_json:
             st_python = json.load(st_json)
             for file in st_python["files"]:
@@ -119,37 +120,42 @@ def get_detected_licenses_from_scancode(scancode_json_file):
                                 if word in license_value:
                                     license_value = license_value.replace(word, "")
                             license_detected.append(license_value)
-                    result_item.set_licenses(license_detected)
+                    if len(license_detected) > 0:
+                        result_item.set_licenses(license_detected)
 
-                    if len(license_expression_list) > 0:
-                        license_expression_list = list(set(license_expression_list))
-                        result_item.set_comment(','.join(license_expression_list))
-                    file_list.append(result_item)
+                        if len(license_expression_list) > 0:
+                            license_expression_list = list(set(license_expression_list))
+                            result_item.set_comment(','.join(license_expression_list))
+                        file_list.append(result_item)
     except:
         pass
+    print("|---Number of files detected: "+str(len(file_list)))
     return file_list
+
 
 def write_result_to_excel(out_file_name, sheet_list):
     try:
         workbook = xlsxwriter.Workbook(out_file_name)
         for sheet_name, sheet_contents in sheet_list.items():
-            worksheet_src = create_worksheet(workbook, sheet_name, ['ID', 'Source Name or Path', 'OSS Name', 'OSS Version', 'License',
-                                                           'Download Location', 'Homepage',
-                                                           'Copyright Text',
-                                                           'License Text', 'Exclude', 'Comment'])
+            worksheet_src = create_worksheet(workbook, sheet_name,
+                                             ['ID', 'Source Name or Path', 'OSS Name', 'OSS Version', 'License',
+                                              'Download Location', 'Homepage',
+                                              'Copyright Text',
+                                              'License Text', 'Exclude', 'Comment'])
             write_result_to_sheet(worksheet_src, sheet_contents)
         workbook.close()
     except Exception as ex:
-       print('* Error :' + str(ex))
+        print('* Error :' + str(ex))
+
 
 def write_result_to_sheet(worksheet, list_to_print):
     row = 1  # Start from the first cell.
     for item_info in list_to_print:
-            row_item = item_info.get_row_to_print()
-            worksheet.write(row, 0, row)
-            for col_num, value in enumerate(row_item):
-                worksheet.write(row, col_num + 1, value)
-            row += 1
+        row_item = item_info.get_row_to_print()
+        worksheet.write(row, 0, row)
+        for col_num, value in enumerate(row_item):
+            worksheet.write(row, col_num + 1, value)
+        row += 1
 
 
 def create_worksheet(workbook, sheet_name, header_row):
@@ -158,8 +164,10 @@ def create_worksheet(workbook, sheet_name, header_row):
         worksheet.write(0, col_num, value)
     return worksheet
 
+
 def main():
     convert_json_to_excel("test_scancode_result")
+
 
 if __name__ == "__main__":
     main()
