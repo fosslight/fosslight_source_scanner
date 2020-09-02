@@ -8,8 +8,8 @@ import os
 import sys
 import json
 from datetime import datetime
-from _write_oss_report_src import write_result_to_excel
-from _parsing_scancode_file_item import parsing_file_item
+from ._write_oss_report_src import write_result_to_excel
+from ._parsing_scancode_file_item import parsing_file_item
 
 _replace_word = ["-only", "-old-style", "-or-later"]
 
@@ -63,7 +63,8 @@ def print_help_msg():
     sys.exit()
 
 
-def main(argv):
+def main():
+    argv = sys.argv[1:]
     path_to_find_bin = os.getcwd()
     try:
         opts, args = getopt.getopt(argv, 'hp:')
@@ -79,4 +80,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()

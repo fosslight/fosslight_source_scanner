@@ -7,10 +7,10 @@ import sys
 import os
 import multiprocessing
 from scancode import cli
-from _parsing_scancode_file_item import parsing_file_item
+from ._parsing_scancode_file_item import parsing_file_item
 import getopt
 from datetime import datetime
-from _write_oss_report_src import write_result_to_excel
+from ._write_oss_report_src import write_result_to_excel
 
 
 def print_help_msg():
@@ -19,7 +19,8 @@ def print_help_msg():
     sys.exit()
 
 
-def main(argv):
+def main():
+    argv = sys.argv[1:]
     path_to_scan = os.getcwd()
     _write_json_file = False
     try:
@@ -68,4 +69,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()
