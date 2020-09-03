@@ -21,7 +21,7 @@ def print_help_msg():
 
 def main():
     argv = sys.argv[1:]
-    path_to_scan = os.getcwd()
+    path_to_scan = ""
     _write_json_file = False
     try:
         opts, args = getopt.getopt(argv, 'hjp:')
@@ -34,6 +34,9 @@ def main():
                 _write_json_file = True
     except:
         pass
+
+    if path_to_scan == "":
+        print_help_msg()
 
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     num_cores = multiprocessing.cpu_count() - 1
