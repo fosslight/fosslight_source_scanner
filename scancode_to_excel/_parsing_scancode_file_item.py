@@ -64,20 +64,27 @@ def parsing_file_item(scancode_file_list):
                 result_item.set_copyright(copyright_value_list)
 
                 license_expression_list = file["license_expressions"]
-                license_expression_list = [x.lower() for x in license_expression_list]
+                if len(license_expression_list) > 0 :
+                    license_expression_list = [x.lower() for x in license_expression_list if x is not None]
 
                 license_detected = []
+                if licenses is None or licenses == "":
+                    continue
                 for lic_item in licenses:
                     license_value = ""
-                    key = lic_item["key"].lower()
-                    spdx = lic_item["spdx_license_key"].lower()
+                    key = lic_item["key"]
+                    spdx = lic_item["spdx_license_key"]
+                    if spdx is not None and spdx != "":
+                        spdx = spdx.lower()
+                    if key is not None and key != "":
+                        key = key.lower()
                     if key in license_expression_list:
                         license_expression_list.remove(key)
                     if spdx != "":
                         license_value = spdx
                     else:
                         license_value = key
-                    if license_value != "":
+                    if license_value is not None and license_value != "":
                         for word in _replace_word:
                             if word in license_value:
                                 license_value = license_value.replace(word, "")
