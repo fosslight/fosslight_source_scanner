@@ -24,7 +24,7 @@ if __name__ == "__main__":
         classifiers      = ['Programming Language :: Python :: 3.6',
                         'License :: OSI Approved :: Closed Sorce Software'],
         install_requires = [
-            'scancode-toolkit @ git+https://github.com/nexB/scancode-toolkit.git@bce355700#egg=scancode-toolkit-0',
+            'scancode-toolkit==3.2.0',
             'XlsxWriter'
         ],
         entry_points = {
