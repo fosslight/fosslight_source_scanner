@@ -4,17 +4,35 @@
 # SPDX-License-Identifier: LicenseRef-LGE-Proprietary
 
 import xlsxwriter
+import csv
+
+_SRC_HEADER = ['ID', 'Source Name or Path', 'OSS Name', 'OSS Version', 'License',
+               'Download Location', 'Homepage',
+               'Copyright Text',
+               'License Text', 'Exclude', 'Comment']
+
+
+def write_result_to_csv(output_file, sheet_list):
+    try:
+        row_num = 1
+        with open(output_file, 'w', newline='') as file:
+            writer = csv.writer(file, delimiter='\t')
+            writer.writerow(_SRC_HEADER)
+            for sheet_name, sheet_contents in sheet_list.items():
+                for item_info in sheet_contents:
+                    item_to_print = item_info.get_row_to_print()
+                    item_to_print.insert(0, row_num)
+                    writer.writerow(item_to_print)
+                    row_num += 1
+    except Exception as ex:
+        print('* Error :' + str(ex))
 
 
 def write_result_to_excel(out_file_name, sheet_list):
     try:
         workbook = xlsxwriter.Workbook(out_file_name)
         for sheet_name, sheet_contents in sheet_list.items():
-            worksheet_src = create_worksheet(workbook, sheet_name,
-                                             ['ID', 'Source Name or Path', 'OSS Name', 'OSS Version', 'License',
-                                              'Download Location', 'Homepage',
-                                              'Copyright Text',
-                                              'License Text', 'Exclude', 'Comment'])
+            worksheet_src = create_worksheet(workbook, sheet_name, _SRC_HEADER)
             write_result_to_sheet(worksheet_src, sheet_contents)
         workbook.close()
     except Exception as ex:

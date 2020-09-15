@@ -7,8 +7,9 @@ import getopt
 import os
 import sys
 import json
+import platform
 from datetime import datetime
-from ._write_oss_report_src import write_result_to_excel
+from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
 
 _replace_word = ["-only", "-old-style", "-or-later"]
@@ -38,6 +39,8 @@ def convert_json_to_excel(scancode_result_json):
         if len(sheet_list) > 0:
             oss_report_name = "OSS_Report-" + start_time + ".xlsx"
             write_result_to_excel(oss_report_name, sheet_list)
+            if platform.system() != "Windows":
+                write_result_to_csv("result_" + start_time + ".csv", sheet_list)
         else:
             print("There is no item to print in OSS_Report.")
 
