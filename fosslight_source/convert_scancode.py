@@ -37,12 +37,12 @@ def convert_json_to_excel(scancode_result_json):
                             pass
 
         if len(sheet_list) > 0:
-            oss_report_name = "OSS_Report-" + start_time + ".xlsx"
+            oss_report_name = "OSS-Report_" + start_time + ".xlsx"
             write_result_to_excel(oss_report_name, sheet_list)
             if platform.system() != "Windows":
                 write_result_to_csv("result_" + start_time + ".csv", sheet_list)
         else:
-            print("There is no item to print in OSS_Report.")
+            print("There is no item to print in OSS-Report.")
 
     except Exception as ex:
         print(str(ex))

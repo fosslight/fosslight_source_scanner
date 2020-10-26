@@ -61,10 +61,10 @@ def main():
                         if rc:
                             if len(result_list) > 0:
                                 sheet_list["SRC"] = result_list
-                                oss_report_name = "OSS_Report-" + start_time + ".xlsx"
+                                oss_report_name = "OSS-Report_" + start_time + ".xlsx"
                                 write_result_to_excel(oss_report_name, sheet_list)
                             else:
-                                print("There is no item to print in OSS_Report.")
+                                print("There is no item to print in OSS-Report.")
                 if _write_json_file:
                     from formattedcode.output_json import write_json
                     json_file_name = "scancode_" + start_time + ".json"
