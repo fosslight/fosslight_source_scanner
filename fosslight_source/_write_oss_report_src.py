@@ -5,6 +5,7 @@
 
 import xlsxwriter
 import csv
+import time
 
 _SRC_HEADER = ['ID', 'Source Name or Path', 'OSS Name', 'OSS Version', 'License',
                'Download Location', 'Homepage',
@@ -54,6 +55,10 @@ def write_result_to_sheet(worksheet, list_to_print):
 
 
 def create_worksheet(workbook, sheet_name, header_row):
+    if len(sheet_name) > 31:
+        current_time = str(time.time())
+        print('* Sheet name: '+sheet_name +' -> '+current_time)
+        sheet_name = current_time
     worksheet = workbook.add_worksheet(sheet_name)
     for col_num, value in enumerate(header_row):
         worksheet.write(0, col_num, value)
