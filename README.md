@@ -12,8 +12,12 @@ $ pip install http://mod.lge.com/code/rest/archive/latest/projects/OSC/repos/fos
 $ fosslight_source -p [Path_to_scan]
 ### Print result to OSS Report and json file
 $ fosslight_source -p [Path_to_scan] -j
-## How to run the script - Converting scancode json result to OSS report
-$ fosslight_convert -p [Path_of_scancode_json_files]
+### Print result to OSS Report and set output excel file name
+$ fosslight_source -p [Path_to_scan] -o [output_excel_file_name]     
+## Converting scancode json result to OSS report
+$ fosslight_convert -p [Path_of_scancode_json_files]       
+### Converting scancode json and set output excel file name      
+$ fosslight_convert -p [Path_of_scancode_json_files] -o [output_excel_file_name]       
 
 <hr />     
 

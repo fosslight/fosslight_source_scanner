@@ -25,9 +25,11 @@ def main():
     path_to_scan = ""
     _write_json_file = False
     _windows = platform.system() == "Windows"
+    start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    output_file = "OSS-Report_" + start_time + ".xlsx"
 
     try:
-        opts, args = getopt.getopt(argv, 'hjp:')
+        opts, args = getopt.getopt(argv, 'hjp:o:')
         for opt, arg in opts:
             if opt == "-h":
                 print_help_msg()
@@ -35,6 +37,9 @@ def main():
                 path_to_scan = arg
             elif opt == "-j":
                 _write_json_file = True
+            elif opt == "-o":
+                output_file = arg
+
     except Exception as ex:
         print_help_msg()
 
@@ -44,7 +49,6 @@ def main():
         else:
             print_help_msg()
 
-    start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     num_cores = multiprocessing.cpu_count() - 1
     if num_cores < 1:
         num_cores = 1
@@ -61,8 +65,7 @@ def main():
                         if rc:
                             if len(result_list) > 0:
                                 sheet_list["SRC"] = result_list
-                                oss_report_name = "OSS-Report_" + start_time + ".xlsx"
-                                write_result_to_excel(oss_report_name, sheet_list)
+                                write_result_to_excel(output_file, sheet_list)
                             else:
                                 print("There is no item to print in OSS-Report.")
                 if _write_json_file:

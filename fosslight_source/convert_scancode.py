@@ -15,9 +15,8 @@ from ._parsing_scancode_file_item import parsing_file_item
 _replace_word = ["-only", "-old-style", "-or-later"]
 
 
-def convert_json_to_excel(scancode_result_json):
+def convert_json_to_excel(scancode_result_json, excel_file_name, csv_file_name):
     try:
-        start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         sheet_list = {}
         if os.path.isfile(scancode_result_json):
             file_list = get_detected_licenses_from_scancode(scancode_result_json)
@@ -37,10 +36,10 @@ def convert_json_to_excel(scancode_result_json):
                             pass
 
         if len(sheet_list) > 0:
-            oss_report_name = "OSS-Report_" + start_time + ".xlsx"
-            write_result_to_excel(oss_report_name, sheet_list)
+
+            write_result_to_excel(excel_file_name, sheet_list)
             if platform.system() != "Windows":
-                write_result_to_csv("result_" + start_time + ".csv", sheet_list)
+                write_result_to_csv(csv_file_name, sheet_list)
         else:
             print("There is no item to print in OSS-Report.")
 
@@ -69,17 +68,23 @@ def print_help_msg():
 def main():
     argv = sys.argv[1:]
     path_to_find_bin = os.getcwd()
+    start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    oss_report_name = "OSS-Report_" + start_time + ".xlsx"
+    csv_file_name = "result_" + start_time + ".csv"
+
     try:
-        opts, args = getopt.getopt(argv, 'hp:')
+        opts, args = getopt.getopt(argv, 'hp:o:')
         for opt, arg in opts:
             if opt == "-h":
                 print_help_msg()
             elif opt == "-p":
                 path_to_find_bin = arg
+            elif opt == "-o":
+                oss_report_name = arg
     except:
         pass
 
-    convert_json_to_excel(path_to_find_bin)
+    convert_json_to_excel(path_to_find_bin, oss_report_name, csv_file_name)
 
 
 if __name__ == '__main__':
