@@ -69,8 +69,8 @@ def main():
     argv = sys.argv[1:]
     path_to_find_bin = os.getcwd()
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    oss_report_name = "OSS-Report_" + start_time + ".xlsx"
-    csv_file_name = "result_" + start_time + ".csv"
+    oss_report_name = "OSS-Report_" + start_time
+    csv_file_name = "result_" + start_time
 
     try:
         opts, args = getopt.getopt(argv, 'hp:o:')
@@ -81,10 +81,11 @@ def main():
                 path_to_find_bin = arg
             elif opt == "-o":
                 oss_report_name = arg
+                csv_file_name = arg
     except:
         pass
 
-    convert_json_to_excel(path_to_find_bin, oss_report_name, csv_file_name)
+    convert_json_to_excel(path_to_find_bin, oss_report_name+ ".xlsx", csv_file_name+ ".csv")
 
 
 if __name__ == '__main__':

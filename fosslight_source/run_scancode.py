@@ -26,7 +26,9 @@ def main():
     _write_json_file = False
     _windows = platform.system() == "Windows"
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    output_file = "OSS-Report_" + start_time + ".xlsx"
+    output_file = "OSS-Report_" + start_time
+    output_csv_file = "result_" + start_time
+    output_json_file = "scancode_" + start_time
 
     try:
         opts, args = getopt.getopt(argv, 'hjp:o:')
@@ -39,6 +41,8 @@ def main():
                 _write_json_file = True
             elif opt == "-o":
                 output_file = arg
+                output_csv_file = arg
+                output_json_file = arg
 
     except Exception as ex:
         print_help_msg()
@@ -65,15 +69,14 @@ def main():
                         if rc:
                             if len(result_list) > 0:
                                 sheet_list["SRC"] = result_list
-                                write_result_to_excel(output_file, sheet_list)
+                                write_result_to_excel(output_file + ".xlsx", sheet_list)
                             else:
                                 print("There is no item to print in OSS-Report.")
                 if _write_json_file:
                     from formattedcode.output_json import write_json
-                    json_file_name = "scancode_" + start_time + ".json"
-                    write_json(results, json_file_name, pretty=True)
+                    write_json(results, output_json_file + ".json", pretty=True)
                 if not _windows:
-                    write_result_to_csv("result_" + start_time + ".csv", sheet_list)
+                    write_result_to_csv(output_csv_file + ".csv", sheet_list)
             else:
                 print("* Source code analysis failed.")
         except Exception as ex:
