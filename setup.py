@@ -11,7 +11,7 @@ with open('README.md', 'r', 'utf-8') as f:
 if __name__ == "__main__":
     setup(
         name             = 'fosslight_source',
-        version          = '1.0',
+        version          = '1.1',
         packages         = find_packages(),
         description      = 'Scancode analysis in OSS Report format',
         long_description = readme,
@@ -22,9 +22,10 @@ if __name__ == "__main__":
         url              = 'http://mod.lge.com/code/projects/OSC/repos/fosslight_source',
         download_url     = 'http://mod.lge.com/code/rest/archive/latest/projects/OSC/repos/fosslight_source/archive?format=zip',
         classifiers      = ['Programming Language :: Python :: 3.6',
-                        'License :: OSI Approved :: Closed Sorce Software'],
+                        'License :: OSI Approved :: Closed Source Software'],
         install_requires = [
-            'scancode-toolkit==3.2.0',
+            'scancode-toolkit',
+            'typecode_libmagic',
             'XlsxWriter'
         ],
         entry_points = {
