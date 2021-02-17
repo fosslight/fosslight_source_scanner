@@ -17,7 +17,6 @@ from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
 
 
-
 def print_help_msg():
     print("* Required : -p path_to_scan")
     print("* Optional : -j ")
@@ -64,8 +63,10 @@ def main():
     sheet_list = {}
     if os.path.isdir(path_to_scan):
         try:
+            output_json_file = output_json_file+".json" if _write_json_file else ""
+
             rc, results = cli.run_scan(path_to_scan, max_depth=100, strip_root=True, license=True, copyright=True,
-                                       return_results=True, processes=num_cores)
+                                       return_results=True, processes=num_cores, output_json_pp=output_json_file)
             if rc:
                 for key, value in results.items():
                     if key == "files":
@@ -76,9 +77,6 @@ def main():
                                 write_result_to_excel(output_file + ".xlsx", sheet_list)
                             else:
                                 print("There is no item to print in OSS-Report.")
-                if _write_json_file:
-                    from formattedcode.output_json import write_json
-                    write_json(results, output_json_file + ".json", pretty=True)
                 if not _windows:
                     write_result_to_csv(output_csv_file + ".csv", sheet_list)
             else:
