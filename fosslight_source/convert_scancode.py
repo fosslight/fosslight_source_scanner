@@ -12,7 +12,6 @@ from datetime import datetime
 from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
 
-_replace_word = ["-only", "-old-style", "-or-later"]
 
 
 def convert_json_to_excel(scancode_result_json, excel_file_name, csv_file_name):
@@ -45,6 +44,8 @@ def convert_json_to_excel(scancode_result_json, excel_file_name, csv_file_name):
 
     except Exception as ex:
         print(str(ex))
+
+    return file_list
 
 
 def get_detected_licenses_from_scancode(scancode_json_file):

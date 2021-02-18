@@ -3,19 +3,25 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: LicenseRef-LGE-Proprietary
 
-_replace_word = ["-only", "-old-style", "-or-later"]
+import os
+
+_replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-"]
+_exclude_filename = ["changelog", "config.guess", "config.sub", "config.h.in", "changes", "ltmain.sh", "aclocal.m4", "configure", "configure.ac", "depcomp", "compile", "missing", "libtool.m4"]
+_exclude_directory = ["test", "tests", "doc", "docs"]
 
 
 class ScanCodeItem:
     file = ""
     licenses = []
     copyright = ""
+    exclude = False
 
     def __init__(self, value):
         self.file = value
         self.copyright = []
         self.licenses = []
         self.comment = ""
+        self.exclude = False
 
     def __del__(self):
         pass
@@ -36,10 +42,32 @@ class ScanCodeItem:
         if len(self.licenses) > 0:
             self.licenses = list(set(self.licenses))
 
+    def set_exclude(self, value):
+        self.exclude = value
+
     def get_row_to_print(self):
-        print_rows = [self.file, "", "", ','.join(self.licenses), "", "", ','.join(self.copyright), "", "",
+        print_rows = [self.file, "", "", ','.join(self.licenses), "", "", ','.join(self.copyright), "", "Exclude" if self.exclude else "",
                       self.comment]
         return print_rows
+
+
+def check_file_path_to_exclude(file_path, result_item):
+    file_path = file_path.lower()
+
+    filename = os.path.basename(file_path)
+
+    if filename in _exclude_filename:
+        result_item.set_exclude(True)
+        return
+
+    directory = file_path.split(os.path.sep)
+    
+    for dir_value in directory:
+        if dir_value in _exclude_directory:
+            result_item.set_exclude(True)
+            break
+
+    return
 
 
 def parsing_file_item(scancode_file_list):
@@ -60,6 +88,9 @@ def parsing_file_item(scancode_file_list):
                 copyright_list = file["copyrights"]
 
                 result_item = ScanCodeItem(file_path)
+                
+                check_file_path_to_exclude(file_path, result_item)
+
                 copyright_value_list = [x["value"] for x in copyright_list]
                 result_item.set_copyright(copyright_value_list)
 
