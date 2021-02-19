@@ -25,13 +25,9 @@ def print_help_msg():
 
 def main():
     argv = sys.argv[1:]
-    path_to_scan = ""
+    _path_to_scan = ""
     _write_json_file = False
-    _windows = platform.system() == "Windows"
-    start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    output_file = "OSS-Report_" + start_time
-    output_csv_file = "result_" + start_time
-    output_json_file = "scancode_" + start_time
+    _output_file = ""
 
     try:
         opts, args = getopt.getopt(argv, 'hjp:o:')
@@ -39,16 +35,32 @@ def main():
             if opt == "-h":
                 print_help_msg()
             elif opt == "-p":
-                path_to_scan = arg
+                _path_to_scan = arg
             elif opt == "-j":
                 _write_json_file = True
             elif opt == "-o":
-                output_file = arg
-                output_csv_file = arg
-                output_json_file = arg
+                _output_file = arg
 
-    except Exception as ex:
+    except Exception:
         print_help_msg()
+
+    success, msg = run_scan(_path_to_scan, _output_file, _write_json_file, -1)
+    if not success:
+        print(msg)
+
+
+
+def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_cores = -1):
+
+    success = True
+    msg = ""
+
+    _windows = platform.system() == "Windows"
+    start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+
+    output_file = "OSS-Report_" + start_time if output_file_name == "" else output_file_name
+    output_csv_file = "result_" + start_time if output_file_name == "" else output_file_name
+    output_json_file = "scancode_" + start_time if output_file_name == "" else output_file_name
 
     if path_to_scan == "":
         if _windows:
@@ -56,9 +68,7 @@ def main():
         else:
             print_help_msg()
 
-    num_cores = multiprocessing.cpu_count() - 1
-    if num_cores < 1:
-        num_cores = 1
+    num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores
 
     sheet_list = {}
     if os.path.isdir(path_to_scan):
@@ -76,16 +86,20 @@ def main():
                                 sheet_list["SRC"] = result_list
                                 write_result_to_excel(output_file + ".xlsx", sheet_list)
                             else:
-                                print("There is no item to print in OSS-Report.")
+                                msg = "* There is no item to print in OSS-Report."
                 if not _windows:
                     write_result_to_csv(output_csv_file + ".csv", sheet_list)
             else:
-                print("* Source code analysis failed.")
+                msg = "* Source code analysis failed."
+                success = False
         except Exception as ex:
-            print('* Error :' + str(ex))
+            success = False
+            msg = '* Error :' + str(ex)
     else:
-        print("* Check the path to scan. :" + path_to_scan)
+        success = False
+        msg = "* Check the path to scan. :" + path_to_scan
 
+    return success, msg
 
 if __name__ == '__main__':
     main()
