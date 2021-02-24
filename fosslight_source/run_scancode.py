@@ -6,15 +6,18 @@
 import sys
 import os
 import multiprocessing
-
 import warnings
-warnings.filterwarnings("ignore",category=FutureWarning)
-from scancode import cli
 import platform
 import getopt
+import logging
+
+from scancode import cli
 from datetime import datetime
 from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
+from ._settings import init_log
+
+warnings.filterwarnings("ignore",category=FutureWarning)
 
 
 def print_help_msg():
@@ -45,9 +48,6 @@ def main():
         print_help_msg()
 
     success, msg = run_scan(_path_to_scan, _output_file, _write_json_file, -1)
-    if not success:
-        print(msg)
-
 
 
 def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_cores = -1):
@@ -58,9 +58,18 @@ def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_
     _windows = platform.system() == "Windows"
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
-    output_file = "OSS-Report_" + start_time if output_file_name == "" else output_file_name
-    output_csv_file = "result_" + start_time if output_file_name == "" else output_file_name
-    output_json_file = "scancode_" + start_time if output_file_name == "" else output_file_name
+    if output_file_name == "":
+        output_file = "OSS-Report_" + start_time
+        output_csv_file = "result_" + start_time
+        output_json_file = "scancode_" + start_time
+        output_dir = os.getcwd()
+    else:
+        output_file = output_file_name
+        output_csv_file = output_file_name
+        output_json_file = output_file_name
+        output_dir = os.path.dirname(os.path.abspath(output_file_name))
+
+    logger = init_log(start_time, output_dir)
 
     if path_to_scan == "":
         if _windows:
@@ -77,6 +86,7 @@ def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_
 
             rc, results = cli.run_scan(path_to_scan, max_depth=100, strip_root=True, license=True, copyright=True,
                                        return_results=True, processes=num_cores, output_json_pp=output_json_file)
+            
             if rc:
                 for key, value in results.items():
                     if key == "files":
@@ -98,7 +108,8 @@ def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_
     else:
         success = False
         msg = "* Check the path to scan. :" + path_to_scan
-
+    
+    logger.warn("Scan Result:"+ str(success)+"\n"+msg)
     return success, msg
 
 if __name__ == '__main__':

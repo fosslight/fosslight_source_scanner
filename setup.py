@@ -7,11 +7,13 @@ from setuptools import setup, find_packages
 with open('README.md', 'r', 'utf-8') as f:
     readme = f.read()
 
+with open('requirements.txt', 'r', 'utf-8') as f:
+    required = f.read().splitlines()
 
 if __name__ == "__main__":
     setup(
         name             = 'fosslight_source',
-        version          = '1.1',
+        version          = '1.2',
         packages         = find_packages(),
         description      = 'Scancode analysis in OSS Report format',
         long_description = readme,
@@ -23,11 +25,7 @@ if __name__ == "__main__":
         download_url     = 'http://mod.lge.com/code/rest/archive/latest/projects/OSC/repos/fosslight_source/archive?format=zip',
         classifiers      = ['Programming Language :: Python :: 3.6',
                         'License :: OSI Approved :: Closed Source Software'],
-        install_requires = [
-            'scancode-toolkit',
-            'typecode_libmagic',
-            'XlsxWriter'
-        ],
+        install_requires = required,
         entry_points = {
             "console_scripts": [
                 "fosslight_convert = fosslight_source.convert_scancode:main",

@@ -6,12 +6,14 @@
 import xlsxwriter
 import csv
 import time
+import logging
 
 _SRC_HEADER = ['ID', 'Source Name or Path', 'OSS Name', 'OSS Version', 'License',
                'Download Location', 'Homepage',
                'Copyright Text',
                'License Text', 'Exclude', 'Comment']
 
+logger = logging.getLogger(__name__)
 
 def write_result_to_csv(output_file, sheet_list):
     try:
@@ -28,7 +30,7 @@ def write_result_to_csv(output_file, sheet_list):
                     writer.writerow(item_to_print)
                     row_num += 1
     except Exception as ex:
-        print('* Error :' + str(ex))
+        logger.warn('* Error :' + str(ex))
 
 
 def write_result_to_excel(out_file_name, sheet_list):
@@ -39,7 +41,7 @@ def write_result_to_excel(out_file_name, sheet_list):
             write_result_to_sheet(worksheet_src, sheet_contents)
         workbook.close()
     except Exception as ex:
-        print('* Error :' + str(ex))
+        logger.warn('* Error :' + str(ex))
 
 
 def write_result_to_sheet(worksheet, list_to_print):
@@ -57,7 +59,7 @@ def write_result_to_sheet(worksheet, list_to_print):
 def create_worksheet(workbook, sheet_name, header_row):
     if len(sheet_name) > 31:
         current_time = str(time.time())
-        print('* Sheet name: '+sheet_name +' -> '+current_time)
+        logger.warn('* Sheet name: '+sheet_name +' -> '+current_time)
         sheet_name = current_time
     worksheet = workbook.add_worksheet(sheet_name)
     for col_num, value in enumerate(header_row):
