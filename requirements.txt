@@ -1,0 +1,4 @@
+scancode-toolkit
+typecode_libmagic
+XlsxWriter
+chardet

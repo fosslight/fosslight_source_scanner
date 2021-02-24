@@ -4,7 +4,9 @@
 # SPDX-License-Identifier: LicenseRef-LGE-Proprietary
 
 import os
+import logging
 
+logger = logging.getLogger(__name__)
 _replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-"]
 _exclude_filename = ["changelog", "config.guess", "config.sub", "config.h.in", "changes", "ltmain.sh", "aclocal.m4", "configure", "configure.ac", "depcomp", "compile", "missing", "libtool.m4"]
 _exclude_directory = ["test", "tests", "doc", "docs"]
@@ -73,7 +75,7 @@ def check_file_path_to_exclude(file_path, result_item):
 def parsing_file_item(scancode_file_list):
     rc = True
     scancode_file_item = []
-
+    logger.debug("FILE COUNT:"+str(len(scancode_file_list)))
     for file in scancode_file_list:
         try:
             is_binary = False
@@ -105,6 +107,7 @@ def parsing_file_item(scancode_file_list):
                     license_value = ""
                     key = lic_item["key"]
                     spdx = lic_item["spdx_license_key"]
+                    #logger.debug("LICENSE_KEY:"+str(key)+",SPDX:"+str(spdx))
                     if spdx is not None and spdx != "":
                         spdx = spdx.lower()
                     if key is not None and key != "":
@@ -115,6 +118,7 @@ def parsing_file_item(scancode_file_list):
                         license_value = spdx
                     else:
                         license_value = key
+
                     if license_value is not None and license_value != "":
                         for word in _replace_word:
                             if word in license_value:
@@ -128,7 +132,7 @@ def parsing_file_item(scancode_file_list):
                         result_item.set_comment(','.join(license_expression_list))
                     scancode_file_item.append(result_item)
         except Exception as ex:
-            print(str(ex))
+            logger.warn("Error Parsing item-"+str(ex))
             rc = False
 
     return rc, scancode_file_item
