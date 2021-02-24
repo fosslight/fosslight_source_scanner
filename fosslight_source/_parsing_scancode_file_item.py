@@ -108,16 +108,14 @@ def parsing_file_item(scancode_file_list):
                     key = lic_item["key"]
                     spdx = lic_item["spdx_license_key"]
                     #logger.debug("LICENSE_KEY:"+str(key)+",SPDX:"+str(spdx))
-                    if spdx is not None and spdx != "":
-                        spdx = spdx.lower()
+
                     if key is not None and key != "":
                         key = key.lower()
-                    if key in license_expression_list:
-                        license_expression_list.remove(key)
-                    if spdx != "":
-                        license_value = spdx
-                    else:
                         license_value = key
+                        if key in license_expression_list:
+                            license_expression_list.remove(key)
+                    if spdx is not None and spdx != "":# Print SPDX instead of Key.
+                        license_value = spdx.lower()
 
                     if license_value is not None and license_value != "":
                         for word in _replace_word:
