@@ -55,9 +55,6 @@ def get_detected_licenses_from_scancode(scancode_json_file):
     file_list = []
     try:
         logger.warn("Start parsing " + scancode_json_file)
-        #rawdata = open(scancode_json_file, "r").read()
-        #result = chardet.detect(rawdata)
-        #charenc = result['encoding']
         with open(scancode_json_file, "r") as st_json:
             st_python = json.load(st_json)
             rc, file_list = parsing_file_item(st_python["files"])

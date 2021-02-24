@@ -6,19 +6,18 @@
 import sys
 import os
 import multiprocessing
-
 import warnings
-warnings.filterwarnings("ignore",category=FutureWarning)
-from scancode import cli
 import platform
 import getopt
 import logging
 
+from scancode import cli
 from datetime import datetime
 from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
 from ._settings import init_log
 
+warnings.filterwarnings("ignore",category=FutureWarning)
 
 
 def print_help_msg():
