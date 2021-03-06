@@ -17,6 +17,7 @@ from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
 from ._settings import init_log
 
+logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore",category=FutureWarning)
 
 
@@ -69,7 +70,7 @@ def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_
         output_json_file = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger = init_log(start_time, output_dir)
+    init_log(start_time, output_dir)
 
     if path_to_scan == "":
         if _windows:
@@ -109,7 +110,7 @@ def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_
         success = False
         msg = "* Check the path to scan. :" + path_to_scan
     
-    logger.warn("Scan Result:"+ str(success)+"\n"+msg)
+    logger.warn("* Scan Result:"+ str(success)+"\n"+msg)
     return success, msg
 
 if __name__ == '__main__':

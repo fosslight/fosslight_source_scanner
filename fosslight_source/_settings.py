@@ -6,6 +6,7 @@
 import logging
 import os
 
+
 def init_log(file_name_suffix, log_dir):
     log_level = logging.WARNING
     log_file = os.path.join(log_dir, "fosslight_src_log_" + file_name_suffix + ".txt")
@@ -17,8 +18,10 @@ def init_log(file_name_suffix, log_dir):
     # set a format which is simpler for console use
     formatter = logging.Formatter('%(message)s')
     console.setFormatter(formatter)
+    console.propagate = False
     # add the handler to the root logger
-    logging.getLogger('').addHandler(console)
     logger = logging.getLogger('fosslight_source')
+    logger.addHandler(console)
+    logger.propagate = False
 
     return logger
