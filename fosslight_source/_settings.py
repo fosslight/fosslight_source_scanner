@@ -9,7 +9,8 @@ import os
 
 def init_log(file_name_suffix, log_dir):
     log_level = logging.WARNING
-    log_file = os.path.join(log_dir, "fosslight_src_log_" + file_name_suffix + ".txt")
+    log_file = os.path.join(log_dir,
+                            "fosslight_src_log_" + file_name_suffix + ".txt")
     logging.basicConfig(filename=log_file, level=log_level,
                         format='%(message)s')
     # set up logging to console

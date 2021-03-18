@@ -8,12 +8,13 @@ import csv
 import time
 import logging
 
-_SRC_HEADER = ['ID', 'Source Name or Path', 'OSS Name', 'OSS Version', 'License',
-               'Download Location', 'Homepage',
-               'Copyright Text',
-               'License Text', 'Exclude', 'Comment']
+_SRC_HEADER = ['ID', 'Source Name or Path', 'OSS Name',
+               'OSS Version', 'License',  'Download Location',
+               'Homepage', 'Copyright Text',  'License Text',
+               'Exclude', 'Comment']
 
 logger = logging.getLogger(__name__)
+
 
 def write_result_to_csv(output_file, sheet_list):
     try:
@@ -23,7 +24,8 @@ def write_result_to_csv(output_file, sheet_list):
             writer.writerow(_SRC_HEADER)
             for sheet_name, sheet_contents in sheet_list.items():
                 # Sorting
-                sheet_contents = sorted(sheet_contents, key=lambda row: (''.join(row.licenses)))
+                sheet_contents = sorted(
+                    sheet_contents, key=lambda row: (''.join(row.licenses)))
                 for item_info in sheet_contents:
                     item_to_print = item_info.get_row_to_print()
                     item_to_print.insert(0, row_num)
@@ -47,7 +49,8 @@ def write_result_to_excel(out_file_name, sheet_list):
 def write_result_to_sheet(worksheet, list_to_print):
     row = 1  # Start from the first cell.
     # Sorting
-    list_to_print = sorted(list_to_print, key=lambda row: (''.join(row.licenses)))
+    list_to_print = sorted(
+        list_to_print, key=lambda row: (''.join(row.licenses)))
     for item_info in list_to_print:
         row_item = item_info.get_row_to_print()
         worksheet.write(row, 0, row)
@@ -59,7 +62,7 @@ def write_result_to_sheet(worksheet, list_to_print):
 def create_worksheet(workbook, sheet_name, header_row):
     if len(sheet_name) > 31:
         current_time = str(time.time())
-        logger.warn('* Sheet name: '+sheet_name +' -> '+current_time)
+        logger.warn('* Sheet name: '+sheet_name + ' -> '+current_time)
         sheet_name = current_time
     worksheet = workbook.add_worksheet(sheet_name)
     for col_num, value in enumerate(header_row):

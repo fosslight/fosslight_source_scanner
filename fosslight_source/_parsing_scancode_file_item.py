@@ -8,10 +8,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 _replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-"]
-_exclude_filename = ["changelog", "config.guess", "config.sub", "config.h.in", "changes", "ltmain.sh", "aclocal.m4", "configure", "configure.ac", "depcomp", "compile", "missing", "libtool.m4"]
+_exclude_filename = ["changelog", "config.guess", "config.sub",
+                     "config.h.in", "changes", "ltmain.sh",
+                     "aclocal.m4", "configure", "configure.ac",
+                     "depcomp", "compile", "missing", "libtool.m4"]
 _exclude_directory = ["test", "tests", "doc", "docs"]
-_exclude_directory = [os.path.sep + dir_name + os.path.sep for dir_name in _exclude_directory]
+_exclude_directory = [os.path.sep + dir_name +
+                      os.path.sep for dir_name in _exclude_directory]
 _exclude_directory.append("/.")
+
 
 class ScanCodeItem:
     file = ""
@@ -49,7 +54,9 @@ class ScanCodeItem:
         self.exclude = value
 
     def get_row_to_print(self):
-        print_rows = [self.file, "", "", ','.join(self.licenses), "", "", ','.join(self.copyright), "", "Exclude" if self.exclude else "",
+        print_rows = [self.file, "", "", ','.join(self.licenses), "", "",
+                      ','.join(self.copyright), "",
+                      "Exclude" if self.exclude else "",
                       self.comment]
         return print_rows
 
@@ -57,10 +64,13 @@ class ScanCodeItem:
 def is_exclude_dir(dir_path):
     if dir_path != "":
         dir_path = dir_path.lower()
-        dir_path = dir_path if dir_path.endswith(os.path.sep) else dir_path + os.path.sep
-        dir_path = dir_path if dir_path.startswith(os.path.sep) else os.path.sep + dir_path
+        dir_path = dir_path if dir_path.endswith(
+            os.path.sep) else dir_path + os.path.sep
+        dir_path = dir_path if dir_path.startswith(
+            os.path.sep) else os.path.sep + dir_path
         return any(dir_name in dir_path for dir_name in _exclude_directory)
     return False
+
 
 def is_exclude_file(file_path, prev_dir, prev_dir_exclude_value):
     file_path = file_path.lower()
@@ -117,21 +127,24 @@ def parsing_file_item(scancode_file_list):
                     continue
 
                 license_expression_list = file["license_expressions"]
-                if len(license_expression_list) > 0 :
-                    license_expression_list = [x.lower() for x in license_expression_list if x is not None]
+                if len(license_expression_list) > 0:
+                    license_expression_list = [
+                        x.lower() for x in license_expression_list
+                        if x is not None]
 
                 for lic_item in licenses:
                     license_value = ""
                     key = lic_item["key"]
                     spdx = lic_item["spdx_license_key"]
-                    #logger.debug("LICENSE_KEY:"+str(key)+",SPDX:"+str(spdx))
+                    # logger.debug("LICENSE_KEY:"+str(key)+",SPDX:"+str(spdx))
 
                     if key is not None and key != "":
                         key = key.lower()
                         license_value = key
                         if key in license_expression_list:
                             license_expression_list.remove(key)
-                    if spdx is not None and spdx != "":# Print SPDX instead of Key.
+                    if spdx is not None and spdx != "":
+                        # Print SPDX instead of Key.
                         license_value = spdx.lower()
 
                     if license_value != "":
@@ -144,8 +157,10 @@ def parsing_file_item(scancode_file_list):
                     result_item.set_licenses(license_detected)
 
                     if len(license_expression_list) > 0:
-                        license_expression_list = list(set(license_expression_list))
-                        result_item.set_comment(','.join(license_expression_list))
+                        license_expression_list = list(
+                            set(license_expression_list))
+                        result_item.set_comment(
+                            ','.join(license_expression_list))
 
                     if is_exclude_file(file_path, prev_dir, prev_dir_value):
                         result_item.set_exclude(True)

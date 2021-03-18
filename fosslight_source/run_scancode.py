@@ -18,7 +18,7 @@ from ._parsing_scancode_file_item import parsing_file_item
 from ._settings import init_log
 
 logger = logging.getLogger(__name__)
-warnings.filterwarnings("ignore",category=FutureWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 def print_help_msg():
@@ -51,7 +51,8 @@ def main():
     success, msg = run_scan(_path_to_scan, _output_file, _write_json_file, -1)
 
 
-def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_cores = -1):
+def run_scan(path_to_scan, output_file_name="",
+             _write_json_file=False, num_cores=-1):
 
     success = True
     msg = ""
@@ -83,11 +84,15 @@ def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_
     sheet_list = {}
     if os.path.isdir(path_to_scan):
         try:
-            output_json_file = output_json_file+".json" if _write_json_file else ""
+            output_json_file = output_json_file+".json" if _write_json_file\
+                else ""
 
-            rc, results = cli.run_scan(path_to_scan, max_depth=100, strip_root=True, license=True, copyright=True,
-                                       return_results=True, processes=num_cores, output_json_pp=output_json_file)
-            
+            rc, results = cli.run_scan(path_to_scan, max_depth=100,
+                                       strip_root=True, license=True,
+                                       copyright=True, return_results=True,
+                                       processes=num_cores,
+                                       output_json_pp=output_json_file)
+
             if rc:
                 for key, value in results.items():
                     if key == "files":
@@ -95,9 +100,11 @@ def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_
                         if rc:
                             if len(result_list) > 0:
                                 sheet_list["SRC"] = result_list
-                                write_result_to_excel(output_file + ".xlsx", sheet_list)
+                                write_result_to_excel(
+                                    output_file + ".xlsx", sheet_list)
                             else:
-                                msg = "* There is no item to print in OSS-Report."
+                                msg = "* There is no item"\
+                                    "to print in OSS-Report."
                 if not _windows:
                     write_result_to_csv(output_csv_file + ".csv", sheet_list)
             else:
@@ -109,9 +116,10 @@ def run_scan(path_to_scan, output_file_name = "", _write_json_file = False, num_
     else:
         success = False
         msg = "* Check the path to scan. :" + path_to_scan
-    
-    logger.warn("* Scan Result:"+ str(success)+"\n"+msg)
+
+    logger.warn("* Scan Result:" + str(success)+"\n"+msg)
     return success, msg
+
 
 if __name__ == '__main__':
     main()
