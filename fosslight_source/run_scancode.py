@@ -91,7 +91,8 @@ def run_scan(path_to_scan, output_file_name="",
                                        strip_root=True, license=True,
                                        copyright=True, return_results=True,
                                        processes=num_cores,
-                                       output_json_pp=output_json_file)
+                                       output_json_pp=output_json_file,
+                                       only_findings=True)
 
             if rc:
                 for key, value in results.items():
