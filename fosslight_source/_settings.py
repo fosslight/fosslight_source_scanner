@@ -5,23 +5,29 @@
 
 import logging
 import os
+from pathlib import Path
 
 
 def init_log(file_name_suffix, log_dir):
+
+    logger = logging.getLogger('fosslight_source')
     log_level = logging.WARNING
+    formatter = logging.Formatter('%(message)s')
     log_file = os.path.join(log_dir,
                             "fosslight_src_log_" + file_name_suffix + ".txt")
-    logging.basicConfig(filename=log_file, level=log_level,
-                        format='%(message)s')
-    # set up logging to console
+
+    Path(log_dir).mkdir(parents=True, exist_ok=True)
+    file_hanlder = logging.FileHandler(log_file)
+    file_hanlder.setLevel(log_level)
+    file_hanlder.setFormatter(formatter)
+    file_hanlder.propagate = False
+
     console = logging.StreamHandler()
     console.setLevel(log_level)
-    # set a format which is simpler for console use
-    formatter = logging.Formatter('%(message)s')
     console.setFormatter(formatter)
     console.propagate = False
-    # add the handler to the root logger
-    logger = logging.getLogger('fosslight_source')
+
+    logger.addHandler(file_hanlder)
     logger.addHandler(console)
     logger.propagate = False
 
