@@ -10,7 +10,7 @@
 
 <p align="center">
     <img src="https://img.shields.io/badge/license-LGE-orange.svg" alt="FOSSLight Scanner is released under the LGE Proprietary License." />
-    <img src="https://img.shields.io/badge/pypi-v1.2-brightgreen.svg" alt="Current python package version." />
+    <img src="https://img.shields.io/badge/pypi-v1.3-brightgreen.svg" alt="Current python package version." />
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
