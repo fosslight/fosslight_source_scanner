@@ -104,7 +104,7 @@ def run_scan(path_to_scan, output_file_name="",
                                     output_file + ".xlsx", sheet_list)
                             else:
                                 msg = "* There is no item"\
-                                    "to print in OSS-Report."
+                                    " to print in OSS-Report."
                 if not _windows:
                     write_result_to_csv(output_csv_file + ".csv", sheet_list)
             else:
