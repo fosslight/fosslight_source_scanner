@@ -25,7 +25,6 @@
 - [How to install](#-how-to-install)
 - [How to run](#-how-to-run)
 - [Result](#-result)
-- [Documentation](#-documentation)
 - [How to report issue](#-how-to-report-issue)
 - [License](#-license)
 
