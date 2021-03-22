@@ -1,11 +1,11 @@
 <center>
 
-[![FOSSLight Source](doc/img/fosslight_source.png)](http://mod.lge.com/code/projects/OSC/repos/fosslight_source)
+[![FOSSLight Source](img/fosslight_source.png)](http://mod.lge.com/code/projects/OSC/repos/fosslight_source)
 </center>
 
 <p align="center">
-  <strong>Analyze the license for the source code.</strong><br>
-  Use Source Code Scanner to extract copyright text and license text in the file.
+  <strong>Source Code의 License를 분석합니다</strong><br>
+  Source Code 스캐너를 이용하여 파일 안에 포함된 Copyright과 License 문구를 추출합니다.
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
-**FOSSLight Source** Using the source code analysis tool called [ScanCode][sc], the License text and Copyright text included in the file are extracted. Excludes some files (ex- build script), binary files, directory and files in specific directories (ex-test) from the ScanCode execution result. And remove sentences such as "-only" and "-old-style" from the license name to be printed. The output result is generated in [OSS Report][or] format.
+**FOSSLight Source** 소스 코드 스캐너인 [ScanCode][sc]를 이용하여, 파일 안에 포함된 Copyright과 License 문구를 추출합니다. Build Script, Binary, Directory, 특정 Directory (ex-test) 안의 파일은 분석 결과에서 제외시킵니다. 그리고 License 이름에서 "-only", "-old-style"와 같은 문구를 제거합니다. 분석 결과는 [OSS Report][or] 형태로 출력됩니다.
 
 [sc]: https://github.com/nexB/scancode-toolkit
 [or]: http://collab.lge.com/main/x/xDHlFg
@@ -32,14 +32,14 @@
 
 ## 📋 Prerequisite
 
-FOSSLight Source needs a Python 3.6+.    
-For windows, you need to install [Microsoft Visual C++ Build Tools][ms_build].
+FOSSLight Source는 Python 3.6+ 기반에서 동작합니다..    
+Windows의 경우 [Microsoft Visual C++ Build Tools][ms_build]를 추가로 설치해야 합니다.
 
 [ms_build]: https://visualstudio.microsoft.com/vs/older-downloads/
 
 ## 🎉 How to install
 
-It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv][anaconda] environment.
+FOSSLight Source는 pip3를 이용하여 설치할 수 있습니다. [python 3.6 + virtualenv][anaconda] 환경에서 설치할 것을 권장합니다.
 
 ```
 $ pip3 install "http://mod.lge.com/code/rest/archive/latest/projects/OSC/repos/fosslight_source/archive?format=zip" 
@@ -48,9 +48,9 @@ $ pip3 install "http://mod.lge.com/code/rest/archive/latest/projects/OSC/repos/f
 
 ## 🚀 How to run
 
-There are two commands for FOSSLight Scanner. 
-- The first is **fosslight_source**, a command that executes source code analysis and outputs OSS Report.
-- The second command is **fosslight_convert** that converts the result of executing ScanCode in json format into OSS Report format.
+FOSSLight Scanner에는 하기 두 가지 명령어가 있습니다. 
+- **fosslight_source** : Source Code 분석을 실행한 후 OSS Report 형식으로 출력.
+- **fosslight_convert** : json형태인 ScanCode 결과를 OSS Report 형식으로 변환.
 
 ### 1. Parameter of fosslight_source      
 | Parameter  | Argument | Description |
@@ -68,12 +68,12 @@ There are two commands for FOSSLight Scanner.
 | o | String | Output file name without file extension. | 
    
 
-### Ex 1. Print result to OSS Report and json file
+### Ex 1. Source Code 분석 후 OSS Report와 json 형태의 ScanCode 결과 출력
 ```
 $ fosslight_source -p /home/source_path -j
 ```
 
-### Ex 2. Converting scancode json result to OSS report
+### Ex 2. json 형태의 ScanCode 결과를 OSS Report 형식으로 변환
 ```
 $ fosslight_convert -p /home/jsonfile_dir
 ```
@@ -89,20 +89,20 @@ $ tree
 └── scancode_2021-03-21_20-44-34.json
 
 ```
-- OSS_Report-[datetime].xlsx : OSS Report format file that outputs source code analysis.
-- result_[datetime].csv : Excluding windows, this is the result of outputting the OSS Report in csv format.
-- scancode_[datetime].json : This is the ScanCode execution result that is generated only when the -j option is given.
-- fosslight_src_log_[datetime].txt: This is the file where the execution log is saved.
+- OSS_Report-[datetime].xlsx : OSS Report형태의 Source Code 분석 결과
+- result_[datetime].csv : OSS Report를 csv로 출력한 결과 (Windows 제외)
+- scancode_[datetime].json : ScanCode 실행 결과 (-j 옵션이 포함된 경우에만 생성)
+- fosslight_src_log_[datetime].txt: 실행 로그가 저장된 파일
 
 
 ## 👏 How to report issue
 
-Please report any ideas or bugs to improve by creating an issue in [OSC CLM][cl]. Then there will be quick bug fixes and upgrades. Ideas to improve are always welcome.
+개선 사항이나 버그는 [OSC CLM][cl]에 이슈를 생성하여 리포트해주시기 바랍니다. 이슈 리포트는 FOSSLight Scanner 업그레이드에 많은 도움이 됩니다.
 
 [cl]: http://clm.lge.com/issue/browse/OSC
 
 ## 📄 License
 
-FOSSLight Source is LGE licensed, as found in the [LICENSE][l] file.
+FOSSLight Source는 LGE Proprietary License 입니다. License 원문 파일 [LICENSE][l]를 참고하십시오.
 
 [l]: http://mod.lge.com/code/projects/OSC/repos/fosslight_source/browse/LICENSE
