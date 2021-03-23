@@ -38,12 +38,11 @@ For windows, you need to install [Microsoft Visual C++ Build Tools][ms_build].
 
 ## 🎉 How to install
 
-It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv][anaconda] environment.
+It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv](doc/Guide_virtualenv.md) environment.
 
 ```
 $ pip3 install "http://mod.lge.com/code/rest/archive/latest/projects/OSC/repos/fosslight_source/archive?format=zip" 
 ```
-[anaconda]: http://collab.lge.com/main/x/RfxdTQ
 
 ## 🚀 How to run
 
