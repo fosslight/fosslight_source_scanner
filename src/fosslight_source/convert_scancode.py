@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 def convert_json_to_excel(scancode_json, excel_name, csv_name):
+    file_list = []
     try:
         sheet_list = {}
         if os.path.isfile(scancode_json):
