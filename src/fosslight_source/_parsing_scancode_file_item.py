@@ -93,7 +93,7 @@ def parsing_file_item(scancode_file_list):
 
     rc = True
     scancode_file_item = []
-    logger.debug("FILE COUNT:"+str(len(scancode_file_list)))
+    logger.warn("|---TOTAL FILE COUNT:"+str(len(scancode_file_list)))
 
     prev_dir = ""
     prev_dir_value = False
@@ -105,13 +105,12 @@ def parsing_file_item(scancode_file_list):
 
             if "is_binary" in file:
                 is_binary = file["is_binary"]
-                continue
             if "type" in file:
                 is_dir = file["type"] == "directory"
                 if is_dir:
                     prev_dir_value = is_exclude_dir(file_path)
                     prev_dir = file_path
-                    continue
+
             if not is_binary and not is_dir:
                 licenses = file["licenses"]
                 copyright_list = file["copyrights"]

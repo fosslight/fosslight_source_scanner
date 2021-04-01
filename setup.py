@@ -13,7 +13,7 @@ with open('requirements.txt', 'r', 'utf-8') as f:
 if __name__ == "__main__":
     setup(
         name='fosslight_source',
-        version='1.3',
+        version='1.3.1',
         package_dir={"": "src"},
         packages=find_packages(where='src'),
         description='Scancode analysis in OSS Report format',

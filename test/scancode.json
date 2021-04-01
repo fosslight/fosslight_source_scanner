@@ -1,0 +1,529 @@
+{
+  "headers": [
+    {
+      "tool_name": "scancode-toolkit",
+      "tool_version": "21.2.25",
+      "options": {},
+      "notice": "Generated with ScanCode and provided on an \"AS IS\" BASIS, WITHOUT WARRANTIES\nOR CONDITIONS OF ANY KIND, either express or implied. No content created from\nScanCode should be considered or used as legal advice. Consult an Attorney\nfor any legal advice.\nScanCode is a free software code scanning tool from nexB Inc. and others.\nVisit https://github.com/nexB/scancode-toolkit/ for support and download.",
+      "start_timestamp": "2021-04-01T020252.920956",
+      "end_timestamp": "2021-04-01T020307.584338",
+      "duration": 14.663402080535889,
+      "message": null,
+      "errors": [],
+      "extra_data": {
+        "files_count": 7
+      }
+    }
+  ],
+  "files": [
+    {
+      "path": "askalono_macos",
+      "type": "file",
+      "licenses": [
+        {
+          "key": "agpl-3.0-plus",
+          "score": 100.0,
+          "name": "GNU Affero General Public License 3.0 or later",
+          "short_name": "AGPL 3.0 or later",
+          "category": "Copyleft",
+          "is_exception": false,
+          "owner": "Free Software Foundation (FSF)",
+          "homepage_url": "http://www.gnu.org/licenses/agpl-3.0.html",
+          "text_url": "http://www.gnu.org/licenses/agpl.txt",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/agpl-3.0-plus",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/agpl-3.0-plus.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/agpl-3.0-plus.yml",
+          "spdx_license_key": "AGPL-3.0-or-later",
+          "spdx_url": "https://spdx.org/licenses/AGPL-3.0-or-later",
+          "start_line": 9176,
+          "end_line": 9176,
+          "matched_rule": {
+            "identifier": "agpl-3.0-plus_101.RULE",
+            "license_expression": "agpl-3.0-plus",
+            "licenses": [
+              "agpl-3.0-plus"
+            ],
+            "is_license_text": false,
+            "is_license_notice": false,
+            "is_license_reference": false,
+            "is_license_tag": true,
+            "is_license_intro": false,
+            "matcher": "2-aho",
+            "rule_length": 1,
+            "matched_length": 1,
+            "match_coverage": 100.0,
+            "rule_relevance": 100
+          }
+        },
+        {
+          "key": "lgpl-2.0-plus",
+          "score": 75.0,
+          "name": "GNU Library General Public License 2.0 or later",
+          "short_name": "LGPL 2.0 or later",
+          "category": "Copyleft Limited",
+          "is_exception": false,
+          "owner": "Free Software Foundation (FSF)",
+          "homepage_url": "http://www.gnu.org/licenses/old-licenses/lgpl-2.0.html",
+          "text_url": "http://www.gnu.org/licenses/old-licenses/lgpl-2.0-standalone.html",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/lgpl-2.0-plus",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/lgpl-2.0-plus.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/lgpl-2.0-plus.yml",
+          "spdx_license_key": "LGPL-2.0-or-later",
+          "spdx_url": "https://spdx.org/licenses/LGPL-2.0-or-later",
+          "start_line": 9176,
+          "end_line": 9176,
+          "matched_rule": {
+            "identifier": "lgpl_bare_single_word.RULE",
+            "license_expression": "lgpl-2.0-plus",
+            "licenses": [
+              "lgpl-2.0-plus"
+            ],
+            "is_license_text": false,
+            "is_license_notice": false,
+            "is_license_reference": true,
+            "is_license_tag": false,
+            "is_license_intro": false,
+            "matcher": "2-aho",
+            "rule_length": 1,
+            "matched_length": 1,
+            "match_coverage": 100.0,
+            "rule_relevance": 75
+          }
+        },
+        {
+          "key": "agpl-3.0-plus",
+          "score": 100.0,
+          "name": "GNU Affero General Public License 3.0 or later",
+          "short_name": "AGPL 3.0 or later",
+          "category": "Copyleft",
+          "is_exception": false,
+          "owner": "Free Software Foundation (FSF)",
+          "homepage_url": "http://www.gnu.org/licenses/agpl-3.0.html",
+          "text_url": "http://www.gnu.org/licenses/agpl.txt",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/agpl-3.0-plus",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/agpl-3.0-plus.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/agpl-3.0-plus.yml",
+          "spdx_license_key": "AGPL-3.0-or-later",
+          "spdx_url": "https://spdx.org/licenses/AGPL-3.0-or-later",
+          "start_line": 9176,
+          "end_line": 9176,
+          "matched_rule": {
+            "identifier": "agpl-3.0-plus_101.RULE",
+            "license_expression": "agpl-3.0-plus",
+            "licenses": [
+              "agpl-3.0-plus"
+            ],
+            "is_license_text": false,
+            "is_license_notice": false,
+            "is_license_reference": false,
+            "is_license_tag": true,
+            "is_license_intro": false,
+            "matcher": "2-aho",
+            "rule_length": 1,
+            "matched_length": 1,
+            "match_coverage": 100.0,
+            "rule_relevance": 100
+          }
+        },
+        {
+          "key": "cc-by-4.0",
+          "score": 50.0,
+          "name": "Creative Commons Attribution 4.0 International Public License",
+          "short_name": "CC-BY-4.0",
+          "category": "Permissive",
+          "is_exception": false,
+          "owner": "Creative Commons",
+          "homepage_url": "http://creativecommons.org/licenses/by/4.0/",
+          "text_url": "http://creativecommons.org/licenses/by/4.0/legalcode",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/cc-by-4.0",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/cc-by-4.0.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/cc-by-4.0.yml",
+          "spdx_license_key": "CC-BY-4.0",
+          "spdx_url": "https://spdx.org/licenses/CC-BY-4.0",
+          "start_line": 9176,
+          "end_line": 9176,
+          "matched_rule": {
+            "identifier": "cc-by-4.0_11.RULE",
+            "license_expression": "cc-by-4.0",
+            "licenses": [
+              "cc-by-4.0"
+            ],
+            "is_license_text": false,
+            "is_license_notice": false,
+            "is_license_reference": true,
+            "is_license_tag": false,
+            "is_license_intro": false,
+            "matcher": "2-aho",
+            "rule_length": 2,
+            "matched_length": 2,
+            "match_coverage": 100.0,
+            "rule_relevance": 50
+          }
+        },
+        {
+          "key": "lgpl-2.0-plus",
+          "score": 75.0,
+          "name": "GNU Library General Public License 2.0 or later",
+          "short_name": "LGPL 2.0 or later",
+          "category": "Copyleft Limited",
+          "is_exception": false,
+          "owner": "Free Software Foundation (FSF)",
+          "homepage_url": "http://www.gnu.org/licenses/old-licenses/lgpl-2.0.html",
+          "text_url": "http://www.gnu.org/licenses/old-licenses/lgpl-2.0-standalone.html",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/lgpl-2.0-plus",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/lgpl-2.0-plus.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/lgpl-2.0-plus.yml",
+          "spdx_license_key": "LGPL-2.0-or-later",
+          "spdx_url": "https://spdx.org/licenses/LGPL-2.0-or-later",
+          "start_line": 9176,
+          "end_line": 9176,
+          "matched_rule": {
+            "identifier": "lgpl_bare_single_word.RULE",
+            "license_expression": "lgpl-2.0-plus",
+            "licenses": [
+              "lgpl-2.0-plus"
+            ],
+            "is_license_text": false,
+            "is_license_notice": false,
+            "is_license_reference": true,
+            "is_license_tag": false,
+            "is_license_intro": false,
+            "matcher": "2-aho",
+            "rule_length": 1,
+            "matched_length": 1,
+            "match_coverage": 100.0,
+            "rule_relevance": 75
+          }
+        }
+      ],
+      "license_expressions": [
+        "agpl-3.0-plus",
+        "lgpl-2.0-plus",
+        "agpl-3.0-plus",
+        "cc-by-4.0",
+        "lgpl-2.0-plus"
+      ],
+      "percentage_of_license_text": 0.01,
+      "copyrights": [],
+      "holders": [],
+      "authors": [],
+      "scan_errors": []
+    },
+    {
+      "path": "LICENSE.txt",
+      "type": "file",
+      "licenses": [
+        {
+          "key": "mit",
+          "score": 100.0,
+          "name": "MIT License",
+          "short_name": "MIT License",
+          "category": "Permissive",
+          "is_exception": false,
+          "owner": "MIT",
+          "homepage_url": "http://opensource.org/licenses/mit-license.php",
+          "text_url": "http://opensource.org/licenses/mit-license.php",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/mit",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/mit.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/mit.yml",
+          "spdx_license_key": "MIT",
+          "spdx_url": "https://spdx.org/licenses/MIT",
+          "start_line": 1,
+          "end_line": 5,
+          "matched_rule": {
+            "identifier": "mit.LICENSE",
+            "license_expression": "mit",
+            "licenses": [
+              "mit"
+            ],
+            "is_license_text": true,
+            "is_license_notice": false,
+            "is_license_reference": false,
+            "is_license_tag": false,
+            "is_license_intro": false,
+            "matcher": "1-hash",
+            "rule_length": 161,
+            "matched_length": 161,
+            "match_coverage": 100.0,
+            "rule_relevance": 100
+          }
+        }
+      ],
+      "license_expressions": [
+        "mit"
+      ],
+      "percentage_of_license_text": 100.0,
+      "copyrights": [],
+      "holders": [],
+      "authors": [],
+      "scan_errors": []
+    },
+    {
+      "path": "LicenseRef-LGE-Proprietary.txt",
+      "type": "file",
+      "licenses": [
+        {
+          "key": "unknown-license-reference",
+          "score": 11.0,
+          "name": "Unknown License file reference",
+          "short_name": "Unknown License reference",
+          "category": "Unstated License",
+          "is_exception": false,
+          "owner": "Unspecified",
+          "homepage_url": null,
+          "text_url": "",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/unknown-license-reference",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/unknown-license-reference.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/unknown-license-reference.yml",
+          "spdx_license_key": "LicenseRef-scancode-unknown-license-reference",
+          "spdx_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/unknown-license-reference.LICENSE",
+          "start_line": 5,
+          "end_line": 5,
+          "matched_rule": {
+            "identifier": "license-intro_22.RULE",
+            "license_expression": "unknown-license-reference",
+            "licenses": [
+              "unknown-license-reference"
+            ],
+            "is_license_text": false,
+            "is_license_notice": false,
+            "is_license_reference": false,
+            "is_license_tag": false,
+            "is_license_intro": true,
+            "matcher": "2-aho",
+            "rule_length": 2,
+            "matched_length": 2,
+            "match_coverage": 100.0,
+            "rule_relevance": 11
+          }
+        }
+      ],
+      "license_expressions": [
+        "unknown-license-reference"
+      ],
+      "percentage_of_license_text": 1.5,
+      "copyrights": [],
+      "holders": [],
+      "authors": [],
+      "scan_errors": []
+    },
+    {
+      "path": "sample_license.txt",
+      "type": "file",
+      "licenses": [
+        {
+          "key": "apache-2.0",
+          "score": 100.0,
+          "name": "Apache License 2.0",
+          "short_name": "Apache 2.0",
+          "category": "Permissive",
+          "is_exception": false,
+          "owner": "Apache Software Foundation",
+          "homepage_url": "http://www.apache.org/licenses/",
+          "text_url": "http://www.apache.org/licenses/LICENSE-2.0",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/apache-2.0",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/apache-2.0.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/apache-2.0.yml",
+          "spdx_license_key": "Apache-2.0",
+          "spdx_url": "https://spdx.org/licenses/Apache-2.0",
+          "start_line": 1,
+          "end_line": 73,
+          "matched_rule": {
+            "identifier": "apache-2.0.LICENSE",
+            "license_expression": "apache-2.0",
+            "licenses": [
+              "apache-2.0"
+            ],
+            "is_license_text": true,
+            "is_license_notice": false,
+            "is_license_reference": false,
+            "is_license_tag": false,
+            "is_license_intro": false,
+            "matcher": "1-hash",
+            "rule_length": 1581,
+            "matched_length": 1581,
+            "match_coverage": 100.0,
+            "rule_relevance": 100
+          }
+        }
+      ],
+      "license_expressions": [
+        "apache-2.0"
+      ],
+      "percentage_of_license_text": 100.0,
+      "copyrights": [],
+      "holders": [],
+      "authors": [],
+      "scan_errors": []
+    },
+    {
+      "path": ".hidden_dir/temp.txt",
+      "type": "file",
+      "licenses": [
+        {
+          "key": "gpl-3.0",
+          "score": 99.98,
+          "name": "GNU General Public License 3.0",
+          "short_name": "GPL 3.0",
+          "category": "Copyleft",
+          "is_exception": false,
+          "owner": "Free Software Foundation (FSF)",
+          "homepage_url": "http://www.gnu.org/licenses/gpl-3.0.html",
+          "text_url": "http://www.gnu.org/licenses/gpl-3.0-standalone.html",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/gpl-3.0",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/gpl-3.0.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/gpl-3.0.yml",
+          "spdx_license_key": "GPL-3.0-only",
+          "spdx_url": "https://spdx.org/licenses/GPL-3.0-only",
+          "start_line": 3,
+          "end_line": 234,
+          "matched_rule": {
+            "identifier": "gpl-3.0_204.RULE",
+            "license_expression": "gpl-3.0",
+            "licenses": [
+              "gpl-3.0"
+            ],
+            "is_license_text": true,
+            "is_license_notice": false,
+            "is_license_reference": false,
+            "is_license_tag": false,
+            "is_license_intro": false,
+            "matcher": "3-seq",
+            "rule_length": 5501,
+            "matched_length": 5500,
+            "match_coverage": 99.98,
+            "rule_relevance": 100
+          }
+        }
+      ],
+      "license_expressions": [
+        "gpl-3.0"
+      ],
+      "percentage_of_license_text": 99.95,
+      "copyrights": [
+        {
+          "value": "Copyright (c) SOIM",
+          "start_line": 1,
+          "end_line": 1
+        },
+        {
+          "value": "Copyright (c) 2007 Free Software Foundation, Inc. <http://fsf.org/>",
+          "start_line": 6,
+          "end_line": 6
+        }
+      ],
+      "holders": [
+        {
+          "value": "SOIM",
+          "start_line": 1,
+          "end_line": 1
+        },
+        {
+          "value": "Free Software Foundation, Inc.",
+          "start_line": 6,
+          "end_line": 6
+        }
+      ],
+      "authors": [],
+      "scan_errors": []
+    },
+    {
+      "path": ".hidden_dir/zero.txt",
+      "type": "file",
+      "licenses": [
+        {
+          "key": "mit",
+          "score": 100.0,
+          "name": "MIT License",
+          "short_name": "MIT License",
+          "category": "Permissive",
+          "is_exception": false,
+          "owner": "MIT",
+          "homepage_url": "http://opensource.org/licenses/mit-license.php",
+          "text_url": "http://opensource.org/licenses/mit-license.php",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/mit",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/mit.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/mit.yml",
+          "spdx_license_key": "MIT",
+          "spdx_url": "https://spdx.org/licenses/MIT",
+          "start_line": 1,
+          "end_line": 5,
+          "matched_rule": {
+            "identifier": "mit.LICENSE",
+            "license_expression": "mit",
+            "licenses": [
+              "mit"
+            ],
+            "is_license_text": true,
+            "is_license_notice": false,
+            "is_license_reference": false,
+            "is_license_tag": false,
+            "is_license_intro": false,
+            "matcher": "1-hash",
+            "rule_length": 161,
+            "matched_length": 161,
+            "match_coverage": 100.0,
+            "rule_relevance": 100
+          }
+        }
+      ],
+      "license_expressions": [
+        "mit"
+      ],
+      "percentage_of_license_text": 100.0,
+      "copyrights": [],
+      "holders": [],
+      "authors": [],
+      "scan_errors": []
+    },
+    {
+      "path": "test/MIT_TEST.txt",
+      "type": "file",
+      "licenses": [
+        {
+          "key": "mit",
+          "score": 100.0,
+          "name": "MIT License",
+          "short_name": "MIT License",
+          "category": "Permissive",
+          "is_exception": false,
+          "owner": "MIT",
+          "homepage_url": "http://opensource.org/licenses/mit-license.php",
+          "text_url": "http://opensource.org/licenses/mit-license.php",
+          "reference_url": "https://scancode-licensedb.aboutcode.org/mit",
+          "scancode_text_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/mit.LICENSE",
+          "scancode_data_url": "https://github.com/nexB/scancode-toolkit/tree/develop/src/licensedcode/data/licenses/mit.yml",
+          "spdx_license_key": "MIT",
+          "spdx_url": "https://spdx.org/licenses/MIT",
+          "start_line": 1,
+          "end_line": 5,
+          "matched_rule": {
+            "identifier": "mit.LICENSE",
+            "license_expression": "mit",
+            "licenses": [
+              "mit"
+            ],
+            "is_license_text": true,
+            "is_license_notice": false,
+            "is_license_reference": false,
+            "is_license_tag": false,
+            "is_license_intro": false,
+            "matcher": "1-hash",
+            "rule_length": 161,
+            "matched_length": 161,
+            "match_coverage": 100.0,
+            "rule_relevance": 100
+          }
+        }
+      ],
+      "license_expressions": [
+        "mit"
+      ],
+      "percentage_of_license_text": 100.0,
+      "copyrights": [],
+      "holders": [],
+      "authors": [],
+      "scan_errors": []
+    }
+  ]
+}
