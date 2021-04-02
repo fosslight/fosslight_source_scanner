@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Copyright (c) 2020 LG Electronics Inc.
-# SPDX-License-Identifier: LicenseRef-LGE-Proprietary
+# SPDX-License-Identifier: LicenseRef-Apache-2.0
 
 import getopt
 import os

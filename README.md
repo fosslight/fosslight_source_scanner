@@ -1,6 +1,6 @@
 <center>
 
-[![FOSSLight Source](doc/img/fosslight_source.png)](http://mod.lge.com/code/projects/OSC/repos/fosslight_source)
+[![FOSSLight Source](doc/img/fosslight_source.png)](https://github.com/LGE-OSS/fosslight_source)
 </center>
 
 <p align="center">
@@ -10,14 +10,13 @@
 
 <p align="center">
     <img src="https://img.shields.io/badge/license-LGE-orange.svg" alt="FOSSLight Scanner is released under the LGE Proprietary License." />
-    <img src="https://img.shields.io/badge/pypi-v1.3-brightgreen.svg" alt="Current python package version." />
+    <img src="https://img.shields.io/badge/pypi-1.4-brightgreen.svg" alt="Current python package version." />
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
-**FOSSLight Source** Using the source code analysis tool called [ScanCode][sc], the License text and Copyright text included in the file are extracted. Excludes some files (ex- build script), binary files, directory and files in specific directories (ex-test) from the ScanCode execution result. And remove sentences such as "-only" and "-old-style" from the license name to be printed. The output result is generated in [OSS Report][or] format.
+**FOSSLight Source** Using the source code analysis tool called [ScanCode][sc], the License text and Copyright text included in the file are extracted. Excludes some files (ex- build script), binary files, directory and files in specific directories (ex-test) from the ScanCode execution result. And remove sentences such as "-only" and "-old-style" from the license name to be printed. The output result is generated in Excel format.
 
 [sc]: https://github.com/nexB/scancode-toolkit
-[or]: http://collab.lge.com/main/x/xDHlFg
 
 ## Contents
 
@@ -41,7 +40,7 @@ For windows, you need to install [Microsoft Visual C++ Build Tools][ms_build].
 It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv](doc/Guide_virtualenv.md) environment.
 
 ```
-$ pip3 install "http://mod.lge.com/code/rest/archive/latest/projects/OSC/repos/fosslight_source/archive?format=zip" 
+$ pip3 install fosslight_source
 ```
 
 ## 🚀 How to run
@@ -95,12 +94,12 @@ $ tree
 
 ## 👏 How to report issue
 
-Please report any ideas or bugs to improve by creating an issue in [OSC CLM][cl]. Then there will be quick bug fixes and upgrades. Ideas to improve are always welcome.
+Please report any ideas or bugs to improve by creating an issue in [Git Repository][repo]. Then there will be quick bug fixes and upgrades. Ideas to improve are always welcome.
 
-[cl]: http://clm.lge.com/issue/browse/OSC
+[repo]: https://github.com/LGE-OSS/fosslight_source/issues
 
 ## 📄 License
 
-FOSSLight Source is LGE licensed, as found in the [LICENSE][l] file.
+FOSSLight Source is Apache-2.0, as found in the [LICENSE][l] file.
 
-[l]: http://mod.lge.com/code/projects/OSC/repos/fosslight_source/browse/LICENSE
+[l]: https://github.com/LGE-OSS/fosslight_source/blob/main/LICENSE

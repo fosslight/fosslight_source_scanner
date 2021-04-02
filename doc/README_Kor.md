@@ -1,6 +1,6 @@
 <center>
 
-[![FOSSLight Source](img/fosslight_source.png)](http://mod.lge.com/code/projects/OSC/repos/fosslight_source)
+[![FOSSLight Source](img/fosslight_source.png)](https://github.com/LGE-OSS/fosslight_source)
 </center>
 
 <p align="center">
@@ -10,14 +10,13 @@
 
 <p align="center">
     <img src="https://img.shields.io/badge/license-LGE-orange.svg" alt="FOSSLight Scanner is released under the LGE Proprietary License." />
-    <img src="https://img.shields.io/badge/pypi-v1.3-brightgreen.svg" alt="Current python package version." />
+    <img src="https://img.shields.io/badge/pypi-1.4-brightgreen.svg" alt="Current python package version." />
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
-**FOSSLight Source** 소스 코드 스캐너인 [ScanCode][sc]를 이용하여, 파일 안에 포함된 Copyright과 License 문구를 추출합니다. Build Script, Binary, Directory, 특정 Directory (ex-test) 안의 파일은 분석 결과에서 제외시킵니다. 그리고 License 이름에서 "-only", "-old-style"와 같은 문구를 제거합니다. 분석 결과는 [OSS Report][or] 형태로 출력됩니다.
+**FOSSLight Source** 소스 코드 스캐너인 [ScanCode][sc]를 이용하여, 파일 안에 포함된 Copyright과 License 문구를 추출합니다. Build Script, Binary, Directory, 특정 Directory (ex-test) 안의 파일은 분석 결과에서 제외시킵니다. 그리고 License 이름에서 "-only", "-old-style"와 같은 문구를 제거합니다. 분석 결과는 Excel 형태로 출력됩니다.
 
 [sc]: https://github.com/nexB/scancode-toolkit
-[or]: http://collab.lge.com/main/x/xDHlFg
 
 ## Contents
 
@@ -41,7 +40,7 @@ Windows의 경우 [Microsoft Visual C++ Build Tools][ms_build]를 추가로 설�
 FOSSLight Source는 pip3를 이용하여 설치할 수 있습니다. [python 3.6 + virtualenv](Guide_virtualenv_Kor.md) 환경에서 설치할 것을 권장합니다.
 
 ```
-$ pip3 install "http://mod.lge.com/code/rest/archive/latest/projects/OSC/repos/fosslight_source/archive?format=zip" 
+$ pip3 install fosslight_source
 ```
 
 ## 🚀 How to run
@@ -95,12 +94,12 @@ $ tree
 
 ## 👏 How to report issue
 
-개선 사항이나 버그는 [OSC CLM][cl]에 이슈를 생성하여 리포트해주시기 바랍니다. 이슈 리포트는 FOSSLight Scanner 업그레이드에 많은 도움이 됩니다.
+개선 사항이나 버그는 [Git Repository][repo]에 이슈를 생성하여 리포트해주시기 바랍니다. 이슈 리포트는 FOSSLight Scanner 업그레이드에 많은 도움이 됩니다.
 
-[cl]: http://clm.lge.com/issue/browse/OSC
+[repo]: https://github.com/LGE-OSS/fosslight_source/issues
 
 ## 📄 License
 
-FOSSLight Source는 LGE Proprietary License 입니다. License 원문 파일 [LICENSE][l]를 참고하십시오.
+FOSSLight Source는 Apache-2.0입니다. License 원문 파일 [LICENSE][l]를 참고하십시오.
 
-[l]: http://mod.lge.com/code/projects/OSC/repos/fosslight_source/browse/LICENSE
+[l]: https://github.com/LGE-OSS/fosslight_source/blob/main/LICENSE
