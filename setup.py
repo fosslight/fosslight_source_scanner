@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-# SPDX-License-Identifier: LicenseRef-Apache-2.0
+# Copyright (c) 2021 LG Electronics
+# SPDX-License-Identifier: Apache-2.0
 from codecs import open
 from setuptools import setup, find_packages
 
