@@ -1,8 +1,8 @@
-<center>
-
-[![FOSSLight Source](doc/img/fosslight_source.png)](https://github.com/LGE-OSS/fosslight_source)
-</center>
-
+<p align="center">
+  <a href="https://github.com/LGE-OSS/fosslight_source">
+    <img alt="fosslight" src="doc/img/fosslight_source.png">
+  </a>
+</p>
 <p align="center">
   <strong>Analyze the license for the source code.</strong><br>
   Use Source Code Scanner to extract copyright text and license text in the file.
@@ -10,7 +10,7 @@
 
 <p align="center">
     <img src="https://img.shields.io/badge/license-LGE-orange.svg" alt="FOSSLight Scanner is released under the LGE Proprietary License." />
-    <img src="https://img.shields.io/badge/pypi-1.4-brightgreen.svg" alt="Current python package version." />
+    <img src="https://img.shields.io/badge/pypi-1.4.0-brightgreen.svg" alt="Current python package version." />
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
