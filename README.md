@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/LGE-OSS/fosslight_source">
-    <img alt="fosslight" src="doc/img/fosslight_source.png">
+    <img alt="fosslight" src="docs/img/fosslight_source.png">
   </a>
 </p>
 <p align="center">
@@ -37,7 +37,7 @@ For windows, you need to install [Microsoft Visual C++ Build Tools][ms_build].
 
 ## 🎉 How to install
 
-It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv](doc/Guide_virtualenv.md) environment.
+It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv](docs/Guide_virtualenv.md) environment.
 
 ```
 $ pip3 install fosslight_source
