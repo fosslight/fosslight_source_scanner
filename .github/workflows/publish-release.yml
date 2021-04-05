@@ -1,0 +1,32 @@
+# 1. Update changelog
+# 2. Build the exe file and upload it in the release assets.
+# 3. Upload a Python Package using Twine
+
+name: Release fosslight_source
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: update changelog with gren
+      env:
+        GREN_GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      run: |
+        npm install github-release-notes@0.17.3
+        node_modules/.bin/gren changelog --override
+    - name: Commit files
+      run: |
+        git config --local user.name "github-actions[bot]"
+        git add CHANGELOG.md
+        git commit -m "Update ChangeLog"
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.TOKEN }}
+        branch: main
+  
