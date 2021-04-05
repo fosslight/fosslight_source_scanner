@@ -1,16 +1,16 @@
-<center>
-
-[![FOSSLight Source](doc/img/fosslight_source.png)](https://github.com/LGE-OSS/fosslight_source)
-</center>
-
+<p align="center">
+  <a href="https://github.com/LGE-OSS/fosslight_source">
+    <img alt="fosslight" src="docs/img/fosslight_source.png">
+  </a>
+</p>
 <p align="center">
   <strong>Analyze the license for the source code.</strong><br>
   Use Source Code Scanner to extract copyright text and license text in the file.
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/license-LGE-orange.svg" alt="FOSSLight Scanner is released under the LGE Proprietary License." />
-    <img src="https://img.shields.io/badge/pypi-1.4-brightgreen.svg" alt="Current python package version." />
+    <img src="https://img.shields.io/badge/license-Apache--2.0-orange.svg" alt="FOSSLight Source is released under the Apache-2.0 License." />
+    <img src="https://img.shields.io/badge/pypi-1.4.0-brightgreen.svg" alt="Current python package version." />
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
@@ -37,7 +37,7 @@ For windows, you need to install [Microsoft Visual C++ Build Tools][ms_build].
 
 ## 🎉 How to install
 
-It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv](doc/Guide_virtualenv.md) environment.
+It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv](docs/Guide_virtualenv.md) environment.
 
 ```
 $ pip3 install fosslight_source

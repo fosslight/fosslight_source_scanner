@@ -1,16 +1,16 @@
-<center>
-
-[![FOSSLight Source](img/fosslight_source.png)](https://github.com/LGE-OSS/fosslight_source)
-</center>
-
+<p align="center">
+  <a href="https://github.com/LGE-OSS/fosslight_source">
+    <img alt="fosslight" src="img/fosslight_source.png">
+  </a>
+</p>
 <p align="center">
   <strong>Source Code의 License를 분석합니다</strong><br>
   Source Code 스캐너를 이용하여 파일 안에 포함된 Copyright과 License 문구를 추출합니다.
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/license-LGE-orange.svg" alt="FOSSLight Scanner is released under the LGE Proprietary License." />
-    <img src="https://img.shields.io/badge/pypi-1.4-brightgreen.svg" alt="Current python package version." />
+    <img src="https://img.shields.io/badge/license-Apache--2.0-orange.svg" alt="FOSSLight Source is released under the Apaceh-2.0 License." />
+    <img src="https://img.shields.io/badge/pypi-1.4.0-brightgreen.svg" alt="Current python package version." />
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
