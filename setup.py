@@ -25,7 +25,7 @@ if __name__ == "__main__":
         url='https://github.com/LGE-OSS/fosslight_source',
         download_url='https://github.com/LGE-OSS/fosslight_source',
         classifiers=['Programming Language :: Python :: 3.6',
-                     'License :: OSI Approved :: Apache License 2.0'],
+                     'License :: OSI Approved :: Apache Software License'],
         install_requires=required,
         entry_points={
             "console_scripts": [
