@@ -49,6 +49,7 @@ FOSSLight Scanner에는 하기 두 가지 명령어가 있습니다.
 
 ### 1. fosslight_source     
 Source Code 분석을 실행한 후 OSS Report 형식으로 출력합니다.
+
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
 | h | None | Print help message. | 
@@ -62,6 +63,7 @@ $ fosslight_source -p /home/source_path -j
 ```
 ### 2. fosslight_convert     
 json형태인 ScanCode 결과를 OSS Report 형식으로 변환합니다.
+
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
 | h | None | Print help message. | 
