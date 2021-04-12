@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
-**FOSSLight Source** uses [ScanCode][sc], a source code analysis tool, to extract the copyright and license phrases contained in the file. Excludes some files (ex- build script), binary files, directory and files in specific directories (ex-test) from the ScanCode execution result. And remove sentences such as "-only" and "-old-style" from the license name to be printed. The output result is generated in Excel format.
+**FOSSLight Source** uses [ScanCode][sc], a source code analysis tool, to extract the copyright and license phrases contained in the file. Some files (ex- build script), binary files, directory and files in specific directories (ex-test) are excluded from the ScanCode execution result. And remove sentences such as "-only" and "-old-style" from the license name to be printed. The output result is generated in Excel format.
 
 [sc]: https://github.com/nexB/scancode-toolkit
 
