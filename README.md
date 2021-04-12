@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/LGE-OSS/fosslight_source">
+  <a href="https://github.com/fosslight/fosslight_source">
     <img alt="fosslight" src="docs/img/fosslight_source.png">
   </a>
 </p>
@@ -96,10 +96,10 @@ $ tree
 
 Please report any ideas or bugs to improve by creating an issue in [Git Repository][repo]. Then there will be quick bug fixes and upgrades. Ideas to improve are always welcome.
 
-[repo]: https://github.com/LGE-OSS/fosslight_source/issues
+[repo]: https://github.com/fosslight/fosslight_source/issues
 
 ## 📄 License
 
 FOSSLight Source is Apache-2.0, as found in the [LICENSE][l] file.
 
-[l]: https://github.com/LGE-OSS/fosslight_source/blob/main/LICENSE
+[l]: https://github.com/fosslight/fosslight_source/blob/main/LICENSE
