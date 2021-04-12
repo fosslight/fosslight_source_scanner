@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://github.com/LGE-OSS/fosslight_source">
+  <a href="https://github.com/fosslight/fosslight_source">
     <img alt="fosslight" src="img/fosslight_source.png">
   </a>
 </p>
@@ -96,10 +96,10 @@ $ tree
 
 개선 사항이나 버그는 [Git Repository][repo]에 이슈를 생성하여 리포트해주시기 바랍니다. 이슈 리포트는 FOSSLight Scanner 업그레이드에 많은 도움이 됩니다.
 
-[repo]: https://github.com/LGE-OSS/fosslight_source/issues
+[repo]: https://github.com/fosslight/fosslight_source/issues
 
 ## 📄 License
 
 FOSSLight Source는 Apache-2.0입니다. License 원문 파일 [LICENSE][l]를 참고하십시오.
 
-[l]: https://github.com/LGE-OSS/fosslight_source/blob/main/LICENSE
+[l]: https://github.com/fosslight/fosslight_source/blob/main/LICENSE
