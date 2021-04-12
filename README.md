@@ -88,7 +88,7 @@ $ tree
 ```
 - OSS-Report_[datetime].xlsx : FOSSLight Source result in OSS Report format.
 - result_[datetime].csv : FOSSLight Source result in csv format. (Except Windows)
-- fosslight_src_log_[datetime].txt: The execution log.
+- fosslight_src_log_[datetime].txt : The execution log.
 - scancode_[datetime].json : The ScanCode result in case of -j option.
 
 
