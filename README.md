@@ -5,7 +5,7 @@
 </p>
 <p align="center">
   <strong>Detect the license for the source code.</strong><br>
-  Use Source Code Scanner to detect copyright text and license text in the file.
+  Use Source Code Scanner and process the scanner results
 </p>
 
 <p align="center">
@@ -86,7 +86,7 @@ $ tree
 └── scancode_2021-03-21_20-44-34.json
 
 ```
-- OSS_Report-[datetime].xlsx : FOSSLight Source result in OSS Report format.
+- OSS_Report_[datetime].xlsx : FOSSLight Source result in OSS Report format.
 - result_[datetime].csv : Excluding windows, this is the result of outputting the OSS Report in csv format.
 - fosslight_src_log_[datetime].txt: This is the file where the execution log is saved.
 - scancode_[datetime].json : This is the ScanCode result when the -j option is given with the fosslight_source command.
