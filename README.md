@@ -4,8 +4,8 @@
   </a>
 </p>
 <p align="center">
-  <strong>Analyze the license for the source code.</strong><br>
-  Use Source Code Scanner to extract copyright text and license text in the file.
+  <strong>Detect the license for the source code.</strong><br>
+  Use Source Code Scanner to detect copyright text and license text in the file.
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
-**FOSSLight Source** uses [ScanCode][sc], a source code analysis tool, to extract the copyright and license phrases contained in the file. Some files (ex- build script), binary files, directory and files in specific directories (ex-test) are excluded from the ScanCode execution result. And remove sentences such as "-only" and "-old-style" from the license name to be printed. The output result is generated in Excel format.
+**FOSSLight Source** uses [ScanCode][sc], a source code scanner, to detect the copyright and license phrases contained in the file. Some files (ex- build script), binary files, directory and files in specific directories (ex-test) are excluded from the result. And removes words such as "-only" and "-old-style" from the license name to be printed. The output result is generated in Excel format.
 
 [sc]: https://github.com/nexB/scancode-toolkit
 
@@ -46,31 +46,31 @@ $ pip3 install fosslight_source
 ## 🚀 How to run
 
 There are two commands for FOSSLight Scanner. 
-- The first is **fosslight_source**, a command that executes source code analysis and outputs OSS Report.
-- The second command is **fosslight_convert** that converts the result of executing ScanCode in json format into OSS Report format.
 
-### 1. Parameter of fosslight_source      
+### 1. fosslight_source
+After executing ScanCode, the source code scanner, print the OSS Report.
+
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
 | h | None | Print help message. | 
-| p | String | Path to analyze source. | 
+| p | String | Path to detect source. | 
 | j | None | As an output, the result of executing ScanCode in json format other than OSS Report is additionally generated. | 
 | o | String | Output file name without file extension. | 
 
-### 2. Parameter of fosslight_convert      
+#### Ex. Print result to OSS Report and json file
+```
+$ fosslight_source -p /home/source_path -j
+```
+
+### 2. fosslight_convert
+Converts the result of executing ScanCode in json format into OSS Report format.    
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
 | h | None | Print help message. | 
 | p | String | Path of ScanCode json files. | 
 | o | String | Output file name without file extension. | 
    
-
-### Ex 1. Print result to OSS Report and json file
-```
-$ fosslight_source -p /home/source_path -j
-```
-
-### Ex 2. Converting scancode json result to OSS report
+#### Ex. Converting scancode json result to OSS report
 ```
 $ fosslight_convert -p /home/jsonfile_dir
 ```
@@ -86,10 +86,10 @@ $ tree
 └── scancode_2021-03-21_20-44-34.json
 
 ```
-- OSS_Report-[datetime].xlsx : OSS Report format file that outputs source code analysis.
+- OSS_Report-[datetime].xlsx : FOSSLight Source result in OSS Report format.
 - result_[datetime].csv : Excluding windows, this is the result of outputting the OSS Report in csv format.
-- scancode_[datetime].json : This is the ScanCode execution result that is generated only when the -j option is given.
 - fosslight_src_log_[datetime].txt: This is the file where the execution log is saved.
+- scancode_[datetime].json : This is the ScanCode result when the -j option is given with the fosslight_source command.
 
 
 ## 👏 How to report issue

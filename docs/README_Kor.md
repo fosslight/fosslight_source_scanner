@@ -4,8 +4,8 @@
   </a>
 </p>
 <p align="center">
-  <strong>Source Code의 License를 분석합니다</strong><br>
-  Source Code 스캐너를 이용하여 파일 안에 포함된 Copyright과 License 문구를 추출합니다.
+  <strong>Source Code의 License를 검출합니다</strong><br>
+  Source Code 스캐너를 이용하여 파일 안에 포함된 Copyright과 License 문구를 검출합니다.
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
     <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
 </p>
 
-**FOSSLight Source** 소스 코드 스캐너인 [ScanCode][sc]를 이용하여, 파일 안에 포함된 Copyright과 License 문구를 추출합니다. Build Script, Binary, Directory, 특정 Directory (ex-test) 안의 파일은 분석 결과에서 제외시킵니다. 그리고 License 이름에서 "-only", "-old-style"와 같은 문구를 제거합니다. 분석 결과는 Excel 형태로 출력됩니다.
+**FOSSLight Source** 소스 코드 스캐너인 [ScanCode][sc]를 이용하여, 파일 안에 포함된 Copyright과 License 문구를 검출합니다. Build Script, Binary, Directory, 특정 Directory (ex-test) 안의 파일을 제외시킵니다. 그리고 License 이름에서 "-only", "-old-style"와 같은 문구를 제거합니다. 결과는 Excel 형태로 출력됩니다.
 
 [sc]: https://github.com/nexB/scancode-toolkit
 
@@ -46,10 +46,9 @@ $ pip3 install fosslight_source
 ## 🚀 How to run
 
 FOSSLight Scanner에는 하기 두 가지 명령어가 있습니다. 
-- **fosslight_source** : Source Code 분석을 실행한 후 OSS Report 형식으로 출력.
-- **fosslight_convert** : json형태인 ScanCode 결과를 OSS Report 형식으로 변환.
 
-### 1. Parameter of fosslight_source      
+### 1. fosslight_source     
+Source Code 분석을 실행한 후 OSS Report 형식으로 출력합니다.
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
 | h | None | Print help message. | 
@@ -57,20 +56,19 @@ FOSSLight Scanner에는 하기 두 가지 명령어가 있습니다.
 | j | None | As an output, the result of executing ScanCode in json format other than OSS Report is additionally generated. | 
 | o | String | Output file name without file extension. | 
 
-### 2. Parameter of fosslight_convert      
+#### Ex. Source Code 분석 후 OSS Report와 json 형태의 ScanCode 결과 출력
+```
+$ fosslight_source -p /home/source_path -j
+```
+### 2. fosslight_convert     
+json형태인 ScanCode 결과를 OSS Report 형식으로 변환합니다.
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
 | h | None | Print help message. | 
 | p | String | Path of ScanCode json files. | 
 | o | String | Output file name without file extension. | 
-   
 
-### Ex 1. Source Code 분석 후 OSS Report와 json 형태의 ScanCode 결과 출력
-```
-$ fosslight_source -p /home/source_path -j
-```
-
-### Ex 2. json 형태의 ScanCode 결과를 OSS Report 형식으로 변환
+#### Ex. json 형태의 ScanCode 결과를 OSS Report 형식으로 변환
 ```
 $ fosslight_convert -p /home/jsonfile_dir
 ```
@@ -88,8 +86,8 @@ $ tree
 ```
 - OSS_Report-[datetime].xlsx : OSS Report형태의 Source Code 분석 결과
 - result_[datetime].csv : OSS Report를 csv로 출력한 결과 (Windows 제외)
-- scancode_[datetime].json : ScanCode 실행 결과 (-j 옵션이 포함된 경우에만 생성)
 - fosslight_src_log_[datetime].txt: 실행 로그가 저장된 파일
+- scancode_[datetime].json : ScanCode 실행 결과 (fosslight_source명령어에 -j 옵션이 포함된 경우에만 생성)
 
 
 ## 👏 How to report issue
