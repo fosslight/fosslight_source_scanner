@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/fosslight/fosslight_source">
-    <img alt="fosslight" src="docs/img/fosslight_source.png">
+    <img alt="fosslight" src="https://github.com/fosslight/fosslight_source/blob/main/docs/img/fosslight_source.png">
   </a>
 </p>
 <p align="center">
@@ -63,13 +63,14 @@ $ fosslight_source -p /home/source_path -j
 ```
 
 ### 2. fosslight_convert
-Converts the result of executing ScanCode in json format into OSS Report format.    
+Converts the result of executing ScanCode in json format into OSS Report format.  
+
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
 | h | None | Print help message. | 
 | p | String | Path of ScanCode json files. | 
 | o | String | Output file name without file extension. | 
-   
+
 #### Ex. Converting scancode json result to OSS report
 ```
 $ fosslight_convert -p /home/jsonfile_dir
