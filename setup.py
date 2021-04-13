@@ -14,7 +14,7 @@ with open('requirements.txt', 'r', 'utf-8') as f:
 if __name__ == "__main__":
     setup(
         name='fosslight_source',
-        version='1.4.0',
+        version='1.4.1',
         package_dir={"": "src"},
         packages=find_packages(where='src'),
         description='FOSSLight Source',
@@ -24,8 +24,12 @@ if __name__ == "__main__":
         author='LG Electronics',
         url='https://github.com/fosslight/fosslight_source',
         download_url='https://github.com/fosslight/fosslight_source',
-        classifiers=['Programming Language :: Python :: 3.6',
-                     'License :: OSI Approved :: Apache Software License'],
+        classifiers=['License :: OSI Approved :: Apache Software License',
+                     "Programming Language :: Python :: 3",
+                     "Programming Language :: Python :: 3.6",
+                     "Programming Language :: Python :: 3.7",
+                     "Programming Language :: Python :: 3.8",
+                     "Programming Language :: Python :: 3.9", ],
         install_requires=required,
         entry_points={
             "console_scripts": [

@@ -16,6 +16,7 @@ from datetime import datetime
 from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
 from ._settings import init_log
+from ._timer_thread import TimerThread
 
 logger = logging.getLogger(__name__)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -48,6 +49,9 @@ def main():
     except Exception:
         print_help_msg()
 
+    timer = TimerThread()
+    timer.setDaemon(True)
+    timer.start()
     success, msg = run_scan(_path_to_scan, _output_file, _write_json_file, -1)
 
 
