@@ -9,9 +9,9 @@
 </p>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/license-Apache--2.0-orange.svg" alt="FOSSLight Source is released under the Apache-2.0 License." />
-    <img src="https://img.shields.io/badge/pypi-1.4.0-brightgreen.svg" alt="Current python package version." />
-    <img src="https://img.shields.io/badge/python-3.6+-blue.svg" />
+    <img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source is released under the Apache-2.0 License." />
+    <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." />
+    <img src="https://img.shields.io/pypi/pyversions/fosslight_source" />
 </p>
 
 **FOSSLight Source** uses [ScanCode][sc], a source code scanner, to detect the copyright and license phrases contained in the file. Some files (ex- build script), binary files, directory and files in specific directories (ex-test) are excluded from the result. And removes words such as "-only" and "-old-style" from the license name to be printed. The output result is generated in Excel format.
