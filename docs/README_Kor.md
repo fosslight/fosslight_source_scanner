@@ -1,3 +1,8 @@
+<p align='right'>
+  <a href="https://github.com/fosslight/fosslight_source/blob/main/README.md">
+    [Eng]
+ </a>
+</p>
 <p align="center">
   <a href="https://github.com/fosslight/fosslight_source">
     <img alt="fosslight" src="img/fosslight_source.png">
