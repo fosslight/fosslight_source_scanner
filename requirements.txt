@@ -1,3 +1,4 @@
 scancode-toolkit<=21.2.25
 typecode_libmagic
 XlsxWriter
+progress
