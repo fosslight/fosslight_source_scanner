@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.4.1 (13/04/2021)
+## Changes
+## 🔧 Maintenance
+
+- Add a spinner when scanning @soimkim (#3)
+
+---
+
 ## v1.4.0 (12/04/2021)
 ## Changes
 ## 🔧 Maintenance
