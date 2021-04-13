@@ -1,3 +1,8 @@
+<p align='right'>
+  <a href="https://github.com/fosslight/fosslight_source/blob/main/docs/README_Kor.md">
+    [Kor]
+ </a>
+</p>
 <p align="center">
   <a href="https://github.com/fosslight/fosslight_source">
     <img alt="fosslight" src="https://github.com/fosslight/fosslight_source/raw/main/docs/img/fosslight_source.png">
