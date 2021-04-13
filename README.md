@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://github.com/fosslight/fosslight_source">
-    <img alt="fosslight" src="https://github.com/fosslight/fosslight_source/blob/main/docs/img/fosslight_source.png">
+    <img alt="fosslight" src="https://github.com/fosslight/fosslight_source/raw/main/docs/img/fosslight_source.png">
   </a>
 </p>
 <p align="center">
