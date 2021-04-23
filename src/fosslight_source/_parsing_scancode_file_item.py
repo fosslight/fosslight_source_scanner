@@ -11,7 +11,8 @@ _replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-"]
 _exclude_filename = ["changelog", "config.guess", "config.sub",
                      "config.h.in", "changes", "ltmain.sh",
                      "aclocal.m4", "configure", "configure.ac",
-                     "depcomp", "compile", "missing", "libtool.m4"]
+                     "depcomp", "compile", "missing", "libtool.m4",
+                     "makefile"]
 _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
@@ -23,6 +24,7 @@ class ScanCodeItem:
     licenses = []
     copyright = ""
     exclude = False
+    is_license_text = False
 
     def __init__(self, value):
         self.file = value
@@ -30,6 +32,7 @@ class ScanCodeItem:
         self.licenses = []
         self.comment = ""
         self.exclude = False
+        self.is_license_text = False
 
     def __del__(self):
         pass
@@ -52,6 +55,9 @@ class ScanCodeItem:
 
     def set_exclude(self, value):
         self.exclude = value
+
+    def set_is_license_text(self, value):
+        self.is_license_text = value
 
     def get_row_to_print(self):
         print_rows = [self.file, "", "", ','.join(self.licenses), "", "",
@@ -151,6 +157,10 @@ def parsing_file_item(scancode_file_list):
                             if word in license_value:
                                 license_value = license_value.replace(word, "")
                         license_detected.append(license_value)
+
+                    matched_rule = lic_item["matched_rule"]
+                    if matched_rule["is_license_text"]:
+                        result_item.set_is_license_text(True)
 
                 if len(license_detected) > 0:
                     result_item.set_licenses(license_detected)
