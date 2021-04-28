@@ -10,12 +10,13 @@ import json
 import platform
 from datetime import datetime
 import logging
+import fosslight_util.constant as constant
+from fosslight_util.set_log import init_log
 
 from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
-from ._settings import init_log
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(constant.LOGGER_NAME)
 
 
 def convert_json_to_excel(scancode_json, excel_name, csv_name):
@@ -73,6 +74,8 @@ def print_help_msg():
 
 
 def main():
+    global logger
+
     argv = sys.argv[1:]
     path_to_find_bin = os.getcwd()
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -99,7 +102,7 @@ def main():
         csv_file_name = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    init_log(start_time, output_dir)
+    logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"))
 
     convert_json_to_excel(path_to_find_bin,
                           oss_report_name + ".xlsx", csv_file_name + ".csv")
