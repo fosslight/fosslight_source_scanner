@@ -13,12 +13,13 @@ import logging
 
 from scancode import cli
 from datetime import datetime
+import fosslight_util.constant as constant
+from fosslight_util.set_log import init_log
 from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
-from ._settings import init_log
 from ._timer_thread import TimerThread
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 
 
@@ -57,6 +58,7 @@ def main():
 
 def run_scan(path_to_scan, output_file_name="",
              _write_json_file=False, num_cores=-1):
+    global logger
 
     success = True
     msg = ""
@@ -75,7 +77,7 @@ def run_scan(path_to_scan, output_file_name="",
         output_json_file = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    init_log(start_time, output_dir)
+    logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"))
 
     if path_to_scan == "":
         if _windows:

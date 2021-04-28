@@ -5,8 +5,9 @@
 
 import os
 import logging
+import fosslight_util.constant as constant
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(constant.LOGGER_NAME)
 _replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-"]
 _exclude_filename = ["changelog", "config.guess", "config.sub",
                      "config.h.in", "changes", "ltmain.sh",

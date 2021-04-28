@@ -7,6 +7,7 @@ import xlsxwriter
 import csv
 import time
 import logging
+import fosslight_util.constant as constant
 
 _SRC_HEADER = ['ID', 'Source Name or Path', 'OSS Name',
                'OSS Version', 'License',  'Download Location',
