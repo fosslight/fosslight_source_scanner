@@ -3,23 +3,19 @@
     [Kor]
  </a>
 </p>
-<p align="center">
-  <a href="https://github.com/fosslight/fosslight_source">
-    <img alt="fosslight" src="https://github.com/fosslight/fosslight_source/raw/main/docs/img/fosslight_source.png">
-  </a>
-</p>
-<p align="center">
-  <strong>Detect the license for the source code.</strong><br>
-  Use Source Code Scanner and process the scanner results
+
+# FOSSLight Source
+
+<img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source is released under the Apache-2.0 License." /> <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." /> <img src="https://img.shields.io/pypi/pyversions/fosslight_source" />
 </p>
 
-<p align="center">
-    <img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source is released under the Apache-2.0 License." />
-    <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." />
-    <img src="https://img.shields.io/pypi/pyversions/fosslight_source" />
-</p>
+```note
+Detect the license for the source code.
+Use Source Code Scanner and process the scanner results.
+```
 
 **FOSSLight Source** uses [ScanCode][sc], a source code scanner, to detect the copyright and license phrases contained in the file. Some files (ex- build script), binary files, directory and files in specific directories (ex-test) are excluded from the result. And removes words such as "-only" and "-old-style" from the license name to be printed. The output result is generated in Excel format.
+
 
 [sc]: https://github.com/nexB/scancode-toolkit
 
