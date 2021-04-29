@@ -100,7 +100,7 @@ def parsing_file_item(scancode_file_list):
 
     rc = True
     scancode_file_item = []
-    logger.warn("|---TOTAL FILE COUNT:"+str(len(scancode_file_list)))
+    msg ="TOTAL FILE COUNT: "+str(len(scancode_file_list))+"\n"
 
     prev_dir = ""
     prev_dir_value = False
@@ -177,7 +177,7 @@ def parsing_file_item(scancode_file_list):
 
                     scancode_file_item.append(result_item)
         except Exception as ex:
-            logger.warn("Error Parsing item-"+str(ex))
+            msg += "* Error Parsing item:"+str(ex)
             rc = False
 
-    return rc, scancode_file_item
+    return rc, scancode_file_item, msg.strip()
