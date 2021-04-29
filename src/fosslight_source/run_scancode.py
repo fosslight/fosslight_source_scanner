@@ -10,14 +10,13 @@ import warnings
 import platform
 import getopt
 import logging
-
 from scancode import cli
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
-from ._timer_thread import TimerThread
+from fosslight_util.timer_thread import TimerThread
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
