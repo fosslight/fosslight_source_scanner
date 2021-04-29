@@ -12,15 +12,22 @@ from datetime import datetime
 import logging
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-
+from fosslight_util.set_log import init_log_item
+import yaml
 from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
 
 logger = logging.getLogger(constant.LOGGER_NAME)
+_PKG_NAME = "fosslight_source"
+_ERROR_PREFIX = "* Error : "
 
 
 def convert_json_to_excel(scancode_json, excel_name, csv_name):
     file_list = []
+    _result_log = init_log_item(_PKG_NAME)
+    msg = ""
+    success = True
+
     try:
         sheet_list = {}
         if os.path.isfile(scancode_json):
@@ -44,13 +51,25 @@ def convert_json_to_excel(scancode_json, excel_name, csv_name):
 
         if len(sheet_list) > 0:
             write_result_to_excel(excel_name, sheet_list)
+            _result_log["OSS Report"] = excel_name
+
             if platform.system() != "Windows":
                 write_result_to_csv(csv_name, sheet_list)
         else:
-            logger.warn("There is no item to print in OSS-Report.")
+            msg = "There is no item to print in OSS-Report."
 
     except Exception as ex:
-        logger.warn(str(ex))
+        success = False
+        msg = _ERROR_PREFIX+str(ex)
+
+    scan_result_msg = str(success)+" "+msg
+    _result_log["Scan Result"] = scan_result_msg.strip()
+
+    try:
+        _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
+        logger.warn("\n"+_str_final_result_log)
+    except Exception as ex:
+        logger.warn(_ERROR_PREFIX+"Failed to print result log. "+ str(ex))
 
     return file_list
 
@@ -61,9 +80,10 @@ def get_detected_licenses_from_scancode(scancode_json_file):
         logger.warn("Start parsing " + scancode_json_file)
         with open(scancode_json_file, "r") as st_json:
             st_python = json.load(st_json)
-            rc, file_list = parsing_file_item(st_python["files"])
+            rc, file_list, msg= parsing_file_item(st_python["files"])
+            logger.warn("|---"+msg)
     except Exception as error:
-        logger.warn("Error Parsing - "+str(error))
+        logger.warn(_ERROR_PREFIX+"Parsing -"+str(error))
     logger.warn("|---Number of files detected: " + str(len(file_list)))
     return file_list
 
