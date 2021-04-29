@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.4.2 (29/04/2021)
+## Changes
+- Print the environment information to the log @soimkim (#4)
+- Load "is_license_text" from ScanCode result @dd-jy 
+
+---
+
 ## v1.4.1 (13/04/2021)
 ## Changes
 ## 🔧 Maintenance
