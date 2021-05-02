@@ -17,13 +17,14 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.set_log import init_log_item
 from fosslight_util.timer_thread import TimerThread
-from ._write_oss_report_src import write_result_to_csv, write_result_to_excel
 from ._parsing_scancode_file_item import parsing_file_item
+from fosslight_util.write_excel import write_excel_and_csv
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 _ERROR_PREFIX = "* Error : "
+
 
 def print_help_msg():
     print("* Required : -p path_to_scan")
@@ -72,12 +73,10 @@ def run_scan(path_to_scan, output_file_name="",
 
     if output_file_name == "":
         output_file = "OSS-Report_" + start_time
-        output_csv_file = "result_" + start_time
         output_json_file = "scancode_" + start_time
         output_dir = os.getcwd()
     else:
         output_file = output_file_name
-        output_csv_file = output_file_name
         output_json_file = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
@@ -92,7 +91,6 @@ def run_scan(path_to_scan, output_file_name="",
 
     num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores
 
-    sheet_list = {}
     if os.path.isdir(path_to_scan):
         try:
             output_json_file = output_json_file+".json" if _write_json_file\
@@ -104,32 +102,28 @@ def run_scan(path_to_scan, output_file_name="",
                                        processes=num_cores,
                                        output_json_pp=output_json_file,
                                        only_findings=True)
-
-            if rc:
+            if not rc:
+                msg += _ERROR_PREFIX+"Source code analysis failed.\n"
+                success = False
+            if results:
+                sheet_list = {}
                 for key, value in results.items():
                     if key == "files":
                         rc, result_list, parsing_msg = parsing_file_item(value)
                         _result_log["Parsing Log"] = parsing_msg
                         if rc:
-                            if len(result_list) > 0:
-                                sheet_list["SRC"] = result_list
-                                write_result_to_excel(
-                                    output_file + ".xlsx", sheet_list)
-                                _result_log["OSS Report"] = output_file
-                            else:
-                                msg = "* There is no item"\
-                                    " to print in OSS-Report."
-                if not _windows:
-                    write_result_to_csv(output_csv_file + ".csv", sheet_list)
-            else:
-                msg = _ERROR_PREFIX+"Source code analysis failed."
-                success = False
+                            sheet_list["SRC"] = [scan_item.get_row_to_print() for scan_item in result_list]
+                            success_to_write, writing_msg = write_excel_and_csv(
+                                output_file, sheet_list)
+                            logger.warn("* Writing excel :"+str(success_to_write)+ " "+writing_msg)
+                            if success_to_write:
+                                _result_log["OSS Report"] = output_file +".xlsx"
         except Exception as ex:
             success = False
-            msg = _ERROR_PREFIX + str(ex)
+            msg = _ERROR_PREFIX + str(ex)+"\n"
     else:
         success = False
-        msg = _ERROR_PREFIX+"Check the path to scan. :" + path_to_scan
+        msg = _ERROR_PREFIX+"Check the path to scan. :" + path_to_scan+"\n"
 
     scan_result_msg = str(success)+" "+msg
     _result_log["Scan Result"] = scan_result_msg.strip()
