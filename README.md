@@ -82,14 +82,14 @@ $ fosslight_convert -p /home/jsonfile_dir
 ```
 $ tree
 .
-├── OSS-Report_2021-03-21_20-44-34.xlsx
-├── fosslight_src_log_2021-03-21_20-44-34.txt
-├── result_2021-03-21_20-44-34.csv
-└── scancode_2021-03-21_20-44-34.json
+├── OSS-Report_2021-05-03_00-39-49.csv
+├── OSS-Report_2021-05-03_00-39-49.xlsx
+├── scancode_2021-05-03_00-39-49.json
+└── fosslight_src_log_2021-05-03_00-39-49.txt
 
 ```
 - OSS-Report_[datetime].xlsx : FOSSLight Source result in OSS Report format.
-- result_[datetime].csv : FOSSLight Source result in csv format. (Except Windows)
+- OSS-Report_[datetime].csv : FOSSLight Source result in csv format. (Except Windows)
 - fosslight_src_log_[datetime].txt : The execution log.
 - scancode_[datetime].json : The ScanCode result in case of -j option.
 

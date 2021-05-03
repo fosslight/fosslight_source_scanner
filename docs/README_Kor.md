@@ -80,14 +80,14 @@ $ fosslight_convert -p /home/jsonfile_dir
 ```
 $ tree
 .
-├── OSS-Report_2021-03-21_20-44-34.xlsx
-├── fosslight_src_log_2021-03-21_20-44-34.txt
-├── result_2021-03-21_20-44-34.csv
-└── scancode_2021-03-21_20-44-34.json
+├── OSS-Report_2021-05-03_00-39-49.csv
+├── OSS-Report_2021-05-03_00-39-49.xlsx
+├── scancode_2021-05-03_00-39-49.json
+└── fosslight_src_log_2021-05-03_00-39-49.txt
 
 ```
 - OSS-Report_[datetime].xlsx : OSS Report형태의 Source Code 분석 결과
-- result_[datetime].csv : OSS Report를 csv로 출력한 결과 (Windows 제외)
+- OSS-Report_[datetime].csv : OSS Report를 csv로 출력한 결과 (Windows 제외)
 - fosslight_src_log_[datetime].txt: 실행 로그가 저장된 파일
 - scancode_[datetime].json : ScanCode 실행 결과 (fosslight_source명령어에 -j 옵션이 포함된 경우에만 생성)
 
