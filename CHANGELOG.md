@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.3 (03/05/2021)
+## Changes
+- Replace excel_writer with fosslight_util @soimkim (#5)
+
+---
+
 ## v1.4.2 (29/04/2021)
 ## Changes
 - Print the environment information to the log @soimkim (#4)
