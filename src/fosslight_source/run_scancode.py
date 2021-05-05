@@ -112,7 +112,10 @@ def run_scan(path_to_scan, output_file_name="",
                         rc, result_list, parsing_msg = parsing_file_item(value)
                         _result_log["Parsing Log"] = parsing_msg
                         if rc:
+                            result_list = sorted(
+                                result_list, key=lambda row: (''.join(row.licenses)))
                             sheet_list["SRC"] = [scan_item.get_row_to_print() for scan_item in result_list]
+
                             success_to_write, writing_msg = write_excel_and_csv(
                                 output_file, sheet_list)
                             logger.warn("* Writing excel :"+str(success_to_write)+ " "+writing_msg)
