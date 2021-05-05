@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.4 (05/05/2021)
+## Changes
+- Sort by license @soimkim (#6)
+
+---
+
 ## v1.4.3 (03/05/2021)
 ## Changes
 - Replace excel_writer with fosslight_util @soimkim (#5)
