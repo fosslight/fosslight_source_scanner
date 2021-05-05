@@ -34,6 +34,8 @@ def convert_json_to_excel(scancode_json, excel_name):
             file_list = get_detected_licenses_from_scancode(
                 scancode_json)
             if len(file_list) > 0:
+                file_list = sorted(
+                                file_list, key=lambda row: (''.join(row.licenses)))
                 sheet_list["SRC"] = [scan_item.get_row_to_print() for scan_item in file_list]
         elif os.path.isdir(scancode_json):
             for root, dirs, files in os.walk(scancode_json):
@@ -45,6 +47,8 @@ def convert_json_to_excel(scancode_json, excel_name):
                                 result_file)
                             if len(file_list) > 0:
                                 file_name = os.path.basename(file)
+                                file_list = sorted(
+                                    file_list, key=lambda row: (''.join(row.licenses)))
                                 sheet_list["SRC_" + file_name] = [scan_item.get_row_to_print() for scan_item in file_list]
                         except Exception as ex:
                             pass
