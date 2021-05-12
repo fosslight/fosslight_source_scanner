@@ -67,7 +67,7 @@ def run_scan(path_to_scan, output_file_name="",
     msg = ""
     _str_final_result_log = ""
     _result_log = {}
-    results = {}
+    result_list = []
 
     _windows = platform.system() == "Windows"
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
@@ -130,7 +130,7 @@ def run_scan(path_to_scan, output_file_name="",
         msg = _ERROR_PREFIX+"Check the path to scan. :" + path_to_scan+"\n"
 
     if not return_results:
-        results = {}
+        result_list = []
     scan_result_msg = str(success)+" "+msg
     _result_log["Scan Result"] = scan_result_msg.strip()
     _result_log["Output Directory"] = output_dir
@@ -139,7 +139,7 @@ def run_scan(path_to_scan, output_file_name="",
         logger.warn("\n"+_str_final_result_log)
     except Exception as ex:
         logger.warn(_ERROR_PREFIX+"Failed to print result log. "+ str(ex))
-    return success, _str_final_result_log, results
+    return success, _str_final_result_log, result_list
 
 
 if __name__ == '__main__':

@@ -35,7 +35,11 @@ def main():
     logger.warn("[Scan] Result_msg: %s" % (ret[1]))
 
     if len(ret) > 2:
-        logger.warn("[Scan] Result_items: %s" % (str(ret[2])))
+        try:
+            for scan_item in ret[2]:
+                logger.warn(scan_item.get_row_to_print())
+        except Exception as ex:
+            logger.error("Error:"+str(ex))
 
 
 if __name__ == '__main__':
