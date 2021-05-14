@@ -20,7 +20,21 @@ _HELP_MESSAGE_SOURCE = """
             -j\t\t\t\t   Generate additional result of executing ScanCode in json format
             -o <file_name>\t\t   Output file name"""
 
+_HELP_MESSAGE_CONVERT = """
+    Usage: fosslight_convert [option1] <arg1> [option2] <arg2>... 
 
-def print_help_msg():
+    FOSSLigtht_convert converts the result of executing ScanCode in json format into OSS Report format.
+
+    Options:
+            -h\t\t\t\t   Print help message
+            -p <path_dir>\t\t   Path of ScanCode json files
+            -o <file_name>\t\t   Output file name"""
+
+
+def print_help_msg_source():
     helpMsg = PrintHelpMsg(_HELP_MESSAGE_SOURCE)
+    helpMsg.print_help_msg(True)
+
+def print_help_msg_convert():
+    helpMsg = PrintHelpMsg(_HELP_MESSAGE_CONVERT)
     helpMsg.print_help_msg(True)
