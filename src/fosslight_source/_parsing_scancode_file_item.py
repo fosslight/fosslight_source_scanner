@@ -62,7 +62,7 @@ class ScanCodeItem:
 
     def get_row_to_print(self):
         print_rows = [self.file, "", "", ','.join(self.licenses), "", "",
-                      ','.join(self.copyright), "",
+                      ','.join(self.copyright),
                       "Exclude" if self.exclude else "",
                       self.comment]
         return print_rows

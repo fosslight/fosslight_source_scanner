@@ -16,6 +16,7 @@ from fosslight_util.set_log import init_log_item
 import yaml
 from ._parsing_scancode_file_item import parsing_file_item
 from fosslight_util.write_excel import write_excel_and_csv
+from .help import print_help_msg_convert
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _PKG_NAME = "fosslight_source"
@@ -88,11 +89,6 @@ def get_detected_licenses_from_scancode(scancode_json_file):
     return file_list
 
 
-def print_help_msg():
-    print("* Required :\n -p path_of_scancode_json_result")
-    sys.exit()
-
-
 def main():
     global logger
 
@@ -105,7 +101,7 @@ def main():
         opts, args = getopt.getopt(argv, 'hp:o:')
         for opt, arg in opts:
             if opt == "-h":
-                print_help_msg()
+                print_help_msg_convert()
             elif opt == "-p":
                 path_to_find_bin = arg
             elif opt == "-o":

@@ -19,17 +19,12 @@ from fosslight_util.set_log import init_log_item
 from fosslight_util.timer_thread import TimerThread
 from ._parsing_scancode_file_item import parsing_file_item
 from fosslight_util.write_excel import write_excel_and_csv
+from .help import print_help_msg_source
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 _ERROR_PREFIX = "* Error : "
-
-
-def print_help_msg():
-    print("* Required : -p path_to_scan")
-    print("* Optional : -j ")
-    sys.exit()
 
 
 def main():
@@ -42,7 +37,7 @@ def main():
         opts, args = getopt.getopt(argv, 'hjp:o:')
         for opt, arg in opts:
             if opt == "-h":
-                print_help_msg()
+                print_help_msg_source()
             elif opt == "-p":
                 _path_to_scan = arg
             elif opt == "-j":
@@ -51,7 +46,7 @@ def main():
                 _output_file = arg
 
     except Exception:
-        print_help_msg()
+        print_help_msg_source()
 
     timer = TimerThread()
     timer.setDaemon(True)
@@ -88,7 +83,7 @@ def run_scan(path_to_scan, output_file_name="",
         if _windows:
             path_to_scan = os.getcwd()
         else:
-            print_help_msg()
+            print_help_msg_source()
 
     num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores
 
