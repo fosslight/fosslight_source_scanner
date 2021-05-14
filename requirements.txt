@@ -1,4 +1,4 @@
-click==6.7
+click==7.1.2
 scancode-toolkit<=21.3.31
 typecode_libmagic
 XlsxWriter
