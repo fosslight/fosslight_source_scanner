@@ -26,8 +26,11 @@ _HELP_MESSAGE_CONVERT = """
     FOSSLigtht_convert converts the result of executing ScanCode in json format into OSS Report format.
 
     Options:
-            -h\t\t\t\t   Print help message
+        Mandatory
             -p <path_dir>\t\t   Path of ScanCode json files
+        
+        Optional
+            -h\t\t\t\t   Print help message
             -o <file_name>\t\t   Output file name"""
 
 
