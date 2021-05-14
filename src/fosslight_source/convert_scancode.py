@@ -16,7 +16,7 @@ from fosslight_util.set_log import init_log_item
 import yaml
 from ._parsing_scancode_file_item import parsing_file_item
 from fosslight_util.write_excel import write_excel_and_csv
-from .help import print_help_msg_convert
+from ._help import print_help_msg_convert
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _PKG_NAME = "fosslight_source"
