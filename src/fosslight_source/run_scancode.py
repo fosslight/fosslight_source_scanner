@@ -134,7 +134,7 @@ def run_scan(path_to_scan, output_file_name="",
         logger.info(_str_final_result_log)
     except Exception as ex:
         logger.warn("Failed to print result log. "+ str(ex))
-    return success, _str_final_result_log, result_list
+    return success, _result_log["Scan Result"], result_list
 
 
 if __name__ == '__main__':
