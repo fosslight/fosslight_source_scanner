@@ -51,7 +51,7 @@ def convert_json_to_excel(scancode_json, excel_name):
                                     file_list, key=lambda row: (''.join(row.licenses)))
                                 sheet_list["SRC_" + file_name] = [scan_item.get_row_to_print() for scan_item in file_list]
                         except Exception as ex:
-                            logger.warn("Error parsing "+file+":"+str(ex))
+                            logger.warning("Error parsing "+file+":"+str(ex))
 
         success_to_write, writing_msg = write_excel_and_csv(excel_name, sheet_list)
         logger.info("Writing excel :"+str(success_to_write)+ " "+writing_msg)
@@ -60,7 +60,7 @@ def convert_json_to_excel(scancode_json, excel_name):
 
     except Exception as ex:
         success = False
-        logger.warn(str(ex))
+        logger.warning(str(ex))
 
     scan_result_msg = str(success)+" "+msg
     _result_log["Scan Result"] = scan_result_msg.strip()
@@ -69,7 +69,7 @@ def convert_json_to_excel(scancode_json, excel_name):
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
         logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warn("Failed to print result log.: "+ str(ex))
+        logger.warning("Failed to print result log.: "+ str(ex))
 
     return file_list
 
@@ -83,7 +83,7 @@ def get_detected_licenses_from_scancode(scancode_json_file):
             rc, file_list, msg= parsing_file_item(st_python["files"])
             logger.info("|---"+msg)
     except Exception as error:
-        logger.warn("Parsing "+scancode_json_file+":"+str(error))
+        logger.warning("Parsing "+scancode_json_file+":"+str(error))
     logger.info("|---Number of files detected: " + str(len(file_list)))
     return file_list
 

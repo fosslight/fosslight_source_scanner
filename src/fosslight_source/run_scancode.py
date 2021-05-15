@@ -133,7 +133,7 @@ def run_scan(path_to_scan, output_file_name="",
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
         logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warn("Failed to print result log. "+ str(ex))
+        logger.warning("Failed to print result log. "+ str(ex))
     return success, _result_log["Scan Result"], result_list
 
 
