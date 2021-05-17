@@ -19,12 +19,11 @@ from fosslight_util.set_log import init_log_item
 from fosslight_util.timer_thread import TimerThread
 from ._parsing_scancode_file_item import parsing_file_item
 from fosslight_util.write_excel import write_excel_and_csv
-from .help import print_help_msg_source
+from ._help import print_help_msg_source
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
-_ERROR_PREFIX = "* Error : "
 
 
 def main():
@@ -99,7 +98,7 @@ def run_scan(path_to_scan, output_file_name="",
                                        output_json_pp=output_json_file,
                                        only_findings=True)
             if not rc:
-                msg += _ERROR_PREFIX+"Source code analysis failed.\n"
+                msg += "Source code analysis failed."
                 success = False
             if results:
                 sheet_list = {}
@@ -114,15 +113,16 @@ def run_scan(path_to_scan, output_file_name="",
 
                             success_to_write, writing_msg = write_excel_and_csv(
                                 output_file, sheet_list)
-                            logger.warn("* Writing excel :"+str(success_to_write)+ " "+writing_msg)
+                            logger.info("Writing excel :"+str(success_to_write)+ " "+writing_msg)
                             if success_to_write:
                                 _result_log["OSS Report"] = output_file +".xlsx"
         except Exception as ex:
             success = False
-            msg = _ERROR_PREFIX + str(ex)+"\n"
+            msg = str(ex)
+            logger.error("Analyze "+path_to_scan+":"+msg)
     else:
         success = False
-        msg = _ERROR_PREFIX+"Check the path to scan. :" + path_to_scan+"\n"
+        msg = "Check the path to scan. :" + path_to_scan
 
     if not return_results:
         result_list = []
@@ -131,10 +131,10 @@ def run_scan(path_to_scan, output_file_name="",
     _result_log["Output Directory"] = output_dir
     try:
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
-        logger.warn("\n"+_str_final_result_log)
+        logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warn(_ERROR_PREFIX+"Failed to print result log. "+ str(ex))
-    return success, _str_final_result_log, result_list
+        logger.warning("Failed to print result log. "+ str(ex))
+    return success, _result_log["Scan Result"], result_list
 
 
 if __name__ == '__main__':

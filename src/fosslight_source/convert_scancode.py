@@ -16,11 +16,10 @@ from fosslight_util.set_log import init_log_item
 import yaml
 from ._parsing_scancode_file_item import parsing_file_item
 from fosslight_util.write_excel import write_excel_and_csv
-from .help import print_help_msg_convert
+from ._help import print_help_msg_convert
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _PKG_NAME = "fosslight_source"
-_ERROR_PREFIX = "* Error : "
 
 
 def convert_json_to_excel(scancode_json, excel_name):
@@ -52,25 +51,25 @@ def convert_json_to_excel(scancode_json, excel_name):
                                     file_list, key=lambda row: (''.join(row.licenses)))
                                 sheet_list["SRC_" + file_name] = [scan_item.get_row_to_print() for scan_item in file_list]
                         except Exception as ex:
-                            pass
+                            logger.warning("Error parsing "+file+":"+str(ex))
 
         success_to_write, writing_msg = write_excel_and_csv(excel_name, sheet_list)
-        logger.warn("* Writing excel :"+str(success_to_write)+ " "+writing_msg)
+        logger.info("Writing excel :"+str(success_to_write)+ " "+writing_msg)
         if success_to_write:
             _result_log["OSS Report"] = excel_name+".xlsx"
 
     except Exception as ex:
         success = False
-        msg = _ERROR_PREFIX+str(ex)
+        logger.warning(str(ex))
 
     scan_result_msg = str(success)+" "+msg
     _result_log["Scan Result"] = scan_result_msg.strip()
 
     try:
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
-        logger.warn("\n"+_str_final_result_log)
+        logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warn(_ERROR_PREFIX+"Failed to print result log. "+ str(ex))
+        logger.warning("Failed to print result log.: "+ str(ex))
 
     return file_list
 
@@ -78,14 +77,14 @@ def convert_json_to_excel(scancode_json, excel_name):
 def get_detected_licenses_from_scancode(scancode_json_file):
     file_list = []
     try:
-        logger.warn("Start parsing " + scancode_json_file)
+        logger.info("Start parsing " + scancode_json_file)
         with open(scancode_json_file, "r") as st_json:
             st_python = json.load(st_json)
             rc, file_list, msg= parsing_file_item(st_python["files"])
-            logger.warn("|---"+msg)
+            logger.info("|---"+msg)
     except Exception as error:
-        logger.warn(_ERROR_PREFIX+"Parsing -"+str(error))
-    logger.warn("|---Number of files detected: " + str(len(file_list)))
+        logger.warning("Parsing "+scancode_json_file+":"+str(error))
+    logger.info("|---Number of files detected: " + str(len(file_list)))
     return file_list
 
 
