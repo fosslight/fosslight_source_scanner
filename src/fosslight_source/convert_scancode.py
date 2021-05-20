@@ -62,8 +62,8 @@ def convert_json_to_excel(scancode_json, excel_name):
         success = False
         logger.warning(str(ex))
 
-    scan_result_msg = str(success)+" "+msg
-    _result_log["Scan Result"] = scan_result_msg.strip()
+    scan_result_msg = str(success) if msg == "" else str(success) + "," + msg
+    _result_log["Scan Result"] = scan_result_msg
 
     try:
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)

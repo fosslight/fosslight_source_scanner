@@ -134,8 +134,9 @@ def run_scan(path_to_scan, output_file_name="",
 
     if not return_results:
         result_list = []
-    scan_result_msg = str(success)+" "+msg
-    _result_log["Scan Result"] = scan_result_msg.strip()
+
+    scan_result_msg = str(success) if msg == "" else str(success) + "," + msg
+    _result_log["Scan Result"] = scan_result_msg
     _result_log["Output Directory"] = output_dir
     try:
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
