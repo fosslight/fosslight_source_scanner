@@ -96,7 +96,25 @@ def is_exclude_file(file_path, prev_dir, prev_dir_exclude_value):
     return False
 
 
-def parsing_file_item(scancode_file_list):
+def get_error_from_header(header_item):
+    has_error = False
+    str_error = ""
+    key_error = "errors"
+
+    try:
+        for header in header_item:
+            if key_error in header:
+                errors = header[key_error]
+                if len(errors) > 0:
+                    has_error = True
+                    str_error = ",".join(errors)
+                    break
+    except Exception as ex:
+        logger.debug("error_parsing_header:"+str(ex))
+    return has_error, str_error
+
+
+def parsing_file_item(scancode_file_list, has_error):
 
     rc = True
     scancode_file_item = []
@@ -104,6 +122,7 @@ def parsing_file_item(scancode_file_list):
 
     prev_dir = ""
     prev_dir_value = False
+
     for file in scancode_file_list:
         try:
             is_binary = False
@@ -123,6 +142,14 @@ def parsing_file_item(scancode_file_list):
                 copyright_list = file["copyrights"]
 
                 result_item = ScanCodeItem(file_path)
+
+                if has_error and "scan_errors" in file:
+                    error_msg = file["scan_errors"]
+                    if len(error_msg) > 0:
+                        logger.debug("test_msg"+file_path+":"+ str(error_msg))
+                        result_item.set_comment(",".join(error_msg))
+                        scancode_file_item.append(result_item)
+                        continue
 
                 copyright_value_list = [x["value"] for x in copyright_list]
                 result_item.set_copyright(copyright_value_list)
@@ -174,10 +201,11 @@ def parsing_file_item(scancode_file_list):
 
                     if is_exclude_file(file_path, prev_dir, prev_dir_value):
                         result_item.set_exclude(True)
-
                     scancode_file_item.append(result_item)
+
         except Exception as ex:
             msg += "* Error Parsing item:"+str(ex)
             rc = False
+            logger.debug(msg)
 
     return rc, scancode_file_item, msg.strip()
