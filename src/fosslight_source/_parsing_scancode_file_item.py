@@ -107,7 +107,7 @@ def get_error_from_header(header_item):
                 errors = header[key_error]
                 if len(errors) > 0:
                     has_error = True
-                    str_error = ",".join(errors)
+                    str_error = str(errors[0])
                     break
     except Exception as ex:
         logger.debug("error_parsing_header:"+str(ex))
