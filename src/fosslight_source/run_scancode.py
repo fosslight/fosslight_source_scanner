@@ -104,18 +104,17 @@ def run_scan(path_to_scan, output_file_name="",
             if results:
                 sheet_list = {}
                 has_error = False
-                if len(results.keys()) > 0 and not success:
-                    success = True
-                    msg = "[Minor_error]"
                 if "headers" in results:
                     has_error, error_msg = get_error_from_header(results["headers"])
                     if has_error:
                         _result_log["Error_files"] = error_msg
-                        msg += "Failed to analyze :"+ error_msg
+                        msg = "Failed to analyze :"+ error_msg
                 if "files" in results:
                     rc, result_list, parsing_msg = parsing_file_item(results["files"], has_error)
                     _result_log["Parsing Log"] = parsing_msg
                     if rc:
+                        if not success:
+                            success = True
                         result_list = sorted(
                             result_list, key=lambda row: (''.join(row.licenses)))
                         sheet_list["SRC"] = [scan_item.get_row_to_print() for scan_item in result_list]
