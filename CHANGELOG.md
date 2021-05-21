@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.4.8 (21/05/2021)
+## Changes
+- Print message for error items @soimkim (#10)
+
+---
+
 ## v1.4.7 (17/05/2021)
 ## Changes
 - Change log level by message
