@@ -14,7 +14,7 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.set_log import init_log_item
 import yaml
-from ._parsing_scancode_file_item import parsing_file_item
+from ._parsing_scancode_file_item import parsing_file_item, get_error_from_header
 from fosslight_util.write_excel import write_excel_and_csv
 from ._help import print_help_msg_convert
 
@@ -62,8 +62,8 @@ def convert_json_to_excel(scancode_json, excel_name):
         success = False
         logger.warning(str(ex))
 
-    scan_result_msg = str(success)+" "+msg
-    _result_log["Scan Result"] = scan_result_msg.strip()
+    scan_result_msg = str(success) if msg == "" else str(success) + "," + msg
+    _result_log["Scan Result"] = scan_result_msg
 
     try:
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
@@ -80,8 +80,11 @@ def get_detected_licenses_from_scancode(scancode_json_file):
         logger.info("Start parsing " + scancode_json_file)
         with open(scancode_json_file, "r") as st_json:
             st_python = json.load(st_json)
-            rc, file_list, msg= parsing_file_item(st_python["files"])
+            has_error, str_error = get_error_from_header(st_python["headers"])
+            rc, file_list, msg= parsing_file_item(st_python["files"], has_error)
             logger.info("|---"+msg)
+            if has_error:
+                logger.info("|---Scan error:"+str_error)
     except Exception as error:
         logger.warning("Parsing "+scancode_json_file+":"+str(error))
     logger.info("|---Number of files detected: " + str(len(file_list)))
