@@ -20,7 +20,7 @@ def main():
     global logger
 
     argv = sys.argv[1:]
-    path_to_find_bin = os.path.abspath("test/test")
+    path_to_find_bin = os.path.abspath("tests/test_files/test")
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     output_file_name = ""
 
