@@ -100,7 +100,7 @@ def parsing_file_item(scancode_file_list):
 
     rc = True
     scancode_file_item = []
-    msg ="TOTAL FILE COUNT: "+str(len(scancode_file_list))+"\n"
+    msg = "TOTAL FILE COUNT: " + str(len(scancode_file_list)) + "\n"
 
     prev_dir = ""
     prev_dir_value = False

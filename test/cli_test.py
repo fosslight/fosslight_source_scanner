@@ -3,10 +3,7 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-import getopt
 import os
-import sys
-import json
 from datetime import datetime
 import logging
 import fosslight_util.constant as constant
@@ -19,7 +16,6 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 def main():
     global logger
 
-    argv = sys.argv[1:]
     path_to_find_bin = os.path.abspath("test/test")
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     output_file_name = ""

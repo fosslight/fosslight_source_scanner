@@ -7,7 +7,6 @@ import getopt
 import os
 import sys
 import json
-import platform
 from datetime import datetime
 import logging
 import fosslight_util.constant as constant
@@ -51,25 +50,25 @@ def convert_json_to_excel(scancode_json, excel_name):
                                     file_list, key=lambda row: (''.join(row.licenses)))
                                 sheet_list["SRC_" + file_name] = [scan_item.get_row_to_print() for scan_item in file_list]
                         except Exception as ex:
-                            logger.warning("Error parsing "+file+":"+str(ex))
+                            logger.warning("Error parsing "+file+":" + str(ex))
 
         success_to_write, writing_msg = write_excel_and_csv(excel_name, sheet_list)
-        logger.info("Writing excel :"+str(success_to_write)+ " "+writing_msg)
+        logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
         if success_to_write:
-            _result_log["OSS Report"] = excel_name+".xlsx"
+            _result_log["OSS Report"] = excel_name + ".xlsx"
 
     except Exception as ex:
         success = False
         logger.warning(str(ex))
 
-    scan_result_msg = str(success)+" "+msg
+    scan_result_msg = str(success) + " " + msg
     _result_log["Scan Result"] = scan_result_msg.strip()
 
     try:
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
         logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warning("Failed to print result log.: "+ str(ex))
+        logger.warning("Failed to print result log.: " + str(ex))
 
     return file_list
 
@@ -80,10 +79,10 @@ def get_detected_licenses_from_scancode(scancode_json_file):
         logger.info("Start parsing " + scancode_json_file)
         with open(scancode_json_file, "r") as st_json:
             st_python = json.load(st_json)
-            rc, file_list, msg= parsing_file_item(st_python["files"])
-            logger.info("|---"+msg)
+            rc, file_list, msg = parsing_file_item(st_python["files"])
+            logger.info("|---" + msg)
     except Exception as error:
-        logger.warning("Parsing "+scancode_json_file+":"+str(error))
+        logger.warning("Parsing " + scancode_json_file + ":" + str(error))
     logger.info("|---Number of files detected: " + str(len(file_list)))
     return file_list
 
@@ -106,7 +105,7 @@ def main():
             elif opt == "-o":
                 output_file_name = arg
     except Exception as error:
-        pass
+        print("Wrong option " + str(error))
 
     if output_file_name == "":
         output_dir = os.getcwd()
