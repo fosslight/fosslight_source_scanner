@@ -18,6 +18,7 @@ from fosslight_util.set_log import init_log
 from fosslight_util.set_log import init_log_item
 from fosslight_util.timer_thread import TimerThread
 from ._parsing_scancode_file_item import parsing_file_item
+from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.write_excel import write_excel_and_csv
 from ._help import print_help_msg_source
 
@@ -97,25 +98,34 @@ def run_scan(path_to_scan, output_file_name="",
                                        processes=num_cores,
                                        output_json_pp=output_json_file,
                                        only_findings=True)
+
             if not rc:
-                msg += "Source code analysis failed."
+                msg = "Source code analysis failed."
                 success = False
+
             if results:
                 sheet_list = {}
-                for key, value in results.items():
-                    if key == "files":
-                        rc, result_list, parsing_msg = parsing_file_item(value)
-                        _result_log["Parsing Log"] = parsing_msg
-                        if rc:
-                            result_list = sorted(
-                                result_list, key=lambda row: (''.join(row.licenses)))
-                            sheet_list["SRC"] = [scan_item.get_row_to_print() for scan_item in result_list]
+                has_error = False
+                if "headers" in results:
+                    has_error, error_msg = get_error_from_header(results["headers"])
+                    if has_error:
+                        _result_log["Error_files"] = error_msg
+                        msg = "Failed to analyze :" + error_msg
+                if "files" in results:
+                    rc, result_list, parsing_msg = parsing_file_item(results["files"], has_error)
+                    _result_log["Parsing Log"] = parsing_msg
+                    if rc:
+                        if not success:
+                            success = True
+                        result_list = sorted(
+                            result_list, key=lambda row: (''.join(row.licenses)))
+                        sheet_list["SRC"] = [scan_item.get_row_to_print() for scan_item in result_list]
 
-                            success_to_write, writing_msg = write_excel_and_csv(
-                                output_file, sheet_list)
-                            logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
-                            if success_to_write:
-                                _result_log["OSS Report"] = output_file + ".xlsx"
+                        success_to_write, writing_msg = write_excel_and_csv(
+                            output_file, sheet_list)
+                        logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
+                        if success_to_write:
+                            _result_log["OSS Report"] = output_file + ".xlsx"
         except Exception as ex:
             success = False
             msg = str(ex)
@@ -126,8 +136,9 @@ def run_scan(path_to_scan, output_file_name="",
 
     if not return_results:
         result_list = []
-    scan_result_msg = str(success) + " " + msg
-    _result_log["Scan Result"] = scan_result_msg.strip()
+
+    scan_result_msg = str(success) if msg == "" else str(success) + "," + msg
+    _result_log["Scan Result"] = scan_result_msg
     _result_log["Output Directory"] = output_dir
     try:
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
