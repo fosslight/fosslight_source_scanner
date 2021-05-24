@@ -107,8 +107,8 @@ def main():
                 path_to_find_bin = arg
             elif opt == "-o":
                 output_file_name = arg
-    except Exception as error:
-        print("Wrong option " + str(error))
+    except Exception:
+        print_help_msg_convert()
 
     if output_file_name == "":
         output_dir = os.getcwd()
@@ -117,7 +117,7 @@ def main():
         oss_report_name = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"))
+    logger = init_log(os.path.join(output_dir, "fosslight_src_log_" + start_time + ".txt"))
 
     convert_json_to_excel(path_to_find_bin, oss_report_name)
 
