@@ -4,6 +4,3 @@ typecode_libmagic
 XlsxWriter
 fosslight_util
 PyYAML
-pytest
-pytest-cov
-pytest-flake8
