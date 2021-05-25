@@ -7,7 +7,6 @@ import getopt
 import os
 import sys
 import json
-import platform
 from datetime import datetime
 import logging
 import fosslight_util.constant as constant
@@ -51,12 +50,12 @@ def convert_json_to_excel(scancode_json, excel_name):
                                     file_list, key=lambda row: (''.join(row.licenses)))
                                 sheet_list["SRC_" + file_name] = [scan_item.get_row_to_print() for scan_item in file_list]
                         except Exception as ex:
-                            logger.warning("Error parsing "+file+":"+str(ex))
+                            logger.warning("Error parsing "+file+":" + str(ex))
 
         success_to_write, writing_msg = write_excel_and_csv(excel_name, sheet_list)
-        logger.info("Writing excel :"+str(success_to_write)+ " "+writing_msg)
+        logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
         if success_to_write:
-            _result_log["OSS Report"] = excel_name+".xlsx"
+            _result_log["OSS Report"] = excel_name + ".xlsx"
 
     except Exception as ex:
         success = False
@@ -69,7 +68,7 @@ def convert_json_to_excel(scancode_json, excel_name):
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
         logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warning("Failed to print result log.: "+ str(ex))
+        logger.warning("Failed to print result log.: " + str(ex))
 
     return file_list
 
@@ -81,12 +80,12 @@ def get_detected_licenses_from_scancode(scancode_json_file):
         with open(scancode_json_file, "r") as st_json:
             st_python = json.load(st_json)
             has_error, str_error = get_error_from_header(st_python["headers"])
-            rc, file_list, msg= parsing_file_item(st_python["files"], has_error)
+            rc, file_list, msg = parsing_file_item(st_python["files"], has_error)
             logger.info("|---"+msg)
             if has_error:
                 logger.info("|---Scan error:"+str_error)
     except Exception as error:
-        logger.warning("Parsing "+scancode_json_file+":"+str(error))
+        logger.warning("Parsing " + scancode_json_file + ":" + str(error))
     logger.info("|---Number of files detected: " + str(len(file_list)))
     return file_list
 
@@ -108,8 +107,8 @@ def main():
                 path_to_find_bin = arg
             elif opt == "-o":
                 output_file_name = arg
-    except Exception as error:
-        pass
+    except Exception:
+        print_help_msg_convert()
 
     if output_file_name == "":
         output_dir = os.getcwd()
@@ -118,7 +117,7 @@ def main():
         oss_report_name = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"))
+    logger = init_log(os.path.join(output_dir, "fosslight_src_log_" + start_time + ".txt"))
 
     convert_json_to_excel(path_to_find_bin, oss_report_name)
 

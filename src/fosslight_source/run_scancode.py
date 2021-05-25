@@ -98,9 +98,11 @@ def run_scan(path_to_scan, output_file_name="",
                                        processes=num_cores,
                                        output_json_pp=output_json_file,
                                        only_findings=True)
+
             if not rc:
                 msg = "Source code analysis failed."
                 success = False
+
             if results:
                 sheet_list = {}
                 has_error = False
@@ -108,7 +110,7 @@ def run_scan(path_to_scan, output_file_name="",
                     has_error, error_msg = get_error_from_header(results["headers"])
                     if has_error:
                         _result_log["Error_files"] = error_msg
-                        msg = "Failed to analyze :"+ error_msg
+                        msg = "Failed to analyze :" + error_msg
                 if "files" in results:
                     rc, result_list, parsing_msg = parsing_file_item(results["files"], has_error)
                     _result_log["Parsing Log"] = parsing_msg
@@ -121,13 +123,13 @@ def run_scan(path_to_scan, output_file_name="",
 
                         success_to_write, writing_msg = write_excel_and_csv(
                             output_file, sheet_list)
-                        logger.info("Writing excel :"+str(success_to_write)+ " "+writing_msg)
+                        logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
                         if success_to_write:
-                            _result_log["OSS Report"] = output_file +".xlsx"
+                            _result_log["OSS Report"] = output_file + ".xlsx"
         except Exception as ex:
             success = False
             msg = str(ex)
-            logger.error("Analyze "+path_to_scan+":"+msg)
+            logger.error("Analyze " + path_to_scan + ":" + msg)
     else:
         success = False
         msg = "Check the path to scan. :" + path_to_scan
@@ -142,7 +144,7 @@ def run_scan(path_to_scan, output_file_name="",
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
         logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warning("Failed to print result log. "+ str(ex))
+        logger.warning("Failed to print result log. " + str(ex))
     return success, _result_log["Scan Result"], result_list
 
 

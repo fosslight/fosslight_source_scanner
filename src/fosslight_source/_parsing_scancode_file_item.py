@@ -108,7 +108,7 @@ def get_error_from_header(header_item):
                 error_cnt = len(errors)
                 if error_cnt > 0:
                     has_error = True
-                    str_error ='{}...({})'.format(errors[0], error_cnt)
+                    str_error = '{}...({})'.format(errors[0], error_cnt)
                     break
     except Exception as ex:
         logger.debug("error_parsing_header:"+str(ex))
@@ -119,7 +119,7 @@ def parsing_file_item(scancode_file_list, has_error):
 
     rc = True
     scancode_file_item = []
-    msg ="TOTAL FILE COUNT: "+str(len(scancode_file_list))+"\n"
+    msg = "TOTAL FILE COUNT: " + str(len(scancode_file_list)) + "\n"
 
     prev_dir = ""
     prev_dir_value = False
@@ -147,7 +147,7 @@ def parsing_file_item(scancode_file_list, has_error):
                 if has_error and "scan_errors" in file:
                     error_msg = file["scan_errors"]
                     if len(error_msg) > 0:
-                        logger.debug("test_msg"+file_path+":"+ str(error_msg))
+                        logger.debug("test_msg" + file_path + ":" + str(error_msg))
                         result_item.set_comment(",".join(error_msg))
                         scancode_file_item.append(result_item)
                         continue
