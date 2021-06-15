@@ -25,7 +25,7 @@ _HELP_MESSAGE_SOURCE = """
 _HELP_MESSAGE_CONVERT = """
     Usage: fosslight_convert [option1] <arg1> [option2] <arg2>...
 
-    FOSSLigtht_convert converts the result of executing ScanCode in json format into OSS Report format.
+    FOSSLigtht_convert converts the result of executing ScanCode in json format into FOSSLight Report format.
 
     Options:
         Mandatory

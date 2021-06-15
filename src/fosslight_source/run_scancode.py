@@ -68,7 +68,7 @@ def run_scan(path_to_scan, output_file_name="",
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
     if output_file_name == "":
-        output_file = "OSS-Report_" + start_time
+        output_file = "FOSSLight-Report_" + start_time
         output_json_file = "scancode_" + start_time
         output_dir = os.getcwd()
     else:
@@ -125,7 +125,7 @@ def run_scan(path_to_scan, output_file_name="",
                             output_file, sheet_list)
                         logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
                         if success_to_write:
-                            _result_log["OSS Report"] = output_file + ".xlsx"
+                            _result_log["FOSSLight Report"] = output_file + ".xlsx"
         except Exception as ex:
             success = False
             msg = str(ex)
