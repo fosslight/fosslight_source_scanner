@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
  -->
 <p align='right'>
   <a href="https://github.com/fosslight/fosslight_source/blob/main/docs/README_Kor.md">
-    [Kor]
+    [Korean]
  </a>
 </p>
 

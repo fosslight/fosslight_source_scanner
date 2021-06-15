@@ -1,6 +1,6 @@
 <p align='right'>
   <a href="https://github.com/fosslight/fosslight_source/blob/main/README.md">
-    [Eng]
+    [English]
  </a>
 </p>
 
