@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
  -->
 <p align='right'>
   <a href="https://github.com/fosslight/fosslight_source/blob/main/docs/README_Kor.md">
-    [Kor]
+    [Korean]
  </a>
 </p>
 
@@ -53,22 +53,22 @@ $ pip3 install fosslight_source
 There are two commands for FOSSLight Scanner. 
 
 ### 1. fosslight_source
-After executing ScanCode, the source code scanner, print the OSS Report.
+After executing ScanCode, the source code scanner, print the FOSSLight Report.
 
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
 | h | None | Print help message. | 
 | p | String | Path to detect source. | 
-| j | None | As an output, the result of executing ScanCode in json format other than OSS Report is additionally generated. | 
+| j | None | As an output, the result of executing ScanCode in json format other than FOSSLight Report is additionally generated. | 
 | o | String | Output file name without file extension. | 
 
-#### Ex. Print result to OSS Report and json file
+#### Ex. Print result to FOSSLight Report and json file
 ```
 $ fosslight_source -p /home/source_path -j
 ```
 
 ### 2. fosslight_convert
-Converts the result of executing ScanCode in json format into OSS Report format.  
+Converts the result of executing ScanCode in json format into FOSSLight Report format.  
 
 | Parameter  | Argument | Description |
 | ------------- | ------------- | ------------- |
@@ -76,7 +76,7 @@ Converts the result of executing ScanCode in json format into OSS Report format.
 | p | String | Path of ScanCode json files. | 
 | o | String | Output file name without file extension. | 
 
-#### Ex. Converting scancode json result to OSS report
+#### Ex. Converting scancode json result to FOSSLight report
 ```
 $ fosslight_convert -p /home/jsonfile_dir
 ```
@@ -86,14 +86,14 @@ $ fosslight_convert -p /home/jsonfile_dir
 ```
 $ tree
 .
-├── OSS-Report_2021-05-03_00-39-49.csv
-├── OSS-Report_2021-05-03_00-39-49.xlsx
+├── FOSSLight-Report_2021-05-03_00-39-49.csv
+├── FOSSLight-Report_2021-05-03_00-39-49.xlsx
 ├── scancode_2021-05-03_00-39-49.json
 └── fosslight_src_log_2021-05-03_00-39-49.txt
 
 ```
-- OSS-Report_[datetime].xlsx : FOSSLight Source result in OSS Report format.
-- OSS-Report_[datetime].csv : FOSSLight Source result in csv format. (Except Windows)
+- FOSSLight-Report_[datetime].xlsx : FOSSLight Source result in OSS Report format.
+- FOSSLight-Report_[datetime].csv : FOSSLight Source result in csv format. (Except Windows)
 - fosslight_src_log_[datetime].txt : The execution log.
 - scancode_[datetime].json : The ScanCode result in case of -j option.
 

@@ -20,12 +20,12 @@ def main():
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     output_file_name = ""
 
-    oss_report_name = "test_result_func_call/result"
+    fosslight_report_name = "test_result_func_call/result"
     output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
     logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"))
 
-    ret = run_scan(path_to_find_bin, oss_report_name, True, -1, True)
+    ret = run_scan(path_to_find_bin, fosslight_report_name, True, -1, True)
 
     logger.warn("[Scan] Result: %s" % (ret[0]))
     logger.warn("[Scan] Result_msg: %s" % (ret[1]))

@@ -55,7 +55,7 @@ def convert_json_to_excel(scancode_json, excel_name):
         success_to_write, writing_msg = write_excel_and_csv(excel_name, sheet_list)
         logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
         if success_to_write:
-            _result_log["OSS Report"] = excel_name + ".xlsx"
+            _result_log["FOSSLight Report"] = excel_name + ".xlsx"
 
     except Exception as ex:
         success = False
@@ -112,7 +112,7 @@ def main():
 
     if output_file_name == "":
         output_dir = os.getcwd()
-        oss_report_name = "OSS-Report_" + start_time
+        oss_report_name = "FOSSLight-Report_" + start_time
     else:
         oss_report_name = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
