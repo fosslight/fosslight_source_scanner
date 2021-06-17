@@ -1,12 +1,12 @@
 <p align='right'>
-  <a href="https://github.com/fosslight/fosslight_source/blob/main/README.md">
+  <a href="https://github.com/fosslight/fosslight_source_scanner/blob/main/README.md">
     [English]
  </a>
 </p>
 
 # FOSSLight Source Scanner
 
-<img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source is released under the Apache-2.0 License." /> <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." /> <img src="https://img.shields.io/pypi/pyversions/fosslight_source" /> [![REUSE status](https://api.reuse.software/badge/github.com/fosslight/fosslight_source)](https://api.reuse.software/info/github.com/fosslight/fosslight_source)
+<img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source is released under the Apache-2.0 License." /> <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." /> <img src="https://img.shields.io/pypi/pyversions/fosslight_source" /> [![REUSE status](https://api.reuse.software/badge/github.com/fosslight/fosslight_source_scanner)](https://api.reuse.software/info/github.com/fosslight/fosslight_source_scanner)
 </p>
 
 ```note
@@ -96,10 +96,10 @@ $ tree
 
 개선 사항이나 버그는 [Git Repository][repo]에 이슈를 생성하여 리포트해주시기 바랍니다. 이슈 리포트는 FOSSLight Source Scanner 업그레이드에 많은 도움이 됩니다.
 
-[repo]: https://github.com/fosslight/fosslight_source/issues
+[repo]: https://github.com/fosslight/fosslight_source_scanner/issues
 
 ## 📄 License
 
 FOSSLight Source Scanner는 Apache-2.0입니다. License 원문 파일 [LICENSE][l]를 참고하십시오.
 
-[l]: https://github.com/fosslight/fosslight_source/blob/main/LICENSE
+[l]: https://github.com/fosslight/fosslight_source_scanner/blob/main/LICENSE

@@ -3,14 +3,14 @@ Copyright (c) 2021 LG Electronics
 SPDX-License-Identifier: Apache-2.0
  -->
 <p align='right'>
-  <a href="https://github.com/fosslight/fosslight_source/blob/main/docs/README_Kor.md">
+  <a href="https://github.com/fosslight/fosslight_source_scanner/blob/main/docs/README_Kor.md">
     [Korean]
  </a>
 </p>
 
 # FOSSLight Source Scanner
 
-<img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source Scanner is released under the Apache-2.0 License." /> <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." /> <img src="https://img.shields.io/pypi/pyversions/fosslight_source" /> [![REUSE status](https://api.reuse.software/badge/github.com/fosslight/fosslight_source)](https://api.reuse.software/info/github.com/fosslight/fosslight_source)
+<img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source Scanner is released under the Apache-2.0 License." /> <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." /> <img src="https://img.shields.io/pypi/pyversions/fosslight_source" /> [![REUSE status](https://api.reuse.software/badge/github.com/fosslight/fosslight_source_scanner)](https://api.reuse.software/info/github.com/fosslight/fosslight_source_scanner)
 </p>
 
 ```note
@@ -42,7 +42,7 @@ For windows, you need to install [Microsoft Visual C++ Build Tools][ms_build].
 
 ## 🎉 How to install
 
-It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv](https://github.com/fosslight/fosslight_source/blob/main/docs/Guide_virtualenv.md) environment.
+It can be installed using pip3. It is recommended to install it in the [python 3.6 + virtualenv](https://github.com/fosslight/fosslight_source_scanner/blob/main/docs/Guide_virtualenv.md) environment.
 
 ```
 $ pip3 install fosslight_source
@@ -102,10 +102,10 @@ $ tree
 
 Please report any ideas or bugs to improve by creating an issue in [Git Repository][repo]. Then there will be quick bug fixes and upgrades. Ideas to improve are always welcome.
 
-[repo]: https://github.com/fosslight/fosslight_source/issues
+[repo]: https://github.com/fosslight/fosslight_source_scanner/issues
 
 ## 📄 License
 
 FOSSLight Source Scanner is Apache-2.0, as found in the [LICENSE][l] file.
 
-[l]: https://github.com/fosslight/fosslight_source/blob/main/LICENSE
+[l]: https://github.com/fosslight/fosslight_source_scanner/blob/main/LICENSE
