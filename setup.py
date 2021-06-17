@@ -17,7 +17,7 @@ if __name__ == "__main__":
         version='1.4.8',
         package_dir={"": "src"},
         packages=find_packages(where='src'),
-        description='FOSSLight Source',
+        description='FOSSLight Source Scanner',
         long_description=readme,
         long_description_content_type='text/markdown',
         license='Apache-2.0',
