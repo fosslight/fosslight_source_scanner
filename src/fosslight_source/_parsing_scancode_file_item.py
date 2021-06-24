@@ -192,7 +192,7 @@ def parsing_file_item(scancode_file_list, has_error):
                                     if matched:
                                         license_value = str(matched.group(1))
                             except Exception:
-                                logger.warning("ERROR")
+                                pass
 
                         for word in _replace_word:
                             if word in license_value:
