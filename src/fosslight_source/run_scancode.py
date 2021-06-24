@@ -97,7 +97,7 @@ def run_scan(path_to_scan, output_file_name="",
                                        copyright=True, return_results=True,
                                        processes=num_cores,
                                        output_json_pp=output_json_file,
-                                       only_findings=True)
+                                       only_findings=True, license_text=True)
 
             if not rc:
                 msg = "Source code analysis failed."
