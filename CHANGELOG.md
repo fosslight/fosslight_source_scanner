@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.5.0 (25/06/2021)
+## Changes
+## 🚀 Features
+
+- Print the matched text for unknown spdx @soimkim (#20)
+
+---
+
 ## v1.4.9 (24/06/2021)
 ## Changes
 - Add reuse compliance checking @soimkim (#18)
