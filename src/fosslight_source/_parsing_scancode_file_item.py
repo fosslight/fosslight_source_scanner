@@ -5,6 +5,7 @@
 
 import os
 import logging
+import re
 import fosslight_util.constant as constant
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -123,6 +124,7 @@ def parsing_file_item(scancode_file_list, has_error):
 
     prev_dir = ""
     prev_dir_value = False
+    regex = re.compile(r'licenseref-(\S)+')
 
     for file in scancode_file_list:
         try:
@@ -182,6 +184,16 @@ def parsing_file_item(scancode_file_list, has_error):
                         license_value = spdx.lower()
 
                     if license_value != "":
+                        if key == "unknown-spdx":
+                            try:
+                                if "matched_text" in lic_item:
+                                    matched_txt = lic_item["matched_text"].lower()
+                                    matched = regex.search(matched_txt)
+                                    if matched:
+                                        license_value = str(matched.group())
+                            except Exception:
+                                pass
+
                         for word in _replace_word:
                             if word in license_value:
                                 license_value = license_value.replace(word, "")
