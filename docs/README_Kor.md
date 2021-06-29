@@ -37,7 +37,7 @@ Windows의 경우 [Microsoft Visual C++ Build Tools][ms_build]를 추가로 설�
 
 ## 🎉 How to install
 
-FOSSLight Source Scanner는 pip3를 이용하여 설치할 수 있습니다. [python 3.6 + virtualenv](Guide_virtualenv_Kor.md) 환경에서 설치할 것을 권장합니다.
+FOSSLight Source Scanner는 pip3를 이용하여 설치할 수 있습니다. [python 3.6 + virtualenv](https://fosslight.org/fosslight-guide/scanner/etc/guide_virtualenv.html) 환경에서 설치할 것을 권장합니다.
 
 ```
 $ pip3 install fosslight_source
