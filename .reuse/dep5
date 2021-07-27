@@ -2,10 +2,6 @@ Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: FOSSLight Source
 Source: https://github.com/fosslight/fosslight_source
 
-Files: docs/*
-Copyright: 2021 LG Electronics
-License: Apache-2.0
-
 Files: *.md
 Copyright: 2021 LG Electronics
 License: Apache-2.0
