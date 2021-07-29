@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.5.1 (29/07/2021)
+## Changes
+## 🐛 Hotfixes
+
+- Fix a bug related Release actions @soimkim (#24)
+
+## 🔧 Maintenance
+
+- Remove warning in publish-release.yml @bjk7119 (#22)
+- Update version in setup.py when release @soimkim (#21)
+
+---
+
 ## v1.5.0 (25/06/2021)
 ## Changes
 ## 🚀 Features
