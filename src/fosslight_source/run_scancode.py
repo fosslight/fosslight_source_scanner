@@ -15,7 +15,6 @@ from scancode import cli
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-from fosslight_util.set_log import init_log_item
 from fosslight_util.timer_thread import TimerThread
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
@@ -76,8 +75,8 @@ def run_scan(path_to_scan, output_file_name="",
         output_json_file = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"))
-    _result_log = init_log_item(_PKG_NAME, path_to_scan)
+    logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"),
+                      True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if path_to_scan == "":
         if _windows:

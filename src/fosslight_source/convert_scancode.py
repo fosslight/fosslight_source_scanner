@@ -11,7 +11,6 @@ from datetime import datetime
 import logging
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-from fosslight_util.set_log import init_log_item
 import yaml
 from ._parsing_scancode_file_item import parsing_file_item, get_error_from_header
 from fosslight_util.write_excel import write_excel_and_csv
@@ -21,9 +20,8 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 _PKG_NAME = "fosslight_source"
 
 
-def convert_json_to_excel(scancode_json, excel_name):
+def convert_json_to_excel(scancode_json, excel_name, _result_log):
     file_list = []
-    _result_log = init_log_item(_PKG_NAME)
     msg = ""
     success = True
 
@@ -117,9 +115,9 @@ def main():
         oss_report_name = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger = init_log(os.path.join(output_dir, "fosslight_src_log_" + start_time + ".txt"))
-
-    convert_json_to_excel(path_to_find_bin, oss_report_name)
+    logger, _result_log = init_log(os.path.join(output_dir, "fosslight_src_log_" + start_time + ".txt"),
+                                   True, logging.INFO, logging.DEBUG, _PKG_NAME)
+    convert_json_to_excel(path_to_find_bin, oss_report_name, _result_log)
 
 
 if __name__ == '__main__':
