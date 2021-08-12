@@ -121,7 +121,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
 
     rc = True
     scancode_file_item = []
-    license_list = {} # Key :[license]+[matched_text], value: MatchedLicense()
+    license_list = {}  # Key :[license]+[matched_text], value: MatchedLicense()
     msg = "TOTAL FILE COUNT: " + str(len(scancode_file_list)) + "\n"
 
     prev_dir = ""

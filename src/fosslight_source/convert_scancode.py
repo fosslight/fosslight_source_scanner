@@ -52,9 +52,11 @@ def convert_json_to_excel(scancode_json, excel_name, result_log, need_license=Fa
                                 file_name = os.path.basename(file)
                                 file_list = sorted(
                                     file_list, key=lambda row: (''.join(row.licenses)))
-                                sheet_list[sheet_SRC_prefix +"_" + file_name] = [scan_item.get_row_to_print() for scan_item in file_list]
+                                sheet_name = sheet_SRC_prefix + "_" + file_name
+                                sheet_list[sheet_name] = [scan_item.get_row_to_print() for scan_item in file_list]
                                 if need_license:
-                                    sheet_list[sheet_license_prefix+"_" + file_name] = get_license_list_to_print(lic_list)
+                                    lic_sheet_name = sheet_license_prefix + "_" + file_name
+                                    sheet_list[lic_sheet_name] = get_license_list_to_print(lic_list)
                         except Exception as ex:
                             logger.warning("Error parsing "+file+":" + str(ex))
 

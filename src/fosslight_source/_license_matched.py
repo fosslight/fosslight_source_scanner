@@ -8,18 +8,21 @@ import fosslight_util.constant as constant
 logger = logging.getLogger(constant.LOGGER_NAME)
 HEADER = ['No', 'Category', 'License',
           'Matched Text', 'File Count', 'Files']
+LOW_PRIORITY = ['Permissive', 'Public Domain']
+
 
 class MatchedLicense:
     license = ""
     files = []
     category = ""
     matched_text = ""
+    priority = 0
 
     def __init__(self, lic, category, text, file):
         self.files = [file]
         self.license = lic
-        self.category = category
         self.matched_text = text
+        self.set_category(category)
 
     def __del__(self):
         pass
@@ -32,6 +35,10 @@ class MatchedLicense:
 
     def set_category(self, value):
         self.category = value
+        if value in LOW_PRIORITY:
+            self.priority = 1
+        else:
+            self.priority = 0
 
     def set_matched_text(self, value):
         self.matched_text = value
@@ -43,7 +50,7 @@ class MatchedLicense:
 
 def get_license_list_to_print(license_list):
     license_items = license_list.values()
-    license_items = sorted(license_items, key=lambda row: (row.category, row.license))
+    license_items = sorted(license_items, key=lambda row: (row.priority, row.category, row.license))
     license_rows = [lic_item.get_row_to_print() for lic_item in license_items]
     license_rows.insert(0, HEADER)
     return license_rows
