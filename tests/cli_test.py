@@ -23,7 +23,7 @@ def main():
     fosslight_report_name = "test_result_func_call/result"
     output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"))
+    logger, result_item = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"))
 
     ret = run_scan(path_to_find_bin, fosslight_report_name, True, -1, True)
 
