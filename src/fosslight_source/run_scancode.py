@@ -75,7 +75,7 @@ def run_scan(path_to_scan, output_file_name="",
         output_json_file = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"),
+    logger, _result_log = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"),
                       True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if path_to_scan == "":
