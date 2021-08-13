@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.0 (13/08/2021)
+## Changes
+## 🚀 Features
+
+- Add option for printing matched text @soimkim (#28)
+
+---
+
 ## v1.5.2 (12/08/2021)
 ## Changes
 ## 🔧 Maintenance
