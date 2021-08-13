@@ -7,6 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
+from ._license_matched import MatchedLicense
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-"]
@@ -116,10 +117,11 @@ def get_error_from_header(header_item):
     return has_error, str_error
 
 
-def parsing_file_item(scancode_file_list, has_error):
+def parsing_file_item(scancode_file_list, has_error, need_matched_license=False):
 
     rc = True
     scancode_file_item = []
+    license_list = {}  # Key :[license]+[matched_text], value: MatchedLicense()
     msg = "TOTAL FILE COUNT: " + str(len(scancode_file_list)) + "\n"
 
     prev_dir = ""
@@ -199,6 +201,18 @@ def parsing_file_item(scancode_file_list, has_error):
                                 license_value = license_value.replace(word, "")
                         license_detected.append(license_value)
 
+                        # Add matched licenses
+                        if need_matched_license and "category" in lic_item:
+                            lic_category = lic_item["category"]
+                            if "matched_text" in lic_item:
+                                lic_matched_text = lic_item["matched_text"]
+                                lic_matched_key = license_value + lic_matched_text
+                                if lic_matched_key in license_list:
+                                    license_list[lic_matched_key].set_files(file_path)
+                                else:
+                                    lic_info = MatchedLicense(license_value, lic_category, lic_matched_text, file_path)
+                                    license_list[lic_matched_key] = lic_info
+
                     matched_rule = lic_item["matched_rule"]
                     if matched_rule["is_license_text"]:
                         result_item.set_is_license_text(True)
@@ -221,4 +235,4 @@ def parsing_file_item(scancode_file_list, has_error):
             rc = False
             logger.debug(msg)
 
-    return rc, scancode_file_item, msg.strip()
+    return rc, scancode_file_item, msg.strip(), license_list

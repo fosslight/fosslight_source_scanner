@@ -20,6 +20,7 @@ from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.write_excel import write_excel_and_csv
 from ._help import print_help_msg_source
+from ._license_matched import get_license_list_to_print
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -28,33 +29,35 @@ _PKG_NAME = "fosslight_source"
 
 def main():
     argv = sys.argv[1:]
-    _path_to_scan = ""
-    _write_json_file = False
-    _output_file = ""
+    path_to_scan = ""
+    write_json_file = False
+    output_file = ""
+    print_matched_text = False
 
     try:
-        opts, args = getopt.getopt(argv, 'hjp:o:')
+        opts, args = getopt.getopt(argv, 'hmjp:o:')
         for opt, arg in opts:
             if opt == "-h":
                 print_help_msg_source()
             elif opt == "-p":
-                _path_to_scan = arg
+                path_to_scan = arg
             elif opt == "-j":
-                _write_json_file = True
+                write_json_file = True
             elif opt == "-o":
-                _output_file = arg
-
+                output_file = arg
+            elif opt == "-m":
+                print_matched_text = True
     except Exception:
         print_help_msg_source()
 
     timer = TimerThread()
     timer.setDaemon(True)
     timer.start()
-    run_scan(_path_to_scan, _output_file, _write_json_file, -1, False)
+    run_scan(path_to_scan, output_file, write_json_file, -1, False, print_matched_text)
 
 
 def run_scan(path_to_scan, output_file_name="",
-             _write_json_file=False, num_cores=-1, return_results=False):
+             _write_json_file=False, num_cores=-1, return_results=False, need_license=False):
     global logger
 
     success = True
@@ -111,7 +114,7 @@ def run_scan(path_to_scan, output_file_name="",
                         _result_log["Error_files"] = error_msg
                         msg = "Failed to analyze :" + error_msg
                 if "files" in results:
-                    rc, result_list, parsing_msg = parsing_file_item(results["files"], has_error)
+                    rc, result_list, parsing_msg, license_list = parsing_file_item(results["files"], has_error, need_license)
                     _result_log["Parsing Log"] = parsing_msg
                     if rc:
                         if not success:
@@ -119,6 +122,8 @@ def run_scan(path_to_scan, output_file_name="",
                         result_list = sorted(
                             result_list, key=lambda row: (''.join(row.licenses)))
                         sheet_list["SRC"] = [scan_item.get_row_to_print() for scan_item in result_list]
+                        if need_license:
+                            sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
                         success_to_write, writing_msg = write_excel_and_csv(
                             output_file, sheet_list)
