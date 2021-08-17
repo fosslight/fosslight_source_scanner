@@ -1,5 +1,5 @@
 scancode-toolkit<=21.3.31
 typecode_libmagic
 XlsxWriter
-fosslight_util
+fosslight_util>=1.1.0
 PyYAML

@@ -20,6 +20,7 @@ _HELP_MESSAGE_SOURCE = """
         Optional
             -h\t\t\t\t   Print help message
             -j\t\t\t\t   Generate additional result of executing ScanCode in json format
+            -m\t\t\t\t   Print the Matched text for each license on a separate sheet
             -o <file_name>\t\t   Output file name"""
 
 _HELP_MESSAGE_CONVERT = """
@@ -33,6 +34,7 @@ _HELP_MESSAGE_CONVERT = """
 
         Optional
             -h\t\t\t\t   Print help message
+            -m\t\t\t\t   Print the Matched text for each license on a separate sheet
             -o <file_name>\t\t   Output file name"""
 
 
