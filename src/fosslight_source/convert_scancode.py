@@ -103,7 +103,7 @@ def main():
     global logger
 
     argv = sys.argv[1:]
-    path_to_find_bin = os.getcwd()
+    path_to_find_json = ""
     start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     output_file_name = ""
     print_matched_text = False
@@ -114,12 +114,15 @@ def main():
             if opt == "-h":
                 print_help_msg_convert()
             elif opt == "-p":
-                path_to_find_bin = arg
+                path_to_find_json = arg
             elif opt == "-o":
                 output_file_name = arg
             elif opt == "-m":
                 print_matched_text = True
     except Exception:
+        print_help_msg_convert()
+
+    if path_to_find_json == "":
         print_help_msg_convert()
 
     if output_file_name == "":
@@ -131,7 +134,7 @@ def main():
 
     logger, _result_log = init_log(os.path.join(output_dir, "fosslight_src_log_" + start_time + ".txt"),
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME)
-    convert_json_to_excel(path_to_find_bin, oss_report_name, _result_log, print_matched_text)
+    convert_json_to_excel(path_to_find_json, oss_report_name, _result_log, print_matched_text)
 
 
 if __name__ == '__main__':
