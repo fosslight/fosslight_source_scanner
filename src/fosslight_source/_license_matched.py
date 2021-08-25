@@ -31,7 +31,8 @@ class MatchedLicense:
         self.license = value
 
     def set_files(self, value):
-        self.files.append(value)
+        if value not in self.files:
+            self.files.append(value)
 
     def set_category(self, value):
         self.category = value
