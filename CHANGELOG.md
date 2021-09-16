@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.2 (16/09/2021)
+## Changes
+## 🐛 Hotfixes
+
+- Remove required version of ScanCode @soimkim (#33)
+
+---
+
 ## v1.6.1 (26/08/2021)
 ## Changes
 ## 🔧 Maintenance
