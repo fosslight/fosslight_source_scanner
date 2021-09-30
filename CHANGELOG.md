@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.3 (30/09/2021)
+## Changes
+## 🔧 Maintenance
+
+- Update datetime format @soimkim (#34)
+
+---
+
 ## v1.6.2 (16/09/2021)
 ## Changes
 ## 🐛 Hotfixes
