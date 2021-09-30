@@ -67,7 +67,7 @@ def run_scan(path_to_scan, output_file_name="",
     result_list = []
 
     _windows = platform.system() == "Windows"
-    start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
 
     if output_file_name == "":
         output_file = "FOSSLight-Report_" + start_time

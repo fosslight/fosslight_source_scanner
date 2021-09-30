@@ -104,7 +104,7 @@ def main():
 
     argv = sys.argv[1:]
     path_to_find_json = ""
-    start_time = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_file_name = ""
     print_matched_text = False
 
