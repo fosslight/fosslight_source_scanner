@@ -21,7 +21,8 @@ _HELP_MESSAGE_SOURCE = """
             -h\t\t\t\t   Print help message
             -j\t\t\t\t   Generate additional result of executing ScanCode in json format
             -m\t\t\t\t   Print the Matched text for each license on a separate sheet
-            -o <file_name>\t\t   Output file name"""
+            -o <file_name>\t\t   Output file name
+            -x\t\t\t\t   Run SCANOSS scan"""
 
 _HELP_MESSAGE_CONVERT = """
     Usage: fosslight_convert [option1] <arg1> [option2] <arg2>...
@@ -36,7 +37,6 @@ _HELP_MESSAGE_CONVERT = """
             -h\t\t\t\t   Print help message
             -m\t\t\t\t   Print the Matched text for each license on a separate sheet
             -o <file_name>\t\t   Output file name"""
-
 
 def print_help_msg_source():
     helpMsg = PrintHelpMsg(_HELP_MESSAGE_SOURCE)

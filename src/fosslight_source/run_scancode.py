@@ -33,9 +33,10 @@ def main():
     write_json_file = False
     output_file = ""
     print_matched_text = False
+    run_scanoss = False
 
     try:
-        opts, args = getopt.getopt(argv, 'hmjp:o:')
+        opts, args = getopt.getopt(argv, 'hmjxp:o:')
         for opt, arg in opts:
             if opt == "-h":
                 print_help_msg_source()
@@ -47,14 +48,35 @@ def main():
                 output_file = arg
             elif opt == "-m":
                 print_matched_text = True
+            elif opt == "-x":
+                run_scanoss = True
     except Exception:
         print_help_msg_source()
 
     timer = TimerThread()
     timer.setDaemon(True)
     timer.start()
-    run_scan(path_to_scan, output_file, write_json_file, -1, False, print_matched_text)
+    if run_scanoss == True:
+        run_scanoss_py(path_to_scan, output_file)
+    else:
+        run_scan(path_to_scan, output_file, write_json_file, -1, False, print_matched_text)
 
+def run_scanoss_py(path_to_scan, output_file_name=""):
+    scan_command = "scanoss-py scan -o "
+
+    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+
+    if output_file_name == "":
+        output_file = "SCANOSS_FOSSLight-Report_" + start_time + ".json"
+        output_dir = os.getcwd()
+    else:
+        output_file = output_file_name + ".json"
+        output_dir = os.path.dirname(os.path.abspath(output_file_name))
+   
+    scan_command += output_file + " "
+    scan_command += path_to_scan
+    print(scan_command)
+    os.system(scan_command)
 
 def run_scan(path_to_scan, output_file_name="",
              _write_json_file=False, num_cores=-1, return_results=False, need_license=False):

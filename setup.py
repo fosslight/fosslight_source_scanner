@@ -33,7 +33,9 @@ if __name__ == "__main__":
         install_requires=required,
         entry_points={
             "console_scripts": [
+#                "fosslight_convert = fosslight_source.convert_scanoss:main",
                 "fosslight_convert = fosslight_source.convert_scancode:main",
+#                "fosslight_convert_scanoss = fosslight_source.convert_scanoss:main",
                 "fosslight_source = fosslight_source.run_scancode:main",
                 "convert_scancode = fosslight_source.convert_scancode:main",
                 "run_scancode = fosslight_source.run_scancode:main"
