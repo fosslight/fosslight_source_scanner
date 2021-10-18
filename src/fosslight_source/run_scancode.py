@@ -81,11 +81,11 @@ def run_scan(path_to_scan, output_file_name="",
             output_path = os.getcwd()
         else:
             output_path = os.path.abspath(output_path)
-        
+
         if output_file == "":
             if output_extension == _json_ext:
                 output_file = "Opossum_input_" + start_time
-            else:   
+            else:
                 output_file = "FOSSLight-Report_" + start_time
 
         if _write_json_file:
@@ -94,7 +94,7 @@ def run_scan(path_to_scan, output_file_name="",
             output_json_file = ""
 
         logger, _result_log = init_log(os.path.join(output_path, "fosslight_src_log_"+start_time+".txt"),
-                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
+                                       True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
         if path_to_scan == "":
             if _windows:
@@ -107,11 +107,11 @@ def run_scan(path_to_scan, output_file_name="",
         if os.path.isdir(path_to_scan):
             try:
                 rc, results = cli.run_scan(path_to_scan, max_depth=100,
-                                        strip_root=True, license=True,
-                                        copyright=True, return_results=True,
-                                        processes=num_cores,
-                                        output_json_pp=output_json_file,
-                                        only_findings=True, license_text=True)
+                                           strip_root=True, license=True,
+                                           copyright=True, return_results=True,
+                                           processes=num_cores,
+                                           output_json_pp=output_json_file,
+                                           only_findings=True, license_text=True)
 
                 if not rc:
                     msg = "Source code analysis failed."
@@ -138,8 +138,10 @@ def run_scan(path_to_scan, output_file_name="",
                                 sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
                             output_file_without_ext = os.path.join(output_path, output_file)
-                            success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list, FL_SOURCE)
-                            logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write) + " " + writing_msg)
+                            success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension,
+                                                                              sheet_list, FL_SOURCE)
+                            logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write)
+                                        + " " + writing_msg)
                             if success_to_write:
                                 _result_log["Output file"] = output_file_without_ext + output_extension
 
