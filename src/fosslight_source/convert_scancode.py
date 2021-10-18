@@ -13,7 +13,8 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 import yaml
 from ._parsing_scancode_file_item import parsing_file_item, get_error_from_header
-from fosslight_util.write_excel import write_excel_and_csv
+from fosslight_util.output_format import check_output_format, write_output_file
+from fosslight_util.write_opossum import FL_SOURCE
 from ._help import print_help_msg_convert
 from ._license_matched import get_license_list_to_print
 
@@ -21,13 +22,38 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 _PKG_NAME = "fosslight_source"
 
 
-def convert_json_to_excel(scancode_json, excel_name, result_log, need_license=False):
+def convert_json_to_output_report(scancode_json, output_file_name, need_license=False, format=""):
+    global logger
+
     sheet_license_prefix = "matched_text"
     sheet_SRC_prefix = "SRC"
     file_list = []
     lic_list = {}
     msg = ""
     success = True
+    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    _json_ext = ".json"
+
+    success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
+    if success:
+        if output_path == "":
+                output_path = os.getcwd()
+        else:
+            output_path = os.path.abspath(output_path)
+        
+        if output_file == "":
+            if output_extension == _json_ext:
+                output_file = "Opossum_input_" + start_time
+            else:   
+                output_file = "FOSSLight-Report_" + start_time
+    else:
+        output_path = os.getcwd()
+
+    logger, result_log = init_log(os.path.join(output_path, "fosslight_src_log_" + start_time + ".txt"),
+                                   True, logging.INFO, logging.DEBUG, _PKG_NAME)
+    if not success:
+        logger.error("Fail to convert scancode: " + msg)
+        return []
 
     try:
         sheet_list = {}
@@ -60,10 +86,11 @@ def convert_json_to_excel(scancode_json, excel_name, result_log, need_license=Fa
                         except Exception as ex:
                             logger.warning("Error parsing "+file+":" + str(ex))
 
-        success_to_write, writing_msg = write_excel_and_csv(excel_name, sheet_list)
-        logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
+        output_file_without_ext = os.path.join(output_path, output_file)
+        success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list, FL_SOURCE)
+        logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write) + " " + writing_msg)
         if success_to_write:
-            result_log["FOSSLight Report"] = excel_name + ".xlsx"
+            result_log["Output file"] = output_file_without_ext + output_extension
 
     except Exception as ex:
         success = False
@@ -100,16 +127,14 @@ def get_detected_licenses_from_scancode(scancode_json_file, need_license):
 
 
 def main():
-    global logger
-
     argv = sys.argv[1:]
     path_to_find_json = ""
-    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     output_file_name = ""
     print_matched_text = False
+    format = ""
 
     try:
-        opts, args = getopt.getopt(argv, 'hmp:o:')
+        opts, args = getopt.getopt(argv, 'hmp:o:f:')
         for opt, arg in opts:
             if opt == "-h":
                 print_help_msg_convert()
@@ -119,22 +144,15 @@ def main():
                 output_file_name = arg
             elif opt == "-m":
                 print_matched_text = True
+            elif opt == "-f":
+                format = arg
     except Exception:
         print_help_msg_convert()
 
     if path_to_find_json == "":
         print_help_msg_convert()
 
-    if output_file_name == "":
-        output_dir = os.getcwd()
-        oss_report_name = "FOSSLight-Report_" + start_time
-    else:
-        oss_report_name = output_file_name
-        output_dir = os.path.dirname(os.path.abspath(output_file_name))
-
-    logger, _result_log = init_log(os.path.join(output_dir, "fosslight_src_log_" + start_time + ".txt"),
-                                   True, logging.INFO, logging.DEBUG, _PKG_NAME)
-    convert_json_to_excel(path_to_find_json, oss_report_name, _result_log, print_matched_text)
+    convert_json_to_output_report(path_to_find_json, output_file_name, print_matched_text, format)
 
 
 if __name__ == '__main__':
