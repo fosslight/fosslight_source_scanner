@@ -20,7 +20,6 @@ from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from ._help import print_help_msg_source
 from ._license_matched import get_license_list_to_print
-from fosslight_util.write_opossum import FL_SOURCE
 from fosslight_util.output_format import check_output_format, write_output_file
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -133,13 +132,13 @@ def run_scan(path_to_scan, output_file_name="",
                                 success = True
                             result_list = sorted(
                                 result_list, key=lambda row: (''.join(row.licenses)))
-                            sheet_list["SRC"] = [scan_item.get_row_to_print() for scan_item in result_list]
+                            sheet_list["SRC_FL_Source"] = [scan_item.get_row_to_print() for scan_item in result_list]
                             if need_license:
                                 sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
                             output_file_without_ext = os.path.join(output_path, output_file)
                             success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension,
-                                                                              sheet_list, FL_SOURCE)
+                                                                              sheet_list)
                             logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write)
                                         + " " + writing_msg)
                             if success_to_write:

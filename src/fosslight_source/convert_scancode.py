@@ -14,7 +14,6 @@ from fosslight_util.set_log import init_log
 import yaml
 from ._parsing_scancode_file_item import parsing_file_item, get_error_from_header
 from fosslight_util.output_format import check_output_format, write_output_file
-from fosslight_util.write_opossum import FL_SOURCE
 from ._help import print_help_msg_convert
 from ._license_matched import get_license_list_to_print
 
@@ -26,7 +25,7 @@ def convert_json_to_output_report(scancode_json, output_file_name, need_license=
     global logger
 
     sheet_license_prefix = "matched_text"
-    sheet_SRC_prefix = "SRC"
+    sheet_SRC_prefix = "SRC_FL_Source"
     file_list = []
     lic_list = {}
     msg = ""
@@ -87,7 +86,7 @@ def convert_json_to_output_report(scancode_json, output_file_name, need_license=
                             logger.warning("Error parsing "+file+":" + str(ex))
 
         output_file_without_ext = os.path.join(output_path, output_file)
-        success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list, FL_SOURCE)
+        success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list)
         logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write) + " " + writing_msg)
         if success_to_write:
             result_log["Output file"] = output_file_without_ext + output_extension
