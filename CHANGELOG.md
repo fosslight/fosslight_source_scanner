@@ -1,5 +1,47 @@
 # Changelog
 
+## v1.6.3 (30/09/2021)
+## Changes
+## 🔧 Maintenance
+
+- Update datetime format @soimkim (#34)
+
+---
+
+## v1.6.2 (16/09/2021)
+## Changes
+## 🐛 Hotfixes
+
+- Remove required version of ScanCode @soimkim (#33)
+
+---
+
+## v1.6.1 (26/08/2021)
+## Changes
+## 🔧 Maintenance
+
+- Remove duplicates from matched file @soimkim (#32)
+- Print help message when p option is missing @soimkim (#31)
+-  Set condition to use FOSSLight Util v1.1.0 or later @soimkim (#29)
+
+---
+
+## v1.6.0 (13/08/2021)
+## Changes
+## 🚀 Features
+
+- Add option for printing matched text @soimkim (#28)
+
+---
+
+## v1.5.2 (12/08/2021)
+## Changes
+## 🔧 Maintenance
+
+- Merge init_log & init_log_item functions @bjk7119 (#25)
+
+---
+
 ## v1.5.1 (29/07/2021)
 ## Changes
 ## 🐛 Hotfixes
