@@ -1,5 +1,15 @@
 # Changelog
 
+## v1.6.4 (21/10/2021)
+## Changes
+## 🔧 Maintenance
+
+- Update version of fosslight_util @dd-jy (#39)
+- Update required version of fosslight_util @soimkim (#38)
+- Add format(-f) option and modify the function to write output @dd-jy (#37)
+
+---
+
 ## v1.6.3 (30/09/2021)
 ## Changes
 ## 🔧 Maintenance
