@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # FOSSLight Source Scanner
 
-<img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source Scanner is released under the Apache-2.0 License." /> <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." /> <img src="https://img.shields.io/pypi/pyversions/fosslight_source" /> [![REUSE status](https://api.reuse.software/badge/github.com/fosslight/fosslight_source_scanner)](https://api.reuse.software/info/github.com/fosslight/fosslight_source_scanner) [![Guide](http://img.shields.io/badge/-doc-blue?style=flat-square&logo=github&link=https://fosslight.org/fosslight-guide-en/scanner/1_source.html)](https://fosslight.org/fosslight-guide-en/scanner/1_source.html)
+<img src="https://img.shields.io/pypi/l/fosslight_source" alt="FOSSLight Source Scanner is released under the Apache-2.0 License." /> <img src="https://img.shields.io/pypi/v/fosslight_source" alt="Current python package version." /> <img src="https://img.shields.io/pypi/pyversions/fosslight_source" /> [![REUSE status](https://api.reuse.software/badge/github.com/fosslight/fosslight_source_scanner)](https://api.reuse.software/info/github.com/fosslight/fosslight_source_scanner) [![Guide](http://img.shields.io/badge/-doc-blue?style=flat-square&logo=github&link=https://fosslight.org/fosslight-guide-en/scanner/1_source.html)](https://fosslight.org/fosslight-guide-en/scanner/2_source.html)
 </p>
 
 ```note

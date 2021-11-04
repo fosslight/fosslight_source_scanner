@@ -34,7 +34,7 @@ if __name__ == "__main__":
         entry_points={
             "console_scripts": [
                 "fosslight_convert = fosslight_source.convert_scancode:main",
-                "fosslight_source = fosslight_source.run_scancode:main",
+                "fosslight_source = fosslight_source.cli:main",
                 "convert_scancode = fosslight_source.convert_scancode:main",
                 "run_scancode = fosslight_source.run_scancode:main"
             ]
