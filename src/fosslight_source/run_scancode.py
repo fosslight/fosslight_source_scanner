@@ -3,19 +3,16 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-import sys
 import os
 import multiprocessing
 import warnings
 import platform
-import getopt
 import logging
 import yaml
 from scancode import cli
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-from fosslight_util.timer_thread import TimerThread
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from ._help import print_help_msg_source
@@ -27,48 +24,17 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 
 
-def main():
-    argv = sys.argv[1:]
-    path_to_scan = ""
-    write_json_file = False
-    output_file = ""
-    print_matched_text = False
-    format = ""
-
-    try:
-        opts, args = getopt.getopt(argv, 'hmjp:o:f:')
-        for opt, arg in opts:
-            if opt == "-h":
-                print_help_msg_source()
-            elif opt == "-p":
-                path_to_scan = arg
-            elif opt == "-j":
-                write_json_file = True
-            elif opt == "-o":
-                output_file = arg
-            elif opt == "-m":
-                print_matched_text = True
-            elif opt == "-f":
-                format = arg
-    except Exception:
-        print_help_msg_source()
-
-    timer = TimerThread()
-    timer.setDaemon(True)
-    timer.start()
-
-    run_scan(path_to_scan, output_file, write_json_file, -1, False, print_matched_text, format)
-
-
 def run_scan(path_to_scan, output_file_name="",
-             _write_json_file=False, num_cores=-1, return_results=False, need_license=False, format=""):
-    global logger
+             _write_json_file=False, num_cores=-1, return_results=False, need_license=False, format="", called_by_cli=False):
+    if not called_by_cli:
+        global logger
 
     success = True
     msg = ""
     _str_final_result_log = ""
     _result_log = {}
     result_list = []
+    license_list = []
     _json_ext = ".json"
 
     _windows = platform.system() == "Windows"
@@ -76,24 +42,26 @@ def run_scan(path_to_scan, output_file_name="",
 
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
     if success:
-        if output_path == "":
+        if output_path == "":  # if json output with _write_json_file not used, output_path won't be needed.
             output_path = os.getcwd()
         else:
             output_path = os.path.abspath(output_path)
 
-        if output_file == "":
-            if output_extension == _json_ext:
-                output_file = "Opossum_input_" + start_time
-            else:
-                output_file = "FOSSLight-Report_" + start_time
+        if not called_by_cli:
+            if output_file == "":
+                if output_extension == _json_ext:
+                    output_file = "Opossum_input_" + start_time
+                else:
+                    output_file = "FOSSLight-Report_" + start_time
 
         if _write_json_file:
             output_json_file = os.path.join(output_path, "scancode_raw_result.json")
         else:
             output_json_file = ""
 
-        logger, _result_log = init_log(os.path.join(output_path, "fosslight_src_log_"+start_time+".txt"),
-                                       True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
+        if not called_by_cli:
+            logger, _result_log = init_log(os.path.join(output_path, "fosslight_src_log_"+start_time+".txt"),
+                                           True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
         if path_to_scan == "":
             if _windows:
@@ -137,12 +105,13 @@ def run_scan(path_to_scan, output_file_name="",
                                 sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
                             output_file_without_ext = os.path.join(output_path, output_file)
-                            success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension,
-                                                                              sheet_list)
-                            logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write)
-                                        + " " + writing_msg)
-                            if success_to_write:
-                                _result_log["Output file"] = output_file_without_ext + output_extension
+                            if not called_by_cli:
+                                success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension,
+                                                                                  sheet_list)
+                                logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write)
+                                            + " " + writing_msg)
+                                if success_to_write:
+                                    _result_log["Output file"] = output_file_without_ext + output_extension
 
             except Exception as ex:
                 success = False
@@ -166,8 +135,4 @@ def run_scan(path_to_scan, output_file_name="",
 
     if not success:
         logger.error("Failed to run:" + str(scan_result_msg))
-    return success, _result_log["Scan Result"], result_list
-
-
-if __name__ == '__main__':
-    main()
+    return success, _result_log["Scan Result"], result_list, license_list
