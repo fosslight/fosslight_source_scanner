@@ -8,94 +8,16 @@ import logging
 import re
 import fosslight_util.constant as constant
 from ._license_matched import MatchedLicense
+from ._scan_item import ScanItem
+from ._scan_item import is_exclude_dir
+from ._scan_item import is_exclude_file
+from ._scan_item import replace_word
 
 logger = logging.getLogger(constant.LOGGER_NAME)
-_replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-"]
-_exclude_filename = ["changelog", "config.guess", "config.sub",
-                     "config.h.in", "changes", "ltmain.sh",
-                     "aclocal.m4", "configure", "configure.ac",
-                     "depcomp", "compile", "missing", "libtool.m4",
-                     "makefile"]
 _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
 _exclude_directory.append("/.")
-
-
-class ScanCodeItem:
-    file = ""
-    licenses = []
-    copyright = ""
-    exclude = False
-    is_license_text = False
-
-    def __init__(self, value):
-        self.file = value
-        self.copyright = []
-        self.licenses = []
-        self.comment = ""
-        self.exclude = False
-        self.is_license_text = False
-
-    def __del__(self):
-        pass
-
-    def set_comment(self, value):
-        self.comment = value
-
-    def set_file(self, value):
-        self.file = value
-
-    def set_copyright(self, value):
-        self.copyright.extend(value)
-        if len(self.copyright) > 0:
-            self.copyright = list(set(self.copyright))
-
-    def set_licenses(self, value):
-        self.licenses.extend(value)
-        if len(self.licenses) > 0:
-            self.licenses = list(set(self.licenses))
-
-    def set_exclude(self, value):
-        self.exclude = value
-
-    def set_is_license_text(self, value):
-        self.is_license_text = value
-
-    def get_row_to_print(self):
-        print_rows = [self.file, "", "", ','.join(self.licenses), "", "",
-                      ','.join(self.copyright),
-                      "Exclude" if self.exclude else "",
-                      self.comment]
-        return print_rows
-
-
-def is_exclude_dir(dir_path):
-    if dir_path != "":
-        dir_path = dir_path.lower()
-        dir_path = dir_path if dir_path.endswith(
-            os.path.sep) else dir_path + os.path.sep
-        dir_path = dir_path if dir_path.startswith(
-            os.path.sep) else os.path.sep + dir_path
-        return any(dir_name in dir_path for dir_name in _exclude_directory)
-    return False
-
-
-def is_exclude_file(file_path, prev_dir, prev_dir_exclude_value):
-    file_path = file_path.lower()
-    filename = os.path.basename(file_path)
-    if filename in _exclude_filename:
-        return True
-
-    dir_path = os.path.dirname(file_path)
-    if dir_path == prev_dir:
-        return prev_dir_exclude_value
-    else:
-        # There will be no execution of this else statement.
-        # Because scancode json output results are sorted by path,
-        # most of them will match the previous if statement.
-        return is_exclude_dir(dir_path)
-    return False
 
 
 def get_error_from_header(header_item):
@@ -146,7 +68,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                 licenses = file["licenses"]
                 copyright_list = file["copyrights"]
 
-                result_item = ScanCodeItem(file_path)
+                result_item = ScanItem(file_path)
 
                 if has_error and "scan_errors" in file:
                     error_msg = file["scan_errors"]
@@ -196,7 +118,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                             except Exception:
                                 pass
 
-                        for word in _replace_word:
+                        for word in replace_word:
                             if word in license_value:
                                 license_value = license_value.replace(word, "")
                         license_detected.append(license_value)
