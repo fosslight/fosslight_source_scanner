@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
+import pkg_resources
 import warnings
 import logging
 import json
@@ -12,6 +13,7 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.output_format import check_output_format  # , write_output_file
 from ._parsing_scanoss_file import parsing_scanResult  # scanoss
+# from ._help import print_help_msg_source
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -33,6 +35,11 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
         global logger
 
     scanoss_file_list = []
+    try:
+        pkg_resources.get_distribution("scanoss")
+    except Exception as error:
+        logger.warning(str(error) + ". Skipping scan with scanoss.")
+        return scanoss_file_list
     scan_command = "scanoss-py scan -o "
 
     start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
