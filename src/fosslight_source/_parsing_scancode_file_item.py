@@ -14,11 +14,6 @@ from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
 
 logger = logging.getLogger(constant.LOGGER_NAME)
-# _exclude_filename = ["changelog", "config.guess", "config.sub",
-#                      "config.h.in", "changes", "ltmain.sh",
-#                      "aclocal.m4", "configure", "configure.ac",
-#                      "depcomp", "compile", "missing", "libtool.m4",
-#                      "makefile"]
 _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
