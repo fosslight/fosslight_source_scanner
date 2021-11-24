@@ -3,7 +3,7 @@ Copyright (c) 2021 LG Electronics
 SPDX-License-Identifier: Apache-2.0
  -->
 <p align='right'>
-  <a href="https://fosslight.org/fosslight-guide/scanner/1_source.html">
+  <a href="https://fosslight.org/fosslight-guide/scanner/2_source.html">
     [Korean]
  </a>
 </p>
