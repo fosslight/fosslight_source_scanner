@@ -19,11 +19,12 @@ _HELP_MESSAGE_SOURCE = """
 
         Optional
             -h\t\t\t\t   Print help message
-            -j\t\t\t\t   Generate additional result of executing ScanCode in json format
-            -m\t\t\t\t   Print the Matched text for each license on a separate sheet
+            -j\t\t\t\t   Generate raw result of scanners in json format
+            -m\t\t\t\t   Print the Matched text for each license on a separate sheet (Scancode Only)
             -o <output_path>\t\t   Output path
             \t\t\t\t    (If you want to generate the specific file name, add the output path with file name.)
-            -f <format>\t\t\t   Output file format (excel, csv, opossum)"""
+            -f <format>\t\t\t   Output file format (excel, csv, opossum)
+            -s <scanner>\t\t   Select which scanner to be run (scancode, scanoss, all)"""
 
 _HELP_MESSAGE_CONVERT = """
     Usage: fosslight_convert [option1] <arg1> [option2] <arg2>...
