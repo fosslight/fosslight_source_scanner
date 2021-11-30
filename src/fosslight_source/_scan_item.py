@@ -29,6 +29,9 @@ class ScanItem:
     oss_name = ""
     oss_version = ""
     download_location = ""
+    matched_lines = ""  # for scanoss
+    fileURL = ""  # for scanoss
+    vendor = ""  # for scanoss
 
     def __init__(self, value):
         self.file = value
@@ -71,6 +74,15 @@ class ScanItem:
 
     def set_download_location(self, value):
         self.download_location = value
+
+    def set_matched_lines(self, value):
+        self.matched_lines = value
+
+    def set_fileURL(self, value):
+        self.fileURL = value
+
+    def set_vendor(self, value):
+        self.vendor = value
 
     def get_row_to_print(self):
         if not self.download_location:

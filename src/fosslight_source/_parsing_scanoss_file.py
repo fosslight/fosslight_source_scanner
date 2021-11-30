@@ -43,17 +43,17 @@ def parsing_scanResult(scanoss_report):
         if is_exclude_file(file_path):
             result_item.set_exclude(True)
 
-        comment = ""
-        comment += "Match Type : " + findings[0]['id'] + ", "
         if 'vendor' in findings[0]:
-            comment += "Vendor : " + findings[0]['vendor'] + ", "
+            result_item.set_vendor(findings[0]['vendor'])
         if 'file_url' in findings[0]:
-            comment += "File URL : " + findings[0]['file_url'] + ", "
+            result_item.set_fileURL(findings[0]['file_url'])
         if 'matched' in findings[0]:
-            comment += "Matched : " + findings[0]['matched'] + ", "
-        if 'lines' in findings[0]:
-            comment += "Lines : " + findings[0]['lines']
-        result_item.set_comment(comment)
+            if 'lines' in findings[0]:
+                result_item.set_matched_lines(findings[0]['matched'] + " (" + findings[0]['lines'] + ")")
+            else:
+                result_item.set_matched_lines(findings[0]['matched'])
+        elif 'lines' in findings[0]:
+            result_item.set_matched_lines("(" + findings[0]['lines'] + ")")
 
         scanoss_file_item.append(result_item)
 
