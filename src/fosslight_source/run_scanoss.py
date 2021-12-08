@@ -54,8 +54,7 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     else:
         output_path = os.path.abspath(output_path)
 
-    if output_file == "":
-        output_file = "scanoss_raw_result.json"
+    output_file = "scanoss_raw_result.json"
 
     output_json_file = os.path.join(output_path, output_file)
 
