@@ -29,9 +29,9 @@ class ScanItem:
     oss_name = ""
     oss_version = ""
     download_location = ""
-    matched_lines = ""  # for scanoss
-    fileURL = ""  # for scanoss
-    vendor = ""  # for scanoss
+    matched_lines = ""
+    fileURL = ""
+    vendor = ""
 
     def __init__(self, value):
         self.file = value
@@ -85,16 +85,17 @@ class ScanItem:
         self.vendor = value
 
     def get_row_to_print(self):
-        if not self.download_location:
-            print_rows = [self.file, "", "", ','.join(self.licenses), "", "",
-                          ','.join(self.copyright),
-                          "Exclude" if self.exclude else "",
-                          self.comment]
-        else:
-            print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
-                          ','.join(self.copyright),
-                          "Exclude" if self.exclude else "",
-                          self.comment]
+        print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
+                      ','.join(self.copyright),
+                      "Exclude" if self.exclude else "",
+                      self.comment]
+        return print_rows
+
+    def get_row_to_print_for_scanoss(self):
+        print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
+                      ','.join(self.copyright),
+                      "Exclude" if self.exclude else "",
+                      self.comment, self.matched_lines, self.fileURL, self.vendor]
         return print_rows
 
     def merge_scan_item(self, other):
@@ -119,6 +120,12 @@ class ScanItem:
             self.oss_version = other.oss_version
         if not self.download_location:
             self.download_location = other.download_location
+        if not self.matched_lines:
+            self.matched_lines = other.matched_lines
+        if not self.fileURL:
+            self.fileURL = other.fileURL
+        if not self.vendor:
+            self.vendor = other.vendor
 
     def __eq__(self, other):
         return self.file == other.file

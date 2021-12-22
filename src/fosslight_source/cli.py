@@ -19,6 +19,13 @@ from fosslight_util.output_format import check_output_format, write_output_file
 from .run_scancode import run_scan
 from .run_scanoss import run_scanoss_py
 
+SCANOSS_SHEET_NAME = 'SRC_FL_Source'
+SCANOSS_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
+                                       'OSS Version', 'License', 'Download Location',
+                                       'Homepage', 'Copyright Text', 'Exclude',
+                                       'Comment', 'scanoss_matched_lines',
+                                       'scanoss_fileURL', 'scanoss_vendor']}
+
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
@@ -82,10 +89,11 @@ def main():
     else:
         print_help_msg_source()
         sys.exit(1)
-    create_report_file(start_time, scanned_result, license_list, print_matched_text, output_path, output_file, output_extension)
+    create_report_file(start_time, scanned_result, license_list, selected_scanner, print_matched_text,
+                       output_path, output_file, output_extension)
 
 
-def create_report_file(start_time, scanned_result, license_list, need_license=False,
+def create_report_file(start_time, scanned_result, license_list, selected_scanner, need_license=False,
                        output_path="", output_file="", output_extension=""):
     """
     Create report files for given scanned result.
@@ -95,6 +103,7 @@ def create_report_file(start_time, scanned_result, license_list, need_license=Fa
     :param license_list: matched text (only for scancode).
     :param need_license: if requested, output matched text (only for scancode).
     """
+    extended_header = {}
     _result_log = {}
     sheet_list = {}
     _json_ext = ".json"
@@ -111,13 +120,19 @@ def create_report_file(start_time, scanned_result, license_list, need_license=Fa
             output_file = "FOSSLight-Report_" + start_time
 
     scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
-    sheet_list["SRC_FL_Source"] = [scan_item.get_row_to_print() for scan_item in scanned_result]
+
+    if selected_scanner == 'scancode' or output_extension == _json_ext:
+        sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print() for scan_item in scanned_result]
+
+    else:
+        sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_scanoss() for scan_item in scanned_result]
+        extended_header = SCANOSS_HEADER
 
     if need_license:
         sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
     output_file_without_ext = os.path.join(output_path, output_file)
-    success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list)
+    success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list, extended_header)
     logger.info("Writing Output file(" + output_file + output_extension + "):"
                 + str(success_to_write) + " " + writing_msg)
     if success_to_write:
