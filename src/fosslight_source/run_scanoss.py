@@ -20,7 +20,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 
 
-def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=False, write_json_file=False):
+def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=False, write_json_file=False, num_threads=-1):
     """
     Run scanoss.py for the given path.
 
@@ -54,12 +54,16 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     else:
         output_path = os.path.abspath(output_path)
 
-    if output_file == "":
-        output_file = "scanoss_raw_result.json"
+    output_file = "scanoss_raw_result.json"
 
     output_json_file = os.path.join(output_path, output_file)
 
     scan_command += output_json_file + " " + path_to_scan
+
+    if num_threads > 0:
+        scan_command += " -T " + str(num_threads)
+    else:
+        scan_command += " -T " + "30"
 
     try:
         os.system(scan_command)
