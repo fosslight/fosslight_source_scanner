@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.6.5 (30/12/2021)
+## 🚀 Features
+
+- Add scanoss information on excel @JustinWonjaePark (#53)
+- Add scanoss thread feature and amend tox test @JustinWonjaePark (#51)
+- Add scanoss.py as a scanner @JustinWonjaePark (#50)
+
+## 🔧 Maintenance
+
+- Add python version to github PR action @soimkim (#43)
+
+---
+
 ## v1.6.4 (21/10/2021)
 ## Changes
 ## 🔧 Maintenance
