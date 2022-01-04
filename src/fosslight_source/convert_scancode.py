@@ -14,7 +14,7 @@ from fosslight_util.set_log import init_log
 import yaml
 from ._parsing_scancode_file_item import parsing_file_item, get_error_from_header
 from fosslight_util.output_format import check_output_format, write_output_file
-from ._help import print_help_msg_convert
+from ._help import print_help_msg_convert, print_version
 from ._license_matched import get_license_list_to_print
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -133,10 +133,12 @@ def main():
     format = ""
 
     try:
-        opts, args = getopt.getopt(argv, 'hmp:o:f:')
+        opts, args = getopt.getopt(argv, 'hvmp:o:f:')
         for opt, arg in opts:
             if opt == "-h":
                 print_help_msg_convert()
+            elif opt == "-v":
+                print_version(_PKG_NAME)
             elif opt == "-p":
                 path_to_find_json = arg
             elif opt == "-o":
