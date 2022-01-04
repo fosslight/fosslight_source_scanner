@@ -13,7 +13,7 @@ from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
-from ._help import print_help_msg_source
+from ._help import print_help_msg_source, print_version
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_format, write_output_file
 from .run_scancode import run_scan
@@ -48,10 +48,12 @@ def main():
     license_list = []
 
     try:
-        opts, args = getopt.getopt(argv, 'hmjs:p:o:f:')
+        opts, args = getopt.getopt(argv, 'hvmjs:p:o:f:')
         for opt, arg in opts:
             if opt == "-h":
                 print_help_msg_source()
+            elif opt == "-v":
+                print_version(_PKG_NAME)
             elif opt == "-p":
                 path_to_scan = arg
             elif opt == "-j":

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2021 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
-from fosslight_util.help import PrintHelpMsg
+from fosslight_util.help import PrintHelpMsg, print_package_version
 
 _HELP_MESSAGE_SOURCE = """
     Usage: fosslight_source [option1] <arg1> [option2] <arg2>...
@@ -19,6 +19,7 @@ _HELP_MESSAGE_SOURCE = """
 
         Optional
             -h\t\t\t\t   Print help message
+            -v\t\t\t\t   Print FOSSLight Source Scanner version
             -j\t\t\t\t   Generate raw result of scanners in json format
             -m\t\t\t\t   Print the Matched text for each license on a separate sheet (Scancode Only)
             -o <output_path>\t\t   Output path
@@ -37,10 +38,15 @@ _HELP_MESSAGE_CONVERT = """
 
         Optional
             -h\t\t\t\t   Print help message
+            -v\t\t\t\t   Print FOSSLight Source Scanner version
             -m\t\t\t\t   Print the Matched text for each license on a separate sheet
             -o <output_path>\t\t   Output path
             \t\t\t\t    (If you want to generate the specific file name, add the output path with file name.)
             -f <format>\t\t\t   Output file format (excel, csv, opossum)"""
+
+
+def print_version(pkg_name):
+    print_package_version(pkg_name, "FOSSLight Source Scanner Version")
 
 
 def print_help_msg_source():
