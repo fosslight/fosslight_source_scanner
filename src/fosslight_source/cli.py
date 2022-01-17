@@ -25,6 +25,11 @@ SCANOSS_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
                                        'Homepage', 'Copyright Text', 'Exclude',
                                        'Comment', 'scanoss_matched_lines',
                                        'scanoss_fileURL', 'scanoss_vendor']}
+MERGED_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
+                                      'OSS Version', 'License', 'Download Location',
+                                      'Homepage', 'Copyright Text', 'Exclude',
+                                      'Comment', 'license_reference', 'scanoss_matched_lines',
+                                      'scanoss_fileURL', 'scanoss_vendor']}
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -126,9 +131,13 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
     if selected_scanner == 'scancode' or output_extension == _json_ext:
         sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print() for scan_item in scanned_result]
 
-    else:
+    elif selected_scanner == 'scanoss':
         sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_scanoss() for scan_item in scanned_result]
         extended_header = SCANOSS_HEADER
+
+    else:
+        sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_all_scanner() for scan_item in scanned_result]
+        extended_header = MERGED_HEADER
 
     if need_license:
         sheet_list["matched_text"] = get_license_list_to_print(license_list)
