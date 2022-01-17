@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.6.6 (17/01/2022)
+## Changes
+## 🐛 Hotfixes
+
+- Add package to fix installation errors @soimkim (#55)
+
+## 🔧 Maintenance
+
+- Add the -v option to print the installed version of FOSSLight Source Scanner @soimkim (#57)
+- Update README.md to add description for SCANOSS @JustinWonjaePark (#56)
+
+---
+
 ## v1.6.5 (30/12/2021)
 ## 🚀 Features
 
