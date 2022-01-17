@@ -39,6 +39,7 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
         pkg_resources.get_distribution("scanoss")
     except Exception as error:
         logger.warning(str(error) + ". Skipping scan with scanoss.")
+        logger.warning("Please install scanoss and dataclasses before run fosslight_source with scanoss option.")
         return scanoss_file_list
     scan_command = "scanoss-py scan -o "
 
