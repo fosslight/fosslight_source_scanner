@@ -32,6 +32,7 @@ class ScanItem:
     matched_lines = ""
     fileURL = ""
     vendor = ""
+    license_reference = ""
 
     def __init__(self, value):
         self.file = value
@@ -84,6 +85,9 @@ class ScanItem:
     def set_vendor(self, value):
         self.vendor = value
 
+    def set_license_reference(self, value):
+        self.license_reference = value
+
     def get_row_to_print(self):
         print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
                       ','.join(self.copyright),
@@ -98,12 +102,20 @@ class ScanItem:
                       self.comment, self.matched_lines, self.fileURL, self.vendor]
         return print_rows
 
+    def get_row_to_print_for_all_scanner(self):
+        print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
+                      ','.join(self.copyright),
+                      "Exclude" if self.exclude else "",
+                      self.comment, self.license_reference, self.matched_lines, self.fileURL, self.vendor]
+        return print_rows
+
     def merge_scan_item(self, other):
         """
         Merge two ScanItem instance into one.
-
-        TODO: define how to merge comments and implement.
         """
+        if sorted(self.licenses) != sorted(other.licenses):
+            self.license_reference = f"(Scancode) {', '.join(self.licenses)} / (Scanoss)  {', '.join(other.licenses)}"
+
         self.licenses = list(set(self.licenses + other.licenses))
 
         if len(self.copyright) > 0:
