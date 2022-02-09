@@ -106,12 +106,12 @@ def run_scan(path_to_scan, output_file_name="",
 
                             output_file_without_ext = os.path.join(output_path, output_file)
                             if not called_by_cli:
-                                success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension,
+                                success_to_write, writing_msg, result_file= write_output_file(output_file_without_ext, output_extension,
                                                                                   sheet_list)
-                                logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write)
-                                            + " " + writing_msg)
                                 if success_to_write:
-                                    _result_log["Output file"] = output_file_without_ext + output_extension
+                                    logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
+                                else:
+                                    logger.error(f"Fail to generate result file. msg:({writing_msg})")
 
             except Exception as ex:
                 success = False
