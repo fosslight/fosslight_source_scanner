@@ -80,6 +80,9 @@ def main():
 
     start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
+    if not success:
+        logger.error(f"Format error. {msg}")
+        sys.exit(1)
     logger, _result_log = init_log(os.path.join(output_path, "fosslight_src_log_"+start_time+".txt"),
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
@@ -111,7 +114,6 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
     :param need_license: if requested, output matched text (only for scancode).
     """
     extended_header = {}
-    _result_log = {}
     sheet_list = {}
     _json_ext = ".json"
 
@@ -143,11 +145,12 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
         sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
     output_file_without_ext = os.path.join(output_path, output_file)
-    success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list, extended_header)
-    logger.info("Writing Output file(" + output_file + output_extension + "):"
-                + str(success_to_write) + " " + writing_msg)
+    success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension,
+                                                                   sheet_list, extended_header)
     if success_to_write:
-        _result_log["Output file"] = output_file_without_ext + output_extension
+        logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
+    else:
+        logger.error(f"Fail to generate result file. msg:({writing_msg})")
 
 
 def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1,
