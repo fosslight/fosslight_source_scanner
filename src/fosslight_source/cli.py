@@ -114,7 +114,6 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
     :param need_license: if requested, output matched text (only for scancode).
     """
     extended_header = {}
-    _result_log = {}
     sheet_list = {}
     _json_ext = ".json"
 
@@ -146,7 +145,8 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
         sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
     output_file_without_ext = os.path.join(output_path, output_file)
-    success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension, sheet_list, extended_header)
+    success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension,
+                                                                   sheet_list, extended_header)
     if success_to_write:
         logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
     else:

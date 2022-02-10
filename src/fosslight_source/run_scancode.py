@@ -106,8 +106,8 @@ def run_scan(path_to_scan, output_file_name="",
 
                             output_file_without_ext = os.path.join(output_path, output_file)
                             if not called_by_cli:
-                                success_to_write, writing_msg, result_file= write_output_file(output_file_without_ext, output_extension,
-                                                                                  sheet_list)
+                                success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext,
+                                                                                               output_extension, sheet_list)
                                 if success_to_write:
                                     logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
                                 else:
