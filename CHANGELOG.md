@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.6.7 (10/02/2022)
+## Changes
+## 🚀 Features
+
+- Add license reference column @soimkim (#59)
+
+## 🔧 Maintenance
+
+- Amend to print output file name and deal with format option error @soimkim (#62)
+
+---
+
 ## v1.6.6 (17/01/2022)
 ## Changes
 ## 🐛 Hotfixes
