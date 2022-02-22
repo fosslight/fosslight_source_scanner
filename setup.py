@@ -31,7 +31,8 @@ if __name__ == "__main__":
                      "Programming Language :: Python :: 3.8",
                      "Programming Language :: Python :: 3.9", ],
         install_requires=required,
-        extras_require={":python_version>'3.6'": ["scanoss>=0.7.0"]},
+        extras_require={":python_version>'3.6'": ["scanoss>=0.7.0"],
+                        ":python_version<'3.7'": ["dataclasses", "scanoss"]},
         entry_points={
             "console_scripts": [
                 "fosslight_convert = fosslight_source.convert_scancode:main",
