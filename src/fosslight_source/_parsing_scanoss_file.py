@@ -49,11 +49,11 @@ def parsing_scanResult(scanoss_report):
             result_item.set_fileURL(findings[0]['file_url'])
         if 'matched' in findings[0]:
             if 'lines' in findings[0]:
-                result_item.set_matched_lines(findings[0]['matched'] + " (" + findings[0]['lines'] + ")")
+                result_item.set_matched_lines(f"{findings[0]['matched']} ({findings[0]['lines']})")
             else:
-                result_item.set_matched_lines(findings[0]['matched'])
+                result_item.set_matched_lines(f"{findings[0]['matched']}")
         elif 'lines' in findings[0]:
-            result_item.set_matched_lines("(" + findings[0]['lines'] + ")")
+            result_item.set_matched_lines(f"({findings[0]['lines']})")
 
         scanoss_file_item.append(result_item)
 

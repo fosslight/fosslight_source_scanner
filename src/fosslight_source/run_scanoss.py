@@ -59,7 +59,7 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
 
     output_json_file = os.path.join(output_path, output_file)
 
-    scan_command += output_json_file + " " + path_to_scan
+    scan_command += f"{output_json_file} {path_to_scan}"
 
     if num_threads > 0:
         scan_command += " -T " + str(num_threads)
@@ -69,24 +69,24 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     try:
         os.system(scan_command)
         st_json = open(output_json_file, "r")
-        logger.info("SCANOSS Start parsing " + path_to_scan)
+        logger.info(f"SCANOSS Start parsing {path_to_scan}")
         with open(output_json_file, "r") as st_json:
             st_python = json.load(st_json)
             scanoss_file_list = parsing_scanResult(st_python)
     except Exception as error:
-        logger.warning("Parsing " + path_to_scan + ":" + str(error))
-    logger.info("|---Number of files detected with SCANOSS: " + str(len(scanoss_file_list)))
+        logger.warning(f"Parsing {path_to_scan}: {error}")
+    logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
 
     if not write_json_file:
         try:
-            os.system("rm " + output_json_file)
+            os.system(f"rm {output_json_file}")
             os.system("rm scanner_output.wfp")
         except Exception as error:
-            logger.debug("Deleting scanoss result failed.:" + str(error))
+            logger.debug(f"Deleting scanoss result failed.: {error}")
     else:
         try:
-            os.system("mv scanner_output.wfp " + output_path + "/scanoss_fingerprint.wfp")
+            os.system(f"mv scanner_output.wfp {output_path}/scanoss_fingerprint.wfp")
         except Exception as error:
-            logger.debug("Moving scanoss fingerprint file failed.:" + str(error))
+            logger.debug(f"Moving scanoss fingerprint file failed.: {error}")
 
     return scanoss_file_list

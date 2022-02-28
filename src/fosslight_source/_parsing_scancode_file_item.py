@@ -35,7 +35,7 @@ def get_error_from_header(header_item):
                     str_error = '{}...({})'.format(errors[0], error_cnt)
                     break
     except Exception as ex:
-        logger.debug("error_parsing_header:"+str(ex))
+        logger.debug(f"Error_parsing_header: {ex}")
     return has_error, str_error
 
 
@@ -44,7 +44,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
     rc = True
     scancode_file_item = []
     license_list = {}  # Key :[license]+[matched_text], value: MatchedLicense()
-    msg = "TOTAL FILE COUNT: " + str(len(scancode_file_list)) + "\n"
+    msg = f"TOTAL FILE COUNT: {len(scancode_file_list)} \n"
 
     prev_dir = ""
     prev_dir_value = False
@@ -73,7 +73,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                 if has_error and "scan_errors" in file:
                     error_msg = file["scan_errors"]
                     if len(error_msg) > 0:
-                        logger.debug("test_msg" + file_path + ":" + str(error_msg))
+                        logger.debug(f"Test_msg {file_path}:{error_msg}")
                         result_item.set_comment(",".join(error_msg))
                         scancode_file_item.append(result_item)
                         continue
@@ -153,7 +153,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                     scancode_file_item.append(result_item)
 
         except Exception as ex:
-            msg += "* Error Parsing item:"+str(ex)
+            msg += f"* Error Parsing item: {ex}"
             rc = False
             logger.debug(msg)
 
