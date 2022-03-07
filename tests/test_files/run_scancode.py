@@ -70,15 +70,15 @@ def run_scan(path_to_scan, output_file_name="",
     start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
 
     if output_file_name == "":
-        output_file = "FOSSLight-Report_" + start_time
-        output_json_file = "scancode_" + start_time
+        output_file = f"FOSSLight-Report_{start_time}"
+        output_json_file = f"scancode_{start_time}"
         output_dir = os.getcwd()
     else:
         output_file = output_file_name
         output_json_file = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger, _result_log = init_log(os.path.join(output_dir, "fosslight_src_log_"+start_time+".txt"),
+    logger, _result_log = init_log(os.path.join(output_dir, f"fosslight_src_log_{start_time}.txt"),
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if path_to_scan == "":
@@ -91,7 +91,7 @@ def run_scan(path_to_scan, output_file_name="",
 
     if os.path.isdir(path_to_scan):
         try:
-            output_json_file = output_json_file+".json" if _write_json_file\
+            output_json_file = f"{output_json_file}.json" if _write_json_file\
                 else ""
 
             rc, results = cli.run_scan(path_to_scan, max_depth=100,
@@ -127,16 +127,16 @@ def run_scan(path_to_scan, output_file_name="",
 
                         success_to_write, writing_msg = write_excel_and_csv(
                             output_file, sheet_list)
-                        logger.info("Writing excel :" + str(success_to_write) + " " + writing_msg)
+                        logger.info(f"Writing excel : {success_to_write} {writing_msg}")
                         if success_to_write:
-                            _result_log["FOSSLight Report"] = output_file + ".xlsx"
+                            _result_log["FOSSLight Report"] = f"{output_file}.xlsx"
         except Exception as ex:
             success = False
             msg = str(ex)
-            logger.error("Analyze " + path_to_scan + ":" + msg)
+            logger.error(f"Analyze {path_to_scan}: {msg}")
     else:
         success = False
-        msg = "Check the path to scan. :" + path_to_scan
+        msg = f"Check the path to scan. : {path_to_scan}"
 
     if not return_results:
         result_list = []
@@ -148,7 +148,7 @@ def run_scan(path_to_scan, output_file_name="",
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
         logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warning("Failed to print result log. " + str(ex))
+        logger.warning(f"Failed to print result log. {ex}")
     return success, _result_log["Scan Result"], result_list
 
 

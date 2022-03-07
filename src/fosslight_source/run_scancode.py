@@ -50,9 +50,9 @@ def run_scan(path_to_scan, output_file_name="",
         if not called_by_cli:
             if output_file == "":
                 if output_extension == _json_ext:
-                    output_file = "Opossum_input_" + start_time
+                    output_file = f"Opossum_input_{start_time}"
                 else:
-                    output_file = "FOSSLight-Report_" + start_time
+                    output_file = f"FOSSLight-Report_{start_time}"
 
         if _write_json_file:
             output_json_file = os.path.join(output_path, "scancode_raw_result.json")
@@ -60,7 +60,7 @@ def run_scan(path_to_scan, output_file_name="",
             output_json_file = ""
 
         if not called_by_cli:
-            logger, _result_log = init_log(os.path.join(output_path, "fosslight_src_log_"+start_time+".txt"),
+            logger, _result_log = init_log(os.path.join(output_path, f"fosslight_src_log_{start_time}.txt"),
                                            True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
         if path_to_scan == "":
@@ -116,7 +116,7 @@ def run_scan(path_to_scan, output_file_name="",
             except Exception as ex:
                 success = False
                 msg = str(ex)
-                logger.error("Analyze " + path_to_scan + ":" + msg)
+                logger.error(f"Analyze {path_to_scan}: {msg}")
         else:
             success = False
             msg = "Check the path to scan. :" + path_to_scan
@@ -124,15 +124,15 @@ def run_scan(path_to_scan, output_file_name="",
         if not return_results:
             result_list = []
 
-    scan_result_msg = str(success) if msg == "" else str(success) + ", " + msg
+    scan_result_msg = str(success) if msg == "" else f"{success}, {msg}"
     _result_log["Scan Result"] = scan_result_msg
     _result_log["Output Directory"] = output_path
     try:
         _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
         logger.info(_str_final_result_log)
     except Exception as ex:
-        logger.warning("Failed to print result log. " + str(ex))
+        logger.warning(f"Failed to print result log. {ex}")
 
     if not success:
-        logger.error("Failed to run:" + str(scan_result_msg))
+        logger.error(f"Failed to run: {scan_result_msg}")
     return success, _result_log["Scan Result"], result_list, license_list
