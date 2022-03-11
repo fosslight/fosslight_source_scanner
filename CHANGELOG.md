@@ -1,14 +1,23 @@
 # Changelog
 
+## v1.6.8 (11/03/2022)
+## Changes
+## 🔧 Maintenance
+
+- Change the scanoss-related packages @soimkim (#64)
+- Change the scanoss-related packages @soimkim (#63)
+
+---
+
 ## v1.6.7 (10/02/2022)
 ## Changes
 ## 🚀 Features
 
-- Add license reference column @soimkim (#59)
+- Add license reference column @JustinWonjaePark (#59)
 
 ## 🔧 Maintenance
 
-- Amend to print output file name and deal with format option error @soimkim (#62)
+- Amend to print output file name and deal with format option error @JustinWonjaePark (#62)
 
 ---
 
