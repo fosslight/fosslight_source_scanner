@@ -1,10 +1,20 @@
 # Changelog
 
+## v1.6.9 (06/04/2022)
+## Changes
+## 🐛 Hotfixes
+
+- Fix errors that occur in Python 3.6.7 or lower @soimkim (#67)
+
+## 🔧 Maintenance
+
+- Add a commit message checker @soimkim (#66)
+---
+
 ## v1.6.8 (11/03/2022)
 ## Changes
 ## 🔧 Maintenance
 
-- Change the scanoss-related packages @soimkim (#64)
 - Change the scanoss-related packages @soimkim (#63)
 
 ---
