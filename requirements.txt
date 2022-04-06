@@ -1,3 +1,4 @@
+pyparsing<=3.0.4;python_full_version<"3.6.8"
 scancode-toolkit
 typecode_libmagic
 XlsxWriter
