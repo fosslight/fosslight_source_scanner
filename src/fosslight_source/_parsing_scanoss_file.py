@@ -9,6 +9,46 @@ from ._scan_item import ScanItem
 from ._scan_item import is_exclude_file
 
 logger = logging.getLogger(constant.LOGGER_NAME)
+SCANOSS_INFO_HEADER = ['No', 'Source Name or Path', 'Component Declared', 'SPDX Tag',
+                       'File Header', 'License File', 'Scancode',
+                       'scanoss_matched_lines', 'scanoss_fileURL']
+
+
+def parsing_extraInfo(scanned_result):
+    scanoss_extra_info = []
+    for scan_item in scanned_result:
+        license_w_source = scan_item.scanoss_reference
+        if license_w_source:
+            license_w_source = refine_license_source_output(license_w_source)
+            extra_item = [scan_item.file, license_w_source['component_declared'], license_w_source['file_spdx_tag'],
+                          license_w_source['file_header'], license_w_source['license_file'], license_w_source['scancode'],
+                          scan_item.matched_lines, scan_item.fileURL]
+            scanoss_extra_info.append(extra_item)
+    scanoss_extra_info.insert(0, SCANOSS_INFO_HEADER)
+    return scanoss_extra_info
+
+
+def refine_license_source_input(license_w_source):
+    if 'component_declared' not in license_w_source.keys():
+        license_w_source['component_declared'] = ''
+    if 'file_spdx_tag' not in license_w_source.keys():
+        license_w_source['file_spdx_tag'] = ''
+    if 'file_header' not in license_w_source.keys():
+        license_w_source['file_header'] = ''
+    if 'license_file' not in license_w_source.keys():
+        license_w_source['license_file'] = ''
+    if 'scancode' not in license_w_source.keys():
+        license_w_source['scancode'] = ''
+    return license_w_source
+
+
+def refine_license_source_output(license_w_source):
+    license_w_source['component_declared'] = ','.join(license_w_source['component_declared'])
+    license_w_source['file_spdx_tag'] = ','.join(license_w_source['file_spdx_tag'])
+    license_w_source['file_header'] = ','.join(license_w_source['file_header'])
+    license_w_source['license_file'] = ','.join(license_w_source['license_file'])
+    license_w_source['scancode'] = ','.join(license_w_source['scancode'])
+    return license_w_source
 
 
 def parsing_scanResult(scanoss_report):
@@ -21,39 +61,42 @@ def parsing_scanResult(scanoss_report):
                 continue
 
         if 'component' in findings[0]:
-            result_item.set_oss_name(findings[0]['component'])
+            result_item.oss_name = findings[0]['component']
         if 'version' in findings[0]:
-            result_item.set_oss_version(findings[0]['version'])
+            result_item.oss_version = findings[0]['version']
         if 'url' in findings[0]:
-            result_item.set_download_location(findings[0]['url'])
+            result_item.download_location = findings[0]['url']
 
         license_detected = []
+        license_w_source = {}
         copyright_detected = []
         if 'licenses' in findings[0]:
             for license in findings[0]['licenses']:
                 license_detected.append(license['name'].lower())
+                if license['source'] not in license_w_source:
+                    license_w_source[license['source']] = []
+                license_w_source[license['source']].append(license['name'])
             if len(license_detected) > 0:
-                result_item.set_licenses(license_detected)
+                result_item.licenses = license_detected
+                result_item.scanoss_reference = refine_license_source_input(license_w_source)
         if 'copyrights' in findings[0]:
             for copyright in findings[0]['copyrights']:
                 copyright_detected.append(copyright['name'])
             if len(copyright_detected) > 0:
-                result_item.set_copyright(copyright_detected)
+                result_item.copyright = copyright_detected
 
         if is_exclude_file(file_path):
-            result_item.set_exclude(True)
+            result_item.exclude = True
 
-        if 'vendor' in findings[0]:
-            result_item.set_vendor(findings[0]['vendor'])
         if 'file_url' in findings[0]:
-            result_item.set_fileURL(findings[0]['file_url'])
+            result_item.fileURL = findings[0]['file_url']
         if 'matched' in findings[0]:
             if 'lines' in findings[0]:
-                result_item.set_matched_lines(f"{findings[0]['matched']} ({findings[0]['lines']})")
+                result_item.matched_lines = f"{findings[0]['matched']} ({findings[0]['lines']})"
             else:
-                result_item.set_matched_lines(f"{findings[0]['matched']}")
+                result_item.matched_lines = f"{findings[0]['matched']}"
         elif 'lines' in findings[0]:
-            result_item.set_matched_lines(f"({findings[0]['lines']})")
+            result_item.matched_lines = f"({findings[0]['lines']})"
 
         scanoss_file_item.append(result_item)
 
