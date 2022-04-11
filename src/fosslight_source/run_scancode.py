@@ -16,7 +16,7 @@ from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from ._help import print_help_msg_source
-from fosslight_util.output_format import check_output_format, write_output_file
+from fosslight_util.output_format import check_output_format
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -100,15 +100,6 @@ def run_scan(path_to_scan, output_file_name="",
                             result_list = sorted(
                                 result_list, key=lambda row: (''.join(row.licenses)))
                             sheet_list["SRC_FL_Source"] = [scan_item.get_row_to_print() for scan_item in result_list]
-
-                            output_file_without_ext = os.path.join(output_path, output_file)
-                            if not called_by_cli:
-                                success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext,
-                                                                                               output_extension, sheet_list)
-                                if success_to_write:
-                                    logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
-                                else:
-                                    logger.error(f"Fail to generate result file. msg:({writing_msg})")
 
             except Exception as ex:
                 success = False
