@@ -74,12 +74,12 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                     error_msg = file["scan_errors"]
                     if len(error_msg) > 0:
                         logger.debug(f"Test_msg {file_path}:{error_msg}")
-                        result_item.set_comment(",".join(error_msg))
+                        result_item.comment = ",".join(error_msg)
                         scancode_file_item.append(result_item)
                         continue
 
                 copyright_value_list = [x["value"] for x in copyright_list]
-                result_item.set_copyright(copyright_value_list)
+                result_item.copyright = copyright_value_list
 
                 # Set the license value
                 license_detected = []
@@ -137,19 +137,18 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
 
                     matched_rule = lic_item["matched_rule"]
                     if matched_rule["is_license_text"]:
-                        result_item.set_is_license_text(True)
+                        result_item.is_license_text = True
 
                 if len(license_detected) > 0:
-                    result_item.set_licenses(license_detected)
+                    result_item.licenses = license_detected
 
                     if len(license_expression_list) > 0:
                         license_expression_list = list(
                             set(license_expression_list))
-                        result_item.set_comment(
-                            ','.join(license_expression_list))
+                        result_item.comment = ','.join(license_expression_list)
 
                     if is_exclude_file(file_path, prev_dir, prev_dir_value):
-                        result_item.set_exclude(True)
+                        result_item.exclude = True
                     scancode_file_item.append(result_item)
 
         except Exception as ex:
