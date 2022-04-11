@@ -13,11 +13,16 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.output_format import check_output_format  # , write_output_file
 from ._parsing_scanoss_file import parsing_scanResult  # scanoss
+from ._parsing_scanoss_file import parsing_extraInfo  # scanoss
 # from ._help import print_help_msg_source
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
+
+
+def get_scanoss_extra_info(scanned_result):
+    return parsing_extraInfo(scanned_result)
 
 
 def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=False, write_json_file=False, num_threads=-1):

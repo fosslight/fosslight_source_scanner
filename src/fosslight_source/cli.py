@@ -18,18 +18,21 @@ from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_format, write_output_file
 from .run_scancode import run_scan
 from .run_scanoss import run_scanoss_py
+from .run_scanoss import get_scanoss_extra_info
 
 SCANOSS_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
                                        'OSS Version', 'License', 'Download Location',
                                        'Homepage', 'Copyright Text', 'Exclude',
-                                       'Comment', 'scanoss_matched_lines',
-                                       'scanoss_fileURL', 'scanoss_vendor']}
+                                       'Comment']}
 MERGED_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
                                       'OSS Version', 'License', 'Download Location',
                                       'Homepage', 'Copyright Text', 'Exclude',
-                                      'Comment', 'license_reference', 'scanoss_matched_lines',
-                                      'scanoss_fileURL', 'scanoss_vendor']}
+                                      'Comment', 'license_reference']}
+"""SCANOSS_INFO_HEADER = {"scancode_matched_text": ['No', 'Source Name or Path', 'Component Declared',
+                                                 'SPDX Tag', 'File Header', 'License File',
+                                                 'Scancode', 'scanoss_matched_lines',
+                                                 'scanoss_fileURL']}"""
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -142,7 +145,13 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
         extended_header = MERGED_HEADER
 
     if need_license:
-        sheet_list["matched_text"] = get_license_list_to_print(license_list)
+        if selected_scanner == 'scancode' or output_extension == _json_ext:
+            sheet_list["scancode_matched_text"] = get_license_list_to_print(license_list)
+        elif selected_scanner == 'scanoss':
+            sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
+        else:
+            sheet_list["scancode_matched_text"] = get_license_list_to_print(license_list)
+            sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
 
     output_file_without_ext = os.path.join(output_path, output_file)
     success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension,

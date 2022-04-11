@@ -23,6 +23,7 @@ _exclude_directory.append("/.")
 class ScanItem:
     file = ""
     licenses = []
+    license_w_source = {}
     copyright = ""
     exclude = False
     is_license_text = False
@@ -61,6 +62,9 @@ class ScanItem:
         if len(self.licenses) > 0:
             self.licenses = list(set(self.licenses))
 
+    def set_license_w_source(self, value):
+        self.license_w_source = value
+
     def set_exclude(self, value):
         self.exclude = value
 
@@ -98,16 +102,40 @@ class ScanItem:
     def get_row_to_print_for_scanoss(self):
         print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
                       ','.join(self.copyright),
-                      "Exclude" if self.exclude else "",
-                      self.comment, self.matched_lines, self.fileURL, self.vendor]
+                      "Exclude" if self.exclude else "", self.comment]
         return print_rows
 
     def get_row_to_print_for_all_scanner(self):
         print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
                       ','.join(self.copyright),
-                      "Exclude" if self.exclude else "",
-                      self.comment, self.license_reference, self.matched_lines, self.fileURL, self.vendor]
+                      "Exclude" if self.exclude else "", self.comment, self.license_reference]
         return print_rows
+
+    def get_extra_info_row_for_scanoss(self):
+        if 'component_declared' not in self.license_w_source.keys():
+            self.license_w_source['component_declared'] = ''
+        else:
+            self.license_w_source['component_declared'] = ','.join(self.license_w_source['component_declared'])
+        if 'file_spdx_tag' not in self.license_w_source.keys():
+            self.license_w_source['file_spdx_tag'] = ''
+        else:
+            self.license_w_source['file_spdx_tag'] = ','.join(self.license_w_source['file_spdx_tag'])
+        if 'file_header' not in self.license_w_source.keys():
+            self.license_w_source['file_header'] = ''
+        else:
+            self.license_w_source['file_header'] = ','.join(self.license_w_source['file_header'])
+        if 'license_file' not in self.license_w_source.keys():
+            self.license_w_source['license_file'] = ''
+        else:
+            self.license_w_source['license_file'] = ','.join(self.license_w_source['license_file'])
+        if 'scancode' not in self.license_w_source.keys():
+            self.license_w_source['scancode'] = ''
+        else:
+            self.license_w_source['scancode'] = ','.join(self.license_w_source['scancode'])
+        extra_info_rows = [self.file, self.license_w_source['component_declared'], self.license_w_source['file_spdx_tag'],
+                           self.license_w_source['file_header'], self.license_w_source['license_file'],
+                           self.license_w_source['scancode'], self.matched_lines, self.fileURL]
+        return extra_info_rows
 
     def merge_scan_item(self, other):
         """
@@ -138,6 +166,8 @@ class ScanItem:
             self.fileURL = other.fileURL
         if not self.vendor:
             self.vendor = other.vendor
+        if not self.license_w_source:
+            self.license_w_source = other.license_w_source
 
     def __eq__(self, other):
         return self.file == other.file

@@ -9,6 +9,18 @@ from ._scan_item import ScanItem
 from ._scan_item import is_exclude_file
 
 logger = logging.getLogger(constant.LOGGER_NAME)
+SCANOSS_INFO_HEADER = ['No', 'Source Name or Path', 'Component Declared', 'SPDX Tag',
+                       'File Header', 'License File', 'Scancode',
+                       'scanoss_matched_lines', 'scanoss_fileURL']
+
+
+def parsing_extraInfo(scanned_result):
+    scanoss_extra_info = []
+    for scan_item in scanned_result:
+        extra_item = scan_item.get_extra_info_row_for_scanoss()
+        scanoss_extra_info.append(extra_item)
+    scanoss_extra_info.insert(0, SCANOSS_INFO_HEADER)
+    return scanoss_extra_info
 
 
 def parsing_scanResult(scanoss_report):
@@ -28,12 +40,17 @@ def parsing_scanResult(scanoss_report):
             result_item.set_download_location(findings[0]['url'])
 
         license_detected = []
+        license_w_source = {}
         copyright_detected = []
         if 'licenses' in findings[0]:
             for license in findings[0]['licenses']:
                 license_detected.append(license['name'].lower())
+                if license['source'] not in license_w_source:
+                    license_w_source[license['source']] = []
+                license_w_source[license['source']].append(license['name'])
             if len(license_detected) > 0:
                 result_item.set_licenses(license_detected)
+                result_item.set_license_w_source(license_w_source)
         if 'copyrights' in findings[0]:
             for copyright in findings[0]['copyrights']:
                 copyright_detected.append(copyright['name'])
