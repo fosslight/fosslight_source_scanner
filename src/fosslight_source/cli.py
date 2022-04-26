@@ -154,7 +154,7 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
 
 
 def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1,
-                     need_license=False, format="", called_by_cli=False):
+                     need_license=False, format="", called_by_cli=True):
     """
     Run Scancode and scanoss.py for the given path.
 
