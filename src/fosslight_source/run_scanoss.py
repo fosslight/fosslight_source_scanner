@@ -13,11 +13,15 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.output_format import check_output_format  # , write_output_file
 from ._parsing_scanoss_file import parsing_scanResult  # scanoss
-# from ._help import print_help_msg_source
+import shutil
+from pathlib import Path
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
+SCANOSS_RESULT_FILE = "scanner_output.wfp"
+SCANOSS_OUTPUT_FILE = "scanoss_raw_result.json"
+SCANOSS_COMMAND_PREFIX = "scanoss-py scan -o "
 
 
 def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=False, write_json_file=False, num_threads=-1):
@@ -31,36 +35,30 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     :param write_json_file: if requested, keep the raw files.
     :return scanoss_file_list: list of ScanItem (scanned result by files).
     """
+    success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
     if not called_by_cli:
         global logger
+        start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+        logger, _result_log = init_log(os.path.join(output_path, f"fosslight_src_log_{start_time}.txt"),
+                                       True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     scanoss_file_list = []
     try:
         pkg_resources.get_distribution("scanoss")
     except Exception as error:
-        logger.warning(str(error) + ". Skipping scan with scanoss.")
+        logger.warning(f"{error}. Skipping scan with scanoss.")
         logger.warning("Please install scanoss and dataclasses before run fosslight_source with scanoss option.")
         return scanoss_file_list
-    scan_command = "scanoss-py scan -o "
-
-    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
-
-    success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
-    if not called_by_cli:
-        logger, _result_log = init_log(os.path.join(output_path, "fosslight_src_log_"+start_time+".txt"),
-                                       True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if output_path == "":  # if json output with _write_json_file not used, output_path won't be needed.
         output_path = os.getcwd()
     else:
         output_path = os.path.abspath(output_path)
+        if not os.path.isdir(output_path):
+            Path(output_path).mkdir(parents=True, exist_ok=True)
+    output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
 
-    output_file = "scanoss_raw_result.json"
-
-    output_json_file = os.path.join(output_path, output_file)
-
-    scan_command += f"{output_json_file} {path_to_scan}"
-
+    scan_command = f"{SCANOSS_COMMAND_PREFIX} {output_json_file} {path_to_scan}"
     if num_threads > 0:
         scan_command += " -T " + str(num_threads)
     else:
@@ -68,25 +66,22 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
 
     try:
         os.system(scan_command)
-        st_json = open(output_json_file, "r")
-        logger.info(f"SCANOSS Start parsing {path_to_scan}")
-        with open(output_json_file, "r") as st_json:
-            st_python = json.load(st_json)
-            scanoss_file_list = parsing_scanResult(st_python)
+        if os.path.isfile(output_json_file):
+            with open(output_json_file, "r") as st_json:
+                st_python = json.load(st_json)
+                scanoss_file_list = parsing_scanResult(st_python)
     except Exception as error:
-        logger.warning(f"Parsing {path_to_scan}: {error}")
+        logger.warning(f"SCANOSS Parsing {path_to_scan}: {error}")
+
     logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
 
-    if not write_json_file:
-        try:
-            os.system(f"rm {output_json_file}")
-            os.system("rm scanner_output.wfp")
-        except Exception as error:
-            logger.debug(f"Deleting scanoss result failed.: {error}")
-    else:
-        try:
-            os.system(f"mv scanner_output.wfp {output_path}/scanoss_fingerprint.wfp")
-        except Exception as error:
-            logger.debug(f"Moving scanoss fingerprint file failed.: {error}")
+    try:
+        if write_json_file:
+            shutil.move(SCANOSS_RESULT_FILE, output_path)
+        else:
+            os.remove(output_json_file)
+            os.remove(SCANOSS_RESULT_FILE)
+    except Exception as error:
+        logger.debug(f"Moving scanoss raw files failed.: {error}")
 
     return scanoss_file_list
