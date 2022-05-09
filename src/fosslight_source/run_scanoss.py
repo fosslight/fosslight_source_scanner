@@ -16,6 +16,8 @@ from ._parsing_scanoss_file import parsing_scanResult  # scanoss
 from ._parsing_scanoss_file import parsing_extraInfo  # scanoss
 import shutil
 from pathlib import Path
+import platform
+from ._help import print_help_msg_source
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -41,11 +43,19 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     :return scanoss_file_list: list of ScanItem (scanned result by files).
     """
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
+    _windows = platform.system() == "Windows"
+
     if not called_by_cli:
         global logger
         start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
         logger, _result_log = init_log(os.path.join(output_path, f"fosslight_src_log_{start_time}.txt"),
                                        True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
+
+    if path_to_scan == "":
+        if _windows:
+            path_to_scan = os.getcwd()
+        else:
+            print_help_msg_source()
 
     scanoss_file_list = []
     try:
@@ -76,7 +86,7 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
                 st_python = json.load(st_json)
                 scanoss_file_list = parsing_scanResult(st_python)
     except Exception as error:
-        logger.warning(f"SCANOSS Parsing {path_to_scan}: {error}")
+        logger.debug(f"SCANOSS Parsing {path_to_scan}: {error}")
 
     logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
 

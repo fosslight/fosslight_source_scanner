@@ -85,21 +85,26 @@ def main():
     logger, _result_log = init_log(os.path.join(output_path, "fosslight_src_log_"+start_time+".txt"),
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
-    if selected_scanner == 'scancode':
-        success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
-                                                                                     write_json_file, -1, True,
-                                                                                     print_matched_text, format, True)
-    elif selected_scanner == 'scanoss':
-        scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
-    elif selected_scanner == 'all' or selected_scanner == '':
-        success, _result_log["Scan Result"], scanned_result, license_list = run_all_scanners(path_to_scan, output_file_name,
-                                                                                             write_json_file, -1,
-                                                                                             print_matched_text, format, True)
+    if os.path.isdir(path_to_scan):
+
+        if selected_scanner == 'scancode':
+            success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
+                                                                                         write_json_file, -1, True,
+                                                                                         print_matched_text, format, True)
+        elif selected_scanner == 'scanoss':
+            scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
+        elif selected_scanner == 'all' or selected_scanner == '':
+            success, _result_log["Scan Result"], scanned_result, license_list = run_all_scanners(path_to_scan, output_file_name,
+                                                                                                 write_json_file, -1,
+                                                                                                 print_matched_text, format, True)
+        else:
+            print_help_msg_source()
+            sys.exit(1)
+        create_report_file(start_time, scanned_result, license_list, selected_scanner, print_matched_text,
+                           output_path, output_file, output_extension)
     else:
-        print_help_msg_source()
+        logger.error(f"Check the path to scan. : {path_to_scan}")
         sys.exit(1)
-    create_report_file(start_time, scanned_result, license_list, selected_scanner, print_matched_text,
-                       output_path, output_file, output_extension)
 
 
 def create_report_file(start_time, scanned_result, license_list, selected_scanner, need_license=False,
