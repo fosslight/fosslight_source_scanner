@@ -7,6 +7,7 @@ import logging
 import fosslight_util.constant as constant
 from ._scan_item import ScanItem
 from ._scan_item import is_exclude_file
+from ._scan_item import replace_word
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 SCANOSS_INFO_HEADER = ['No', 'Source Name or Path', 'Component Declared', 'SPDX Tag',
@@ -52,7 +53,13 @@ def parsing_scanResult(scanoss_report):
         copyright_detected = []
         if 'licenses' in findings[0]:
             for license in findings[0]['licenses']:
-                license_detected.append(license['name'].lower())
+
+                license_lower = license['name'].lower()
+                for word in replace_word:
+                    if word in license_lower:
+                        license_lower = license_lower.replace(word, "")
+                license_detected.append(license_lower)
+
                 if license['source'] not in license_w_source:
                     license_w_source[license['source']] = []
                 license_w_source[license['source']].append(license['name'])
