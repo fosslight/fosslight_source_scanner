@@ -6,7 +6,6 @@
 import os
 import multiprocessing
 import warnings
-import platform
 import logging
 import yaml
 from scancode import cli
@@ -15,7 +14,6 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
-from ._help import print_help_msg_source
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_format, write_output_file
 
@@ -37,7 +35,6 @@ def run_scan(path_to_scan, output_file_name="",
     license_list = []
     _json_ext = ".json"
 
-    _windows = platform.system() == "Windows"
     start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
 
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
@@ -62,12 +59,6 @@ def run_scan(path_to_scan, output_file_name="",
         if not called_by_cli:
             logger, _result_log = init_log(os.path.join(output_path, f"fosslight_src_log_{start_time}.txt"),
                                            True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
-
-        if path_to_scan == "":
-            if _windows:
-                path_to_scan = os.getcwd()
-            else:
-                print_help_msg_source()
 
         num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores
 
