@@ -36,6 +36,7 @@ def run_scan(path_to_scan, output_file_name="",
     result_list = []
     license_list = []
     _json_ext = ".json"
+    _yaml_ext = ".yaml"
 
     _windows = platform.system() == "Windows"
     start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -51,6 +52,8 @@ def run_scan(path_to_scan, output_file_name="",
             if output_file == "":
                 if output_extension == _json_ext:
                     output_file = f"Opossum_input_{start_time}"
+                elif output_extension == _yaml_ext:
+                    output_file = f"fosslight-sbom-info_{start_time}"
                 else:
                     output_file = f"FOSSLight-Report_{start_time}"
 
