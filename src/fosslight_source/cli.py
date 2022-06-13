@@ -120,6 +120,7 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
     extended_header = {}
     sheet_list = {}
     _json_ext = ".json"
+    _yaml_ext = ".yaml"
 
     if output_path == "":
         output_path = os.getcwd()
@@ -128,9 +129,11 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
 
     if output_file == "":
         if output_extension == _json_ext:
-            output_file = "Opossum_input_" + start_time
+            output_file = f"Opossum_input_{start_time}"
+        if output_extension == _yaml_ext:
+            output_file = f"fosslight-sbom-info_{start_time}"
         else:
-            output_file = "FOSSLight-Report_" + start_time
+            output_file = f"FOSSLight-Report_{start_time}"
 
     scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
 
