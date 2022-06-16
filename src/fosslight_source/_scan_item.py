@@ -22,8 +22,7 @@ _exclude_directory.append("/.")
 
 class ScanItem:
     file = ""
-    licenses = []
-    copyright = ""
+    scanoss_reference = {}
     exclude = False
     is_license_text = False
     oss_name = ""
@@ -31,13 +30,12 @@ class ScanItem:
     download_location = ""
     matched_lines = ""
     fileURL = ""
-    vendor = ""
     license_reference = ""
 
     def __init__(self, value):
         self.file = value
-        self.copyright = []
-        self.licenses = []
+        self._copyright = []
+        self._licenses = []
         self.comment = ""
         self.exclude = False
         self.is_license_text = False
@@ -45,48 +43,25 @@ class ScanItem:
     def __del__(self):
         pass
 
-    def set_comment(self, value):
-        self.comment = value
+    @property
+    def copyright(self):
+        return self._copyright
 
-    def set_file(self, value):
-        self.file = value
+    @copyright.setter
+    def copyright(self, value):
+        self._copyright.extend(value)
+        if len(self._copyright) > 0:
+            self._copyright = list(set(self._copyright))
 
-    def set_copyright(self, value):
-        self.copyright.extend(value)
-        if len(self.copyright) > 0:
-            self.copyright = list(set(self.copyright))
+    @property
+    def licenses(self):
+        return self._licenses
 
-    def set_licenses(self, value):
-        self.licenses.extend(value)
-        if len(self.licenses) > 0:
-            self.licenses = list(set(self.licenses))
-
-    def set_exclude(self, value):
-        self.exclude = value
-
-    def set_is_license_text(self, value):
-        self.is_license_text = value
-
-    def set_oss_name(self, value):
-        self.oss_name = value
-
-    def set_oss_version(self, value):
-        self.oss_version = value
-
-    def set_download_location(self, value):
-        self.download_location = value
-
-    def set_matched_lines(self, value):
-        self.matched_lines = value
-
-    def set_fileURL(self, value):
-        self.fileURL = value
-
-    def set_vendor(self, value):
-        self.vendor = value
-
-    def set_license_reference(self, value):
-        self.license_reference = value
+    @licenses.setter
+    def licenses(self, value):
+        self._licenses.extend(value)
+        if len(self._licenses) > 0:
+            self._licenses = list(set(self._licenses))
 
     def get_row_to_print(self):
         print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
@@ -98,15 +73,13 @@ class ScanItem:
     def get_row_to_print_for_scanoss(self):
         print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
                       ','.join(self.copyright),
-                      "Exclude" if self.exclude else "",
-                      self.comment, self.matched_lines, self.fileURL, self.vendor]
+                      "Exclude" if self.exclude else "", self.comment]
         return print_rows
 
     def get_row_to_print_for_all_scanner(self):
         print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
                       ','.join(self.copyright),
-                      "Exclude" if self.exclude else "",
-                      self.comment, self.license_reference, self.matched_lines, self.fileURL, self.vendor]
+                      "Exclude" if self.exclude else "", self.comment, self.license_reference]
         return print_rows
 
     def merge_scan_item(self, other):
@@ -136,8 +109,8 @@ class ScanItem:
             self.matched_lines = other.matched_lines
         if not self.fileURL:
             self.fileURL = other.fileURL
-        if not self.vendor:
-            self.vendor = other.vendor
+        if not self.scanoss_reference:
+            self.scanoss_reference = other.scanoss_reference
 
     def __eq__(self, other):
         return self.file == other.file

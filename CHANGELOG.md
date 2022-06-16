@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.6.10 (02/06/2022)
+## Changes
+- Amend how to handle path without files to scan for SCANOSS @JustinWonjaePark (#73)
+- Refine license name on SCANOSS results @JustinWonjaePark (#74)
+
+## 🚀 Features
+
+- Print SCANOSS info in a separate sheet @JustinWonjaePark (#72)
+- Add Dockerfile to build on ubuntu @soimkim (#69)
+
+## 🐛 Hotfixes
+
+- Fix cli.py to remove redundant report @JustinWonjaePark (#71)
+
+---
+
 ## v1.6.9 (06/04/2022)
 ## Changes
 ## 🐛 Hotfixes
