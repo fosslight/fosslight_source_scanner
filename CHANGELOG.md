@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.6.11 (16/06/2022)
+## Changes
+## 🚀 Features
+
+- Add yaml format for FOSSLight Report @dd-jy (#75)
+
+## 🔧 Maintenance
+
+- update minimum version of fosslight_util @dd-jy (#76)
+
+---
+
 ## v1.6.10 (02/06/2022)
 ## Changes
 - Amend how to handle path without files to scan for SCANOSS @JustinWonjaePark (#73)
