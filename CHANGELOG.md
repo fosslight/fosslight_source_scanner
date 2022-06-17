@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.12 (17/06/2022)
+## Changes
+## 🐛 Hotfixes
+
+- Fix typecode-libmagic-from-sources installation bug @soimkim (#77)
+
+---
+
 ## v1.6.11 (16/06/2022)
 ## Changes
 ## 🚀 Features
