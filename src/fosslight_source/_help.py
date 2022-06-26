@@ -15,17 +15,17 @@ _HELP_MESSAGE_SOURCE = """
 
     Options:
         Mandatory
-            -p <source_path>\t\t   Path to analyze source
+            -p <source_path>\t   Path to analyze source
 
         Optional
-            -h\t\t\t\t   Print help message
-            -v\t\t\t\t   Print FOSSLight Source Scanner version
-            -j\t\t\t\t   Generate raw result of scanners in json format
-            -m\t\t\t\t   Print additional information for scan result on separate sheets
-            -o <output_path>\t\t   Output path
-            \t\t\t\t    (If you want to generate the specific file name, add the output path with file name.)
-            -f <format>\t\t\t   Output file format (excel, csv, opossum, yaml)
-            -s <scanner>\t\t   Select which scanner to be run (scancode, scanoss, all)"""
+            -h\t\t\t   Print help message
+            -v\t\t\t   Print FOSSLight Source Scanner version
+            -j\t\t\t   Generate raw result of scanners in json format
+            -m\t\t\t   Print additional information for scan result on separate sheets
+            -o <output_path>\t   Output path (Path or file name)
+            -f <format>\t\t   Output file format (excel, csv, opossum, yaml)
+            -s <scanner>\t   Select which scanner to be run (scancode, scanoss, all)
+            -t <float>\t\t   Stop scancode scanning if scanning takes longer than a timeout in seconds."""
 
 _HELP_MESSAGE_CONVERT = """
     Usage: fosslight_convert [option1] <arg1> [option2] <arg2>...
