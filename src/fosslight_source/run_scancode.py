@@ -23,7 +23,8 @@ _PKG_NAME = "fosslight_source"
 
 
 def run_scan(path_to_scan, output_file_name="",
-             _write_json_file=False, num_cores=-1, return_results=False, need_license=False, format="", called_by_cli=False):
+             _write_json_file=False, num_cores=-1, return_results=False, need_license=False, format="",
+             called_by_cli=False, time_out=120):
     if not called_by_cli:
         global logger
 
@@ -67,12 +68,14 @@ def run_scan(path_to_scan, output_file_name="",
 
         if os.path.isdir(path_to_scan):
             try:
+                time_out = float(time_out)
                 rc, results = cli.run_scan(path_to_scan, max_depth=100,
                                            strip_root=True, license=True,
                                            copyright=True, return_results=True,
                                            processes=num_cores,
                                            output_json_pp=output_json_file,
-                                           only_findings=True, license_text=True)
+                                           only_findings=True, license_text=True,
+                                           timeout=time_out)
 
                 if not rc:
                     msg = "Source code analysis failed."

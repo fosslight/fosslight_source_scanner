@@ -50,9 +50,10 @@ def main():
 
     scanned_result = []
     license_list = []
+    time_out = 120
 
     try:
-        opts, args = getopt.getopt(argv, 'hvmjs:p:o:f:')
+        opts, args = getopt.getopt(argv, 'hvmjs:p:o:f:t:')
         for opt, arg in opts:
             if opt == "-h":
                 print_help_msg_source()
@@ -70,6 +71,8 @@ def main():
                 format = arg
             elif opt == "-s":
                 selected_scanner = arg.lower()
+            elif opt == "-t":
+                time_out = arg
     except Exception:
         print_help_msg_source()
 
@@ -90,13 +93,15 @@ def main():
         if selected_scanner == 'scancode':
             success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                          write_json_file, -1, True,
-                                                                                         print_matched_text, format, True)
+                                                                                         print_matched_text, format, True,
+                                                                                         time_out)
         elif selected_scanner == 'scanoss':
             scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         elif selected_scanner == 'all' or selected_scanner == '':
             success, _result_log["Scan Result"], scanned_result, license_list = run_all_scanners(path_to_scan, output_file_name,
                                                                                                  write_json_file, -1,
-                                                                                                 print_matched_text, format, True)
+                                                                                                 print_matched_text, format, True,
+                                                                                                 time_out)
         else:
             print_help_msg_source()
             sys.exit(1)
@@ -167,7 +172,7 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
 
 
 def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1,
-                     need_license=False, format="", called_by_cli=True):
+                     need_license=False, format="", called_by_cli=True, time_out=120):
     """
     Run Scancode and scanoss.py for the given path.
 
@@ -192,7 +197,7 @@ def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, 
     success, _result_log["Scan Result"], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                   _write_json_file, num_cores,
                                                                                   True, need_license,
-                                                                                  format, called_by_cli)
+                                                                                  format, called_by_cli, time_out)
     scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, called_by_cli, _write_json_file)
 
     for file_in_scancode_result in scancode_result:
