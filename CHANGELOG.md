@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.13 (27/06/2022)
+## Changes
+## 🚀 Features
+
+- Add option for time out @soimkim (#79)
+
+---
+
 ## v1.6.12 (17/06/2022)
 ## Changes
 ## 🐛 Hotfixes
