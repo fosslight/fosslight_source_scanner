@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 FROM	ubuntu:20.04
 
+RUN     apt-get clean
 RUN 	apt-get update && apt-get install sudo -y
 RUN	ln -sf /bin/bash /bin/sh
 
