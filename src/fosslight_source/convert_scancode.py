@@ -84,12 +84,14 @@ def convert_json_to_output_report(scancode_json, output_file_name, need_license=
                                     sheet_list[lic_sheet_name] = get_license_list_to_print(lic_list)
                         except Exception as ex:
                             logger.warning("Error parsing "+file+":" + str(ex))
-
-        output_file_without_ext = os.path.join(output_path, output_file)
-        success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list)
-        logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write) + " " + writing_msg)
-        if success_to_write:
-            result_log["Output file"] = output_file_without_ext + output_extension
+        if sheet_list:
+            output_file_without_ext = os.path.join(output_path, output_file)
+            success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list)
+            logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write) + " " + writing_msg)
+            if success_to_write:
+                result_log["Output file"] = output_file_without_ext + output_extension
+        else:
+            logger.warning("Nothing is detected to convert so output file is not generated.")
 
     except Exception as ex:
         success = False

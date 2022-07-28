@@ -89,7 +89,7 @@ def main():
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if os.path.isdir(path_to_scan):
-
+        logger.info(f"Path to analyze : {os.path.abspath(path_to_scan)}")
         if selected_scanner == 'scancode':
             success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                          write_json_file, -1, True,
@@ -122,6 +122,10 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
     :param license_list: matched text (only for scancode).
     :param need_license: if requested, output matched text (only for scancode).
     """
+    if not scanned_result:
+        logger.warning("Nothing is detected from the scanner so output file is not generated.")
+        return
+
     extended_header = {}
     sheet_list = {}
     _json_ext = ".json"
