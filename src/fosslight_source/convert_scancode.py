@@ -53,7 +53,6 @@ def convert_json_to_output_report(scancode_json, output_file_name, need_license=
     if not success:
         logger.error("Fail to convert scancode: " + msg)
         return []
-
     try:
         sheet_list = {}
         if os.path.isfile(scancode_json):
@@ -86,14 +85,16 @@ def convert_json_to_output_report(scancode_json, output_file_name, need_license=
                             logger.warning("Error parsing "+file+":" + str(ex))
 
         output_file_without_ext = os.path.join(output_path, output_file)
-        success_to_write, writing_msg = write_output_file(output_file_without_ext, output_extension, sheet_list)
-        logger.info("Writing Output file(" + output_file + output_extension + "):" + str(success_to_write) + " " + writing_msg)
+        success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension, sheet_list)
+
         if success_to_write:
-            result_log["Output file"] = output_file_without_ext + output_extension
+            result_log["Output file"] = result_file
+        else:
+            logger.info(f"Failed to writing Output file :{writing_msg}")
 
     except Exception as ex:
         success = False
-        logger.warning(str(ex))
+        logger.warning(f"Failed to parsing file:{ex}")
 
     scan_result_msg = str(success) if msg == "" else str(success) + "," + msg
     result_log["Scan Result"] = scan_result_msg
