@@ -140,33 +140,37 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
         else:
             output_file = f"FOSSLight-Report_{start_time}"
 
-    scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
+    if scanned_result:
+        scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
 
-    if selected_scanner == 'scancode' or output_extension == _json_ext:
-        sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print() for scan_item in scanned_result]
-
-    elif selected_scanner == 'scanoss':
-        sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_scanoss() for scan_item in scanned_result]
-        extended_header = SCANOSS_HEADER
-
-    else:
-        sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_all_scanner() for scan_item in scanned_result]
-        extended_header = MERGED_HEADER
-
-    if need_license:
         if selected_scanner == 'scancode' or output_extension == _json_ext:
-            sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
+            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print() for scan_item in scanned_result]
+
         elif selected_scanner == 'scanoss':
-            sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
+            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_scanoss() for scan_item in scanned_result]
+            extended_header = SCANOSS_HEADER
+
         else:
-            sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
-            sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
+            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_all_scanner() for scan_item in scanned_result]
+            extended_header = MERGED_HEADER
+
+        if need_license:
+            if selected_scanner == 'scancode' or output_extension == _json_ext:
+                sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
+            elif selected_scanner == 'scanoss':
+                sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
+            else:
+                sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
+                sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
 
     output_file_without_ext = os.path.join(output_path, output_file)
     success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension,
                                                                    sheet_list, extended_header)
     if success_to_write:
-        logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
+        if result_file:
+            logger.info(f"Output file:{result_file}")
+        else:
+            logger.warning(f"{writing_msg}")
     else:
         logger.error(f"Fail to generate result file. msg:({writing_msg})")
 
