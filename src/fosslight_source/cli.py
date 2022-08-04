@@ -19,6 +19,7 @@ from fosslight_util.output_format import check_output_format, write_output_file
 from .run_scancode import run_scan
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
+import yaml
 
 SCANOSS_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
@@ -91,7 +92,6 @@ def main():
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if os.path.isdir(path_to_scan):
-
         if selected_scanner == 'scancode':
             success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                          write_json_file, -1, True,
@@ -109,6 +109,10 @@ def main():
             sys.exit(1)
         create_report_file(start_time, scanned_result, license_list, selected_scanner, print_matched_text,
                            output_path, output_file, output_extension)
+        try:
+            logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
+        except Exception as ex:
+            logger.debug(f"Failed to print log.: {ex}")
     else:
         logger.error(f"Check the path to scan. : {path_to_scan}")
         sys.exit(1)
