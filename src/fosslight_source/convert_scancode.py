@@ -131,7 +131,7 @@ def get_detected_licenses_from_scancode(scancode_json_file, need_license):
 
 def main():
     argv = sys.argv[1:]
-    path_to_find_json = ""
+    path_to_find_json = os.getcwd()
     output_file_name = ""
     print_matched_text = False
     format = ""
@@ -145,6 +145,8 @@ def main():
                 print_version(_PKG_NAME)
             elif opt == "-p":
                 path_to_find_json = arg
+                if not path_to_find_json:
+                    path_to_find_json = os.getcwd()
             elif opt == "-o":
                 output_file_name = arg
             elif opt == "-m":
