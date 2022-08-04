@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.6.14 (04/08/2022)
+## Changes
+## 🐛 Hotfixes
+
+- Fix the bug that convert mode does not run @soimkim (#84)
+- Fix package download bug during docker build @soimkim (#80)
+
+## 🔧 Maintenance
+
+- Print tool information to log @soimkim (#86)
+- Analyze the current path if path is null @soimkim (#85)
+- Print the message if there is nothing to print @soimkim (#83)
+
+---
+
 ## v1.6.13 (27/06/2022)
 ## Changes
 ## 🚀 Features
