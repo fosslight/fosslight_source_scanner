@@ -41,7 +41,7 @@ def main():
     _result_log = {}
 
     argv = sys.argv[1:]
-    path_to_scan = ""
+    path_to_scan = os.getcwd()
     write_json_file = False
     output_file_name = ""
     print_matched_text = False
@@ -61,6 +61,8 @@ def main():
                 print_version(_PKG_NAME)
             elif opt == "-p":
                 path_to_scan = arg
+                if not path_to_scan:
+                    path_to_scan = os.getcwd()
             elif opt == "-j":
                 write_json_file = True
             elif opt == "-o":
