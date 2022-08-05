@@ -14,10 +14,8 @@ _HELP_MESSAGE_SOURCE = """
     The output result is generated in Excel format.
 
     Options:
-        Mandatory
-            -p <source_path>\t   Path to analyze source
-
         Optional
+            -p <source_path>\t   Path to analyze source (Default: current directory)
             -h\t\t\t   Print help message
             -v\t\t\t   Print FOSSLight Source Scanner version
             -j\t\t\t   Generate raw result of scanners in json format
@@ -33,10 +31,8 @@ _HELP_MESSAGE_CONVERT = """
     FOSSLigtht_convert converts the result of executing ScanCode in json format into FOSSLight Report format.
 
     Options:
-        Mandatory
-            -p <path_dir>\t\t   Path of ScanCode json files
-
         Optional
+            -p <path_dir>\t\t   Path of ScanCode json files (Default: current directory)
             -h\t\t\t\t   Print help message
             -v\t\t\t\t   Print FOSSLight Source Scanner version
             -m\t\t\t\t   Print the Matched text for each license on a separate sheet
