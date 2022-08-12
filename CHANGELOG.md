@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.6.15 (12/08/2022)
+## Changes
+- Remove the required option from the help message @soimkim (#87)
+
+---
+
 ## v1.6.14 (04/08/2022)
 ## Changes
 ## 🐛 Hotfixes
