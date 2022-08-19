@@ -6,7 +6,6 @@
 import sys
 import os
 import warnings
-import getopt
 import logging
 import copy
 from datetime import datetime
@@ -20,6 +19,7 @@ from .run_scancode import run_scan
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
+import argparse
 
 SCANOSS_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
@@ -41,7 +41,6 @@ def main():
     success = True
     _result_log = {}
 
-    argv = sys.argv[1:]
     path_to_scan = os.getcwd()
     write_json_file = False
     output_file_name = ""
@@ -53,31 +52,39 @@ def main():
     license_list = []
     time_out = 120
 
+    parser = argparse.ArgumentParser(description='FOSSLight Source', prog='fosslight_source', add_help=False)
+    parser.add_argument('--help', '-h', help='Print help message', action='store_true', dest='help')
+    parser.add_argument('--version', '-v', help='Print FOSSLight Source Scanner version', action='store_true', dest='version')
+    parser.add_argument('--path', '-p', help='Path to analyze', dest='path', default="")
+    parser.add_argument('--json', '-j', help='Generate raw result in json format', action='store_true', dest='json')
+    parser.add_argument('--output', '-o', help='Output path', dest='output', default="")
+    parser.add_argument('--matched', '-m', help='Print additional information', action='store_true', dest='matched')
+    parser.add_argument('--format', '-f', help='Output file format (excel, csv, opossum, yaml)', dest='format', default="")
+    parser.add_argument('--scanner', '-s', help='Select which scanner to be run (scancode, scanoss, all)',
+                        dest='scanner', default="")
+    parser.add_argument('--timeout', '-t', help='Stop scancode scanning in given seconds', dest='timeout', default=120)
+
     try:
-        opts, args = getopt.getopt(argv, 'hvmjs:p:o:f:t:')
-        for opt, arg in opts:
-            if opt == "-h":
-                print_help_msg_source()
-            elif opt == "-v":
-                print_version(_PKG_NAME)
-            elif opt == "-p":
-                path_to_scan = arg
-                if not path_to_scan:
-                    path_to_scan = os.getcwd()
-            elif opt == "-j":
-                write_json_file = True
-            elif opt == "-o":
-                output_file_name = arg
-            elif opt == "-m":
-                print_matched_text = True
-            elif opt == "-f":
-                format = arg
-            elif opt == "-s":
-                selected_scanner = arg.lower()
-            elif opt == "-t":
-                time_out = arg
-    except Exception:
+        args = parser.parse_args()
+
+    except SystemExit:
         print_help_msg_source()
+
+    if args.help:
+        print_help_msg_source()
+    if args.version:
+        print_version(_PKG_NAME)
+    if not args.path:
+        path_to_scan = os.getcwd()
+    else:
+        path_to_scan = args.path
+    if args.json:
+        write_json_file = True
+    output_file_name = args.output
+    if args.matched:
+        print_matched_text = True
+    format = args.format
+    time_out = args.timeout
 
     timer = TimerThread()
     timer.setDaemon(True)
