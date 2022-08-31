@@ -48,7 +48,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
 
     prev_dir = ""
     prev_dir_value = False
-    regex = re.compile(r'.*licenseref-(\S+)', re.IGNORECASE)
+    regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
 
     if scancode_file_list:
         for file in scancode_file_list:
@@ -111,7 +111,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                                     matched_txt = lic_item.get("matched_text", "")
                                     matched = regex.search(matched_txt)
                                     if matched:
-                                        license_value = str(matched.group(1))
+                                        license_value = str(matched.group())
                                 except Exception:
                                     pass
 
