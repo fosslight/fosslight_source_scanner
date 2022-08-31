@@ -53,12 +53,9 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
     if scancode_file_list:
         for file in scancode_file_list:
             try:
-                is_binary = False
                 is_dir = False
-                file_path = file["path"]
-
-                if "is_binary" in file:
-                    is_binary = file["is_binary"]
+                file_path = file.get("path", "")
+                is_binary = file.get("is_binary", False)
                 if "type" in file:
                     is_dir = file["type"] == "directory"
                     if is_dir:
@@ -66,13 +63,13 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                         prev_dir = file_path
 
                 if not is_binary and not is_dir:
-                    licenses = file["licenses"]
-                    copyright_list = file["copyrights"]
+                    licenses = file.get("licenses", [])
+                    copyright_list = file.get("copyrights", [])
 
                     result_item = ScanItem(file_path)
 
                     if has_error and "scan_errors" in file:
-                        error_msg = file["scan_errors"]
+                        error_msg = file.get("scan_errors", [])
                         if len(error_msg) > 0:
                             result_item.comment = ",".join(error_msg)
                             scancode_file_item.append(result_item)
@@ -95,8 +92,8 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
 
                     for lic_item in licenses:
                         license_value = ""
-                        key = lic_item["key"]
-                        spdx = lic_item["spdx_license_key"]
+                        key = lic_item.get("key", "")
+                        spdx = lic_item.get("spdx_license_key", "")
                         # logger.debug("LICENSE_KEY:"+str(key)+",SPDX:"+str(spdx))
 
                         if key is not None and key != "":
@@ -111,11 +108,10 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                         if license_value != "":
                             if key == "unknown-spdx":
                                 try:
-                                    if "matched_text" in lic_item:
-                                        matched_txt = lic_item["matched_text"].lower()
-                                        matched = regex.search(matched_txt)
-                                        if matched:
-                                            license_value = str(matched.group())
+                                    matched_txt = lic_item.get("matched_text", "").lower()
+                                    matched = regex.search(matched_txt)
+                                    if matched:
+                                        license_value = str(matched.group())
                                 except Exception:
                                     pass
 
@@ -136,9 +132,8 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                                         lic_info = MatchedLicense(license_value, lic_category, lic_matched_text, file_path)
                                         license_list[lic_matched_key] = lic_info
 
-                        matched_rule = lic_item["matched_rule"]
-                        if matched_rule["is_license_text"]:
-                            result_item.is_license_text = True
+                        matched_rule = lic_item.get("matched_rule", {})
+                        result_item.is_license_text = matched_rule.get("is_license_text", False)
 
                     if len(license_detected) > 0:
                         result_item.licenses = license_detected
