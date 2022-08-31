@@ -55,6 +55,8 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
             try:
                 is_dir = False
                 file_path = file.get("path", "")
+                if not file_path:
+                    continue
                 is_binary = file.get("is_binary", False)
                 if "type" in file:
                     is_dir = file["type"] == "directory"
