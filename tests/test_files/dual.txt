@@ -1,3 +1,5 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # Copyright (c) 2021 LG Electronics Inc.
+# REUSE-IgnoreStart
 # SPDX-License-Identifier: GPL-2.0 or MIT
+# REUSE-IgnoreEnd

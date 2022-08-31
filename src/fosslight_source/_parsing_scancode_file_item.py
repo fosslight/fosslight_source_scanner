@@ -84,7 +84,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                     if licenses is None or licenses == "":
                         continue
 
-                    license_expression_list = file.get("license_expressions",{})
+                    license_expression_list = file.get("license_expressions", {})
                     if len(license_expression_list) > 0:
                         license_expression_list = [
                             x.lower() for x in license_expression_list
