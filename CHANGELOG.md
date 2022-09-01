@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.6.16 (01/09/2022)
+## Changes
+## 🐛 Hotfixes
+
+- Fix a bug when reading a non-existent key @soimkim (#89)
+
+## 🔧 Maintenance
+
+- Do not print empty parsing messages @soimkim (#91)
+- Change the required version of Python to 3.7 @soimkim (#90)
+
+---
+
 ## v1.6.15 (12/08/2022)
 ## Changes
 - Remove the required option from the help message @soimkim (#87)
