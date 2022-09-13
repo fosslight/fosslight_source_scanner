@@ -78,7 +78,14 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                             continue
                     copyright_value_list = []
                     for x in copyright_list:
-                        copyright_value_list.append(x.get("value", ""))
+                        latest_key_data = x.get("copyright", "")
+                        if latest_key_data:
+                            copyright_data = latest_key_data
+                        else:
+                            copyright_data = x.get("value", "")
+                        if copyright_data:
+                            copyright_value_list.append(copyright_data)
+
                     result_item.copyright = copyright_value_list
 
                     # Set the license value
