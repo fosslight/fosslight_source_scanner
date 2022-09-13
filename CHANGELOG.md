@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.17 (13/09/2022)
+## Changes
+## 🐛 Hotfixes
+
+- Fix the bug that can't extract copyright @soimkim (#92)
+
+---
+
 ## v1.6.16 (01/09/2022)
 ## Changes
 ## 🐛 Hotfixes
