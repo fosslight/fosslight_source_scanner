@@ -83,12 +83,12 @@ def main():
     timer.setDaemon(True)
     timer.start()
 
-    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    _start_time = datetime.now().strftime('%y%m%d_%H%M')
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
     if not success:
         logger.error(f"Format error. {msg}")
         sys.exit(1)
-    logger, _result_log = init_log(os.path.join(output_path, "fosslight_src_log_"+start_time+".txt"),
+    logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_{_start_time}.txt"),
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if os.path.isdir(path_to_scan):
@@ -107,7 +107,7 @@ def main():
         else:
             print_help_msg_source()
             sys.exit(1)
-        create_report_file(start_time, scanned_result, license_list, selected_scanner, print_matched_text,
+        create_report_file(_start_time, scanned_result, license_list, selected_scanner, print_matched_text,
                            output_path, output_file, output_extension)
         try:
             logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
@@ -118,7 +118,7 @@ def main():
         sys.exit(1)
 
 
-def create_report_file(start_time, scanned_result, license_list, selected_scanner, need_license=False,
+def create_report_file(_start_time, scanned_result, license_list, selected_scanner, need_license=False,
                        output_path="", output_file="", output_extension=""):
     """
     Create report files for given scanned result.
@@ -131,7 +131,6 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
     extended_header = {}
     sheet_list = {}
     _json_ext = ".json"
-    _yaml_ext = ".yaml"
 
     if output_path == "":
         output_path = os.getcwd()
@@ -140,11 +139,9 @@ def create_report_file(start_time, scanned_result, license_list, selected_scanne
 
     if output_file == "":
         if output_extension == _json_ext:
-            output_file = f"Opossum_input_{start_time}"
-        if output_extension == _yaml_ext:
-            output_file = f"fosslight-sbom-info_{start_time}"
+            output_file = f"fosslight_opossum_{_start_time}"
         else:
-            output_file = f"FOSSLight-Report_{start_time}"
+            output_file = f"fosslight_report_{_start_time}"
 
     if scanned_result:
         scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
