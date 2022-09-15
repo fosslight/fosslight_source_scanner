@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.18 (15/09/2022)
+## Changes
+## 🔧 Maintenance
+
+- Change the output file name @JustinWonjaePark (#93)
+
+---
+
 ## v1.6.17 (13/09/2022)
 ## Changes
 ## 🐛 Hotfixes
