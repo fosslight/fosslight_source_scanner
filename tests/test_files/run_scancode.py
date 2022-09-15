@@ -67,18 +67,18 @@ def run_scan(path_to_scan, output_file_name="",
     result_list = []
 
     _windows = platform.system() == "Windows"
-    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    _start_time = datetime.now().strftime('%y%m%d_%H%M')
 
     if output_file_name == "":
-        output_file = f"FOSSLight-Report_{start_time}"
-        output_json_file = f"scancode_{start_time}"
+        output_file = f"fosslight_report_{_start_time}"
+        output_json_file = f"scancode_{_start_time}"
         output_dir = os.getcwd()
     else:
         output_file = output_file_name
         output_json_file = output_file_name
         output_dir = os.path.dirname(os.path.abspath(output_file_name))
 
-    logger, _result_log = init_log(os.path.join(output_dir, f"fosslight_src_log_{start_time}.txt"),
+    logger, _result_log = init_log(os.path.join(output_dir, f"fosslight_log_{_start_time}.txt"),
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if path_to_scan == "":
