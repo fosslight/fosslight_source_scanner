@@ -55,6 +55,8 @@ def parsing_scanResult(scanoss_report):
             for license in findings[0]['licenses']:
 
                 license_lower = license['name'].lower()
+                if license_lower.endswith('.'):
+                    license_lower = license_lower[:-1]
                 for word in replace_word:
                     if word in license_lower:
                         license_lower = license_lower.replace(word, "")
