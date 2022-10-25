@@ -12,7 +12,7 @@ from fosslight_util.set_log import init_log
 import yaml
 from ._parsing_scancode_file_item import parsing_file_item, get_error_from_header
 from fosslight_util.output_format import check_output_format, write_output_file
-from ._help import print_help_msg_convert, print_version
+from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 import argparse
 
@@ -145,7 +145,7 @@ def main():
     args = parser.parse_args()
 
     if args.help:
-        print_help_msg_convert()
+        print_help_msg_source_scanner()
     if args.version:
         print_version(_PKG_NAME)
     if not args.path:
@@ -159,7 +159,7 @@ def main():
         format = ''.join(args.format)
 
     if path_to_find_json == "":
-        print_help_msg_convert()
+        print_help_msg_source_scanner()
 
     convert_json_to_output_report(path_to_find_json, output_file_name, print_matched_text, format)
 

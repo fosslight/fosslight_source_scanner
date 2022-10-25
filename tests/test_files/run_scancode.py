@@ -19,7 +19,7 @@ from fosslight_util.timer_thread import TimerThread
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.write_excel import write_excel_and_csv
-from ._help import print_help_msg_source
+from ._help import print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -38,7 +38,7 @@ def main():
         opts, args = getopt.getopt(argv, 'hmjp:o:')
         for opt, arg in opts:
             if opt == "-h":
-                print_help_msg_source()
+                print_help_msg_source_scanner()
             elif opt == "-p":
                 path_to_scan = arg
             elif opt == "-j":
@@ -48,7 +48,7 @@ def main():
             elif opt == "-m":
                 print_matched_text = True
     except Exception:
-        print_help_msg_source()
+        print_help_msg_source_scanner()
 
     timer = TimerThread()
     timer.setDaemon(True)
@@ -85,7 +85,7 @@ def run_scan(path_to_scan, output_file_name="",
         if _windows:
             path_to_scan = os.getcwd()
         else:
-            print_help_msg_source()
+            print_help_msg_source_scanner()
 
     num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores
 

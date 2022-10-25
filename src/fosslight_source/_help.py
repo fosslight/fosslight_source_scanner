@@ -4,52 +4,36 @@
 # SPDX-License-Identifier: Apache-2.0
 from fosslight_util.help import PrintHelpMsg, print_package_version
 
-_HELP_MESSAGE_SOURCE = """
-    Usage: fosslight_source [option1] <arg1> [option2] <arg2>...
+_HELP_MESSAGE_SOURCE_SCANNER = """
+    FOSSLight Source Scanner Usage: fosslight_source [option1] <arg1> [option2] <arg2>...
 
-    FOSSLight Source uses ScanCode, a source code scanner, to detect the copyright and license phrases
-    contained in the file. Some files (ex- build script), binary files, directory and files in specific
+    FOSSLight Source Scanner uses ScanCode and SCANOSS, the source code scanners, to detect
+    the copyright and license phrases contained in the file.
+    Some files (ex- build script), binary files, directory and files in specific
     directories (ex-test) are excluded from the result.
-    And removes words such as “-only” and “-old-style” from the license name to be printed.
-    The output result is generated in Excel format.
+
+    FOSSLight Convert Usage: fosslight_convert [option1] <arg1> [option2] <arg2>...
+
+    FOSSLigtht Converter converts the result of ScanCode in json format into FOSSLight Report format.
 
     Options:
         Optional
             -p <source_path>\t   Path to analyze source (Default: current directory)
             -h\t\t\t   Print help message
             -v\t\t\t   Print FOSSLight Source Scanner version
-            -j\t\t\t   Generate raw result of scanners in json format
             -m\t\t\t   Print additional information for scan result on separate sheets
             -o <output_path>\t   Output path (Path or file name)
             -f <format>\t\t   Output file format (excel, csv, opossum, yaml)
+        Options only for FOSSLight Source Scanner
             -s <scanner>\t   Select which scanner to be run (scancode, scanoss, all)
+            -j\t\t\t   Generate raw result of scanners in json format
             -t <float>\t\t   Stop scancode scanning if scanning takes longer than a timeout in seconds."""
-
-_HELP_MESSAGE_CONVERT = """
-    Usage: fosslight_convert [option1] <arg1> [option2] <arg2>...
-
-    FOSSLigtht_convert converts the result of executing ScanCode in json format into FOSSLight Report format.
-
-    Options:
-        Optional
-            -p <path_dir>\t\t   Path of ScanCode json files (Default: current directory)
-            -h\t\t\t\t   Print help message
-            -v\t\t\t\t   Print FOSSLight Source Scanner version
-            -m\t\t\t\t   Print the Matched text for each license on a separate sheet
-            -o <output_path>\t\t   Output path
-            \t\t\t\t    (If you want to generate the specific file name, add the output path with file name.)
-            -f <format>\t\t\t   Output file format (excel, csv, opossum)"""
 
 
 def print_version(pkg_name):
     print_package_version(pkg_name, "FOSSLight Source Scanner Version")
 
 
-def print_help_msg_source():
-    helpMsg = PrintHelpMsg(_HELP_MESSAGE_SOURCE)
-    helpMsg.print_help_msg(True)
-
-
-def print_help_msg_convert():
-    helpMsg = PrintHelpMsg(_HELP_MESSAGE_CONVERT)
+def print_help_msg_source_scanner():
+    helpMsg = PrintHelpMsg(_HELP_MESSAGE_SOURCE_SCANNER)
     helpMsg.print_help_msg(True)
