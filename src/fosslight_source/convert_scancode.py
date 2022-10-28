@@ -3,9 +3,7 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-import getopt
 import os
-import sys
 import json
 from datetime import datetime
 import logging
@@ -16,6 +14,7 @@ from ._parsing_scancode_file_item import parsing_file_item, get_error_from_heade
 from fosslight_util.output_format import check_output_format, write_output_file
 from ._help import print_help_msg_convert, print_version
 from ._license_matched import get_license_list_to_print
+import argparse
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _PKG_NAME = "fosslight_source"
@@ -130,31 +129,34 @@ def get_detected_licenses_from_scancode(scancode_json_file, need_license):
 
 
 def main():
-    argv = sys.argv[1:]
     path_to_find_json = os.getcwd()
     output_file_name = ""
     print_matched_text = False
     format = ""
 
-    try:
-        opts, args = getopt.getopt(argv, 'hvmp:o:f:')
-        for opt, arg in opts:
-            if opt == "-h":
-                print_help_msg_convert()
-            elif opt == "-v":
-                print_version(_PKG_NAME)
-            elif opt == "-p":
-                path_to_find_json = arg
-                if not path_to_find_json:
-                    path_to_find_json = os.getcwd()
-            elif opt == "-o":
-                output_file_name = arg
-            elif opt == "-m":
-                print_matched_text = True
-            elif opt == "-f":
-                format = arg
-    except Exception:
+    parser = argparse.ArgumentParser(description='FOSSLight Source Convert',
+                                     prog='fosslight_source_convert', add_help=False)
+    parser.add_argument('-h', '--help', action='store_true', required=False)
+    parser.add_argument('-v', '--version', action='store_true', required=False)
+    parser.add_argument('-p', '--path', nargs=1, type=str, required=False)
+    parser.add_argument('-o', '--output', nargs=1, type=str, required=False, default="")
+    parser.add_argument('-m', '--matched', action='store_true', required=False)
+    parser.add_argument('-f', '--format', nargs=1, type=str, required=False)
+    args = parser.parse_args()
+
+    if args.help:
         print_help_msg_convert()
+    if args.version:
+        print_version(_PKG_NAME)
+    if not args.path:
+        path_to_find_json = os.getcwd()
+    else:
+        path_to_find_json = ''.join(args.path)
+    output_file_name = ''.join(args.output)
+    if args.matched:
+        print_matched_text = True
+    if args.format:
+        format = ''.join(args.format)
 
     if path_to_find_json == "":
         print_help_msg_convert()
