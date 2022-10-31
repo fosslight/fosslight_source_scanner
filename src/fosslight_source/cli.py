@@ -12,7 +12,7 @@ from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
-from ._help import print_help_msg_source, print_version
+from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_format, write_output_file
 from .run_scancode import run_scan
@@ -66,7 +66,7 @@ def main():
     args = parser.parse_args()
 
     if args.help:
-        print_help_msg_source()
+        print_help_msg_source_scanner()
     if args.version:
         print_version(_PKG_NAME)
     if not args.path:
@@ -111,7 +111,7 @@ def main():
                                                                                                  print_matched_text, format, True,
                                                                                                  time_out)
         else:
-            print_help_msg_source()
+            print_help_msg_source_scanner()
             sys.exit(1)
         create_report_file(_start_time, scanned_result, license_list, selected_scanner, print_matched_text,
                            output_path, output_file, output_extension)
