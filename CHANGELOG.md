@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.6.19 (04/11/2022)
+## Changes
+- Unify help message for source scanner and converter @JustinWonjaePark (#97)
+
+## 🐛 Hotfixes
+
+- Remove the last dot from the result in scanoss license finding @JustinWonjaePark (#95)
+
+## 🔧 Maintenance
+
+- Change argument parsing for convert to argpars @JustinWonjaePark (#94, #96)
+
+---
+
 ## v1.6.18 (15/09/2022)
 ## Changes
 ## 🔧 Maintenance
