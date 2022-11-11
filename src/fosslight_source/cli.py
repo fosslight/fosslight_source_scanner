@@ -91,6 +91,9 @@ def main():
 
     _start_time = datetime.now().strftime('%y%m%d_%H%M')
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
+    if output_extension != '.xlsx' and print_matched_text:
+        logger.warning("-m option is only available for excel.")
+        print_matched_text = False
     if not success:
         logger.error(f"Format error. {msg}")
         sys.exit(1)
