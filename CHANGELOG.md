@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.20 (18/11/2022)
+## Changes
+## 🐛 Hotfixes
+
+- Block -m option for opossum,yaml and csv @JustinWonjaePark (#98)
+
+---
+
 ## v1.6.19 (04/11/2022)
 ## Changes
 - Unify help message for source scanner and converter @JustinWonjaePark (#97)
