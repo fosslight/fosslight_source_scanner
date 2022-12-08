@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.21 (08/12/2022)
+## Changes
+## 🔧 Maintenance
+
+- Add parameter for Scancode cores @soimkim (#100)
+
+---
+
 ## v1.6.20 (18/11/2022)
 ## Changes
 ## 🐛 Hotfixes
