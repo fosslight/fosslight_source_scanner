@@ -51,6 +51,7 @@ def main():
     scanned_result = []
     license_list = []
     time_out = 120
+    core = -1
 
     parser = argparse.ArgumentParser(description='FOSSLight Source', prog='fosslight_source', add_help=False)
     parser.add_argument('-h', '--help', action='store_true', required=False)
@@ -62,6 +63,7 @@ def main():
     parser.add_argument('-f', '--format', nargs=1, type=str, required=False)
     parser.add_argument('-s', '--scanner', nargs=1, type=str, required=False, default='all')
     parser.add_argument('-t', '--timeout', type=int, required=False, default=120)
+    parser.add_argument('-c', '--cores', type=int, required=False, default=-1)
 
     args = parser.parse_args()
 
@@ -84,6 +86,7 @@ def main():
         selected_scanner = ''.join(args.scanner)
 
     time_out = args.timeout
+    core = args.cores
 
     timer = TimerThread()
     timer.setDaemon(True)
@@ -103,14 +106,14 @@ def main():
     if os.path.isdir(path_to_scan):
         if selected_scanner == 'scancode':
             success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
-                                                                                         write_json_file, -1, True,
+                                                                                         write_json_file, core, True,
                                                                                          print_matched_text, format, True,
                                                                                          time_out)
         elif selected_scanner == 'scanoss':
             scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         elif selected_scanner == 'all' or selected_scanner == '':
             success, _result_log["Scan Result"], scanned_result, license_list = run_all_scanners(path_to_scan, output_file_name,
-                                                                                                 write_json_file, -1,
+                                                                                                 write_json_file, core,
                                                                                                  print_matched_text, format, True,
                                                                                                  time_out)
         else:
