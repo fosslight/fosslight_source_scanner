@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.22 (23/12/2022)
+## Changes
+## 🐛 Hotfixes
+
+- Clear ScanCode cache after installation @soimkim (#101)
+
+---
+
 ## v1.6.21 (08/12/2022)
 ## Changes
 ## 🔧 Maintenance
