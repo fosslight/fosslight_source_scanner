@@ -4,20 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 from codecs import open
 from setuptools import setup, find_packages
-from distutils.command.install import install as _install
-
-
-def _post_install(dir):
-    from subprocess import call
-    call(['scancode', '--reindex-licenses'])
-
-
-class install(_install):
-    def run(self):
-        _install.run(self)
-        self.execute(_post_install, (self.install_lib,),
-                     msg="Running post install task")
-
 
 with open('README.md', 'r', 'utf-8') as f:
     readme = f.read()
@@ -44,7 +30,6 @@ if __name__ == "__main__":
                      "Programming Language :: Python :: 3.8",
                      "Programming Language :: Python :: 3.9", ],
         python_requires=">=3.7",
-        cmdclass={'install': install},
         install_requires=required,
         extras_require={":python_version>'3.6'": ["scanoss>=0.7.0"],
                         ":python_version<'3.7'": ["dataclasses", "scanoss"]},
