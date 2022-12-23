@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.23 (23/12/2022)
+## Changes
+## 🔧 Maintenance
+
+- Revert "Clear ScanCode cache after installation" @soimkim (#102)
+
+---
+
 ## v1.6.22 (23/12/2022)
 ## Changes
 ## 🐛 Hotfixes
@@ -289,10 +297,3 @@
 - Change log level by message
 - Return only the result when call it as a function @soimkim (#9)
 - Update Help Message @bjk7119 (#8)
-
----
-
-## v1.4.5 (13/05/2021)
-## Changes
-* Add returning item parameter
-* Add dependency for installing ScanCode
