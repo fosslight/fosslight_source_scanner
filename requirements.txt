@@ -5,4 +5,3 @@ typecode-libmagic
 fosslight_util>=1.4.0
 PyYAML
 wheel
-packaging<=21.3
