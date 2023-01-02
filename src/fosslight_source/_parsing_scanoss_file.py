@@ -26,7 +26,9 @@ def parsing_extraInfo(scanned_result):
                           ','.join(license_w_source['license_file']),
                           ','.join(license_w_source['scancode']),
                           scan_item.matched_lines, scan_item.fileURL]
-            scanoss_extra_info.append(extra_item)
+        else:
+            extra_item = [scan_item.file, '', '', '', '', '', scan_item.matched_lines, scan_item.fileURL]
+        scanoss_extra_info.append(extra_item)
     scanoss_extra_info.insert(0, SCANOSS_INFO_HEADER)
     return scanoss_extra_info
 
