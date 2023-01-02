@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.6.24 (02/01/2023)
+## Changes
+## 🐛 Hotfixes
+
+- Fix omitted Scanoss result at -m option @JustinWonjaePark (#106)
+- Remove warning for -m option with default output @JustinWonjaePark (#104)
+
+## 🔧 Maintenance
+
+- Remove warranty-disclaimer from license detected by ScanCode @JustinWonjaePark (#105)
+- Revert "Fix ScanCode's import LegacyVersion bug" @soimkim (#103)
+
+---
+
 ## v1.6.23 (23/12/2022)
 ## Changes
 ## 🔧 Maintenance
@@ -289,11 +303,3 @@
 ## v1.4.8 (21/05/2021)
 ## Changes
 - Print message for error items @soimkim (#10)
-
----
-
-## v1.4.7 (17/05/2021)
-## Changes
-- Change log level by message
-- Return only the result when call it as a function @soimkim (#9)
-- Update Help Message @bjk7119 (#8)
