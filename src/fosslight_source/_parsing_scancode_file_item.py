@@ -18,6 +18,7 @@ _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
 _exclude_directory.append("/.")
+remove_license = ["warranty-disclaimer"]
 
 
 def get_error_from_header(header_item):
@@ -102,6 +103,10 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                     for lic_item in licenses:
                         license_value = ""
                         key = lic_item.get("key", "")
+                        if key in remove_license:
+                            if key in license_expression_list:
+                                license_expression_list.remove(key)
+                            continue
                         spdx = lic_item.get("spdx_license_key", "")
                         # logger.debug("LICENSE_KEY:"+str(key)+",SPDX:"+str(spdx))
 
