@@ -31,7 +31,7 @@ _HELP_MESSAGE_SOURCE_SCANNER = """
 
 
 def print_version(pkg_name):
-    print_package_version(pkg_name, "FOSSLight Source Scanner Version")
+    print_package_version(pkg_name, "FOSSLight Source Scanner Version:")
 
 
 def print_help_msg_source_scanner():
