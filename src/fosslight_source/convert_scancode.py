@@ -43,11 +43,11 @@ def convert_json_to_output_report(scancode_json, output_file_name, need_license=
             if output_extension == _json_ext:
                 output_file = "fosslight_opossum_" + start_time
             else:
-                output_file = "fosslight_report_" + start_time
+                output_file = "fosslight_report_src_" + start_time
     else:
         output_path = os.getcwd()
 
-    logger, result_log = init_log(os.path.join(output_path, "fosslight_log_" + start_time + ".txt"),
+    logger, result_log = init_log(os.path.join(output_path, "fosslight_log_src_" + start_time + ".txt"),
                                   True, logging.INFO, logging.DEBUG, _PKG_NAME)
     if not success:
         logger.error("Fail to convert scancode: " + msg)
