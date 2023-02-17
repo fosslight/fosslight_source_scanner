@@ -49,7 +49,7 @@ def run_scan(path_to_scan, output_file_name="",
                 if output_extension == _json_ext:
                     output_file = f"fosslight_opossum_{_start_time}"
                 else:
-                    output_file = f"fosslight_report_{_start_time}"
+                    output_file = f"fosslight_report_src_{_start_time}"
 
         if _write_json_file:
             output_json_file = os.path.join(output_path, "scancode_raw_result.json")
@@ -57,7 +57,7 @@ def run_scan(path_to_scan, output_file_name="",
             output_json_file = ""
 
         if not called_by_cli:
-            logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_{_start_time}.txt"),
+            logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
                                            True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
         num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores

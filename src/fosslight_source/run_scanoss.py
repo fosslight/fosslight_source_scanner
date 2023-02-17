@@ -45,7 +45,7 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     if not called_by_cli:
         global logger
         _start_time = datetime.now().strftime('%y%m%d_%H%M')
-        logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_{_start_time}.txt"),
+        logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
                                        True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     scanoss_file_list = []
