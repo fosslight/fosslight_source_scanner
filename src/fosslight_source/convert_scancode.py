@@ -29,7 +29,7 @@ def convert_json_to_output_report(scancode_json, output_file_name, need_license=
     lic_list = {}
     msg = ""
     success = True
-    start_time = datetime.now().strftime('%Y%m%d_%H%M%S')
+    start_time = datetime.now().strftime('%y%m%d_%H%M')
     _json_ext = ".json"
 
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
@@ -41,7 +41,7 @@ def convert_json_to_output_report(scancode_json, output_file_name, need_license=
 
         if output_file == "":
             if output_extension == _json_ext:
-                output_file = "fosslight_opossum_" + start_time
+                output_file = "fosslight_opossum_src_" + start_time
             else:
                 output_file = "fosslight_report_src_" + start_time
     else:

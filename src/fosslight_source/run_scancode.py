@@ -47,7 +47,7 @@ def run_scan(path_to_scan, output_file_name="",
         if not called_by_cli:
             if output_file == "":
                 if output_extension == _json_ext:
-                    output_file = f"fosslight_opossum_{_start_time}"
+                    output_file = f"fosslight_opossum_src_{_start_time}"
                 else:
                     output_file = f"fosslight_report_src_{_start_time}"
 
