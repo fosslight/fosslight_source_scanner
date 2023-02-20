@@ -100,7 +100,7 @@ def main():
     if not success:
         logger.error(f"Format error. {msg}")
         sys.exit(1)
-    logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_{_start_time}.txt"),
+    logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if os.path.isdir(path_to_scan):
@@ -151,9 +151,9 @@ def create_report_file(_start_time, scanned_result, license_list, selected_scann
 
     if output_file == "":
         if output_extension == _json_ext:
-            output_file = f"fosslight_opossum_{_start_time}"
+            output_file = f"fosslight_opossum_src_{_start_time}"
         else:
-            output_file = f"fosslight_report_{_start_time}"
+            output_file = f"fosslight_report_src_{_start_time}"
 
     if scanned_result:
         scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
