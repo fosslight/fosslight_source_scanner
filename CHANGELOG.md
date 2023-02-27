@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.6.25 (27/02/2023)
+## Changes
+## 🔧 Maintenance
+
+- Update git user in release action @bjk7119 (#114, #113)
+- Add the package name to result in the missing file @dd-jy (#112)
+- Add the package name to log and result file @dd-jy (#111)
+- Add the core option in help message @dd-jy (#110)
+- Unify version output format @bjk7119 (#109)
+- Change package to get release package @bjk7119 (#108)
+- Update version of packages for actions @bjk7119 (#107)
+
+---
+
 ## v1.6.24 (02/01/2023)
 ## Changes
 ## 🐛 Hotfixes
@@ -297,9 +311,3 @@
 - Add a reuse badge @soimkim (#13)
 - Add files for reuse compliance @soimkim (#12)
 - Apply Flake8 to check PEP8 @bjk7119 (#11)
-
----
-
-## v1.4.8 (21/05/2021)
-## Changes
-- Print message for error items @soimkim (#10)
