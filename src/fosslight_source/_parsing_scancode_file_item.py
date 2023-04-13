@@ -85,6 +85,11 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                         else:
                             copyright_data = x.get("value", "")
                         if copyright_data:
+                            try:
+                                copyright_data = re.sub(r'SPDX-License-Identifier\s*[\S]+', '', copyright_data, flags=re.I)
+                                copyright_data = re.sub(r'DownloadLocation\s*[\S]+', '', copyright_data, flags=re.I).strip()
+                            except Exception:
+                                pass
                             copyright_value_list.append(copyright_data)
 
                     result_item.copyright = copyright_value_list
