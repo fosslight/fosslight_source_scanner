@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.6.26 (16/04/2023)
+## Changes
+## 🐛 Hotfixes
+
+- Remove SPDX, URL from copyright @soimkim (#115)
+
+## 🔧 Maintenance
+
+- Fix Scancode error in Python 3.7 @soimkim (#116)
+
+---
+
 ## v1.6.25 (27/02/2023)
 ## Changes
 ## 🔧 Maintenance
@@ -295,19 +307,3 @@
 ## 🚀 Features
 
 - Print the matched text for unknown spdx @soimkim (#20)
-
----
-
-## v1.4.9 (24/06/2021)
-## Changes
-- Add reuse compliance checking @soimkim (#18)
-
-## 🔧 Maintenance
-
-- Delete unnecessary lines at tox.ini @bjk7119 (#17)
-- Change the name to FOSSLight Source Scanner @dd-jy (#16)
-- Change OSS report name to FOSSLight report @bjk7119 (#15)
-- Remove click from requirement.txt @soimkim (#14)
-- Add a reuse badge @soimkim (#13)
-- Add files for reuse compliance @soimkim (#12)
-- Apply Flake8 to check PEP8 @bjk7119 (#11)
