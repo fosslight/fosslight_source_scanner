@@ -1,7 +1,7 @@
 pyparsing<=3.0.4;python_full_version<"3.6.8"
-scancode-toolkit
+scancode-toolkit==31.2.6
 XlsxWriter
 typecode-libmagic
-fosslight_util>=1.4.0
+fosslight_util>=1.4.24
 PyYAML
 wheel

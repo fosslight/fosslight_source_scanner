@@ -51,7 +51,6 @@ def main():
     correct_mode = True
     correct_filepath = os.getcwd()
 
-
     scanned_result = []
     license_list = []
     time_out = 120
@@ -131,7 +130,7 @@ def main():
             print_help_msg_source_scanner()
             sys.exit(1)
         create_report_file(_start_time, scanned_result, license_list, selected_scanner, print_matched_text,
-                           output_path, output_file, output_extension, correct_mode, correct_filepath)
+                           output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
         try:
             logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
         except Exception as ex:
@@ -142,7 +141,8 @@ def main():
 
 
 def create_report_file(_start_time, scanned_result, license_list, selected_scanner, need_license=False,
-                       output_path="", output_file="", output_extension="", correct_mode=True, correct_filepath=""):
+                       output_path="", output_file="", output_extension="", correct_mode=True, correct_filepath="",
+                       path_to_scan=""):
     """
     Create report files for given scanned result.
 
@@ -190,7 +190,7 @@ def create_report_file(_start_time, scanned_result, license_list, selected_scann
                 sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
 
     if correct_mode:
-        success, msg_correct, correct_list = correct_with_yaml(correct_filepath, sheet_list)
+        success, msg_correct, correct_list = correct_with_yaml(correct_filepath, path_to_scan, sheet_list)
         if not success:
             logger.info(f"No correction with yaml: {msg_correct}")
         else:
