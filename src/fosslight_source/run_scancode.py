@@ -16,6 +16,7 @@ from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_format, write_output_file
+from fosslight_util.correct import correct_with_yaml
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -24,7 +25,7 @@ _PKG_NAME = "fosslight_source"
 
 def run_scan(path_to_scan, output_file_name="",
              _write_json_file=False, num_cores=-1, return_results=False, need_license=False, format="",
-             called_by_cli=False, time_out=120):
+             called_by_cli=False, time_out=120, correct_mode=True, correct_filepath=""):
     if not called_by_cli:
         global logger
 
@@ -100,13 +101,19 @@ def run_scan(path_to_scan, output_file_name="",
 
                             output_file_without_ext = os.path.join(output_path, output_file)
                             if not called_by_cli:
+                                if correct_mode:
+                                    success, msg_correct, correct_list = correct_with_yaml(correct_filepath, sheet_list)
+                                    if not success:
+                                        logger.info(f"No correction with yaml: {msg_correct}")
+                                    else:
+                                        sheet_list = correct_list
+                                        logger.info("Success to correct with yaml.")
                                 success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext,
                                                                                                output_extension, sheet_list)
                                 if success_to_write:
                                     logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
                                 else:
                                     logger.error(f"Fail to generate result file. msg:({writing_msg})")
-
             except Exception as ex:
                 success = False
                 msg = str(ex)

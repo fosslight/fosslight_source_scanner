@@ -15,6 +15,7 @@ from fosslight_util.timer_thread import TimerThread
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_format, write_output_file
+from fosslight_util.correct import correct_with_yaml
 from .run_scancode import run_scan
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
@@ -47,6 +48,9 @@ def main():
     print_matched_text = False
     format = ""
     selected_scanner = ""
+    correct_mode = True
+    correct_filepath = os.getcwd()
+
 
     scanned_result = []
     license_list = []
@@ -64,6 +68,8 @@ def main():
     parser.add_argument('-s', '--scanner', nargs=1, type=str, required=False, default='all')
     parser.add_argument('-t', '--timeout', type=int, required=False, default=120)
     parser.add_argument('-c', '--cores', type=int, required=False, default=-1)
+    parser.add_argument('--no_correction', action='store_true', required=False)
+    parser.add_argument('--correct_fpath', nargs=1, type=str, required=False)
 
     args = parser.parse_args()
 
@@ -84,6 +90,10 @@ def main():
         format = ''.join(args.format)
     if args.scanner:
         selected_scanner = ''.join(args.scanner)
+    if args.no_correction:
+        correct_mode = False
+    if args.correct_fpath:
+        correct_filepath = ''.join(args.correct_fpath)
 
     time_out = args.timeout
     core = args.cores
@@ -108,7 +118,8 @@ def main():
             success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                          write_json_file, core, True,
                                                                                          print_matched_text, format, True,
-                                                                                         time_out)
+                                                                                         time_out, correct_mode,
+                                                                                         correct_filepath)
         elif selected_scanner == 'scanoss':
             scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         elif selected_scanner == 'all' or selected_scanner == '':
@@ -120,7 +131,7 @@ def main():
             print_help_msg_source_scanner()
             sys.exit(1)
         create_report_file(_start_time, scanned_result, license_list, selected_scanner, print_matched_text,
-                           output_path, output_file, output_extension)
+                           output_path, output_file, output_extension, correct_mode, correct_filepath)
         try:
             logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
         except Exception as ex:
@@ -131,7 +142,7 @@ def main():
 
 
 def create_report_file(_start_time, scanned_result, license_list, selected_scanner, need_license=False,
-                       output_path="", output_file="", output_extension=""):
+                       output_path="", output_file="", output_extension="", correct_mode=True, correct_filepath=""):
     """
     Create report files for given scanned result.
 
@@ -178,6 +189,14 @@ def create_report_file(_start_time, scanned_result, license_list, selected_scann
                 sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
                 sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
 
+    if correct_mode:
+        success, msg_correct, correct_list = correct_with_yaml(correct_filepath, sheet_list)
+        if not success:
+            logger.info(f"No correction with yaml: {msg_correct}")
+        else:
+            sheet_list = correct_list
+            logger.info("Success to correct with yaml.")
+
     output_file_without_ext = os.path.join(output_path, output_file)
     success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension,
                                                                    sheet_list, extended_header)
@@ -216,7 +235,8 @@ def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, 
     success, _result_log["Scan Result"], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                   _write_json_file, num_cores,
                                                                                   True, need_license,
-                                                                                  format, called_by_cli, time_out)
+                                                                                  format, called_by_cli, time_out,
+                                                                                  False, "")
     scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, called_by_cli, _write_json_file)
 
     for file_in_scancode_result in scancode_result:

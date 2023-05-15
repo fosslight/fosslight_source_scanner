@@ -28,7 +28,9 @@ _HELP_MESSAGE_SOURCE_SCANNER = """
             -s <scanner>\t   Select which scanner to be run (scancode, scanoss, all)
             -j\t\t\t   Generate raw result of scanners in json format
             -t <float>\t\t   Stop scancode scanning if scanning takes longer than a timeout in seconds.
-            -c <core>\t\t   Select the number of cores to be scanned with ScanCode."""
+            -c <core>\t\t   Select the number of cores to be scanned with ScanCode.
+            --no_correction\t   Enter if you don't want to correct OSS information with sbom-info.yaml
+            --correct_fpath\t   Path to the sbom-info.yaml file"""
 
 
 def print_version(pkg_name):
