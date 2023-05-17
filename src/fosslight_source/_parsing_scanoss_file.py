@@ -19,16 +19,17 @@ def parsing_extraInfo(scanned_result):
     scanoss_extra_info = []
     for scan_item in scanned_result:
         license_w_source = scan_item.scanoss_reference
-        if license_w_source:
-            extra_item = [scan_item.file, ','.join(license_w_source['component_declared']),
-                          ','.join(license_w_source['file_spdx_tag']),
-                          ','.join(license_w_source['file_header']),
-                          ','.join(license_w_source['license_file']),
-                          ','.join(license_w_source['scancode']),
-                          scan_item.matched_lines, scan_item.fileURL]
-        else:
-            extra_item = [scan_item.file, '', '', '', '', '', scan_item.matched_lines, scan_item.fileURL]
-        scanoss_extra_info.append(extra_item)
+        if scan_item.matched_lines:
+            if license_w_source:
+                extra_item = [scan_item.file, ','.join(license_w_source['component_declared']),
+                              ','.join(license_w_source['file_spdx_tag']),
+                              ','.join(license_w_source['file_header']),
+                              ','.join(license_w_source['license_file']),
+                              ','.join(license_w_source['scancode']),
+                              scan_item.matched_lines, scan_item.fileURL]
+            else:
+                extra_item = [scan_item.file, '', '', '', '', '', scan_item.matched_lines, scan_item.fileURL]
+            scanoss_extra_info.append(extra_item)
     scanoss_extra_info.insert(0, SCANOSS_INFO_HEADER)
     return scanoss_extra_info
 
