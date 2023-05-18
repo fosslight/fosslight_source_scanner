@@ -28,8 +28,8 @@ class ScanItem:
     oss_name = ""
     oss_version = ""
     download_location = ""
-    matched_lines = ""
-    fileURL = ""
+    matched_lines = ""  # Only for SCANOSS results
+    fileURL = ""  # Only for SCANOSS results
     license_reference = ""
 
     def __init__(self, value):
