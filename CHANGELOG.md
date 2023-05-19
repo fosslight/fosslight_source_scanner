@@ -1,5 +1,21 @@
 # Changelog
 
+## v1.6.27 (19/05/2023)
+## Changes
+## 🚀 Features
+
+- Add to correct with sbom-info.yaml @dd-jy (#120)
+
+## 🐛 Hotfixes
+
+- Remove empty scanoss reference @JustinWonjaePark (#119)
+
+## 🔧 Maintenance
+
+- Fixed scancode-toolkit version @dd-jy (#118)
+
+---
+
 ## v1.6.26 (17/04/2023)
 ## Changes
 ## 🐛 Hotfixes
@@ -300,11 +316,3 @@
 
 - Remove warning in publish-release.yml @bjk7119 (#22)
 - Update version in setup.py when release @soimkim (#21)
-
----
-
-## v1.5.0 (25/06/2021)
-## Changes
-## 🚀 Features
-
-- Print the matched text for unknown spdx @soimkim (#20)
