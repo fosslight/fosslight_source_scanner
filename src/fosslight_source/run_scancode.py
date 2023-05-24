@@ -71,6 +71,7 @@ def run_scan(path_to_scan, output_file_name="",
                                            processes=num_cores,
                                            output_json_pp=output_json_file,
                                            only_findings=True, license_text=True,
+                                           url=True,
                                            timeout=time_out)
 
                 if not rc:
