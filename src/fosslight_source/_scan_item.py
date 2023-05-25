@@ -28,6 +28,7 @@ class ScanItem:
     oss_name = ""
     oss_version = ""
     download_location = ""
+    #spdx_download_location = ""
     matched_lines = ""  # Only for SCANOSS results
     fileURL = ""  # Only for SCANOSS results
     license_reference = ""
@@ -63,6 +64,8 @@ class ScanItem:
         if len(self._licenses) > 0:
             self._licenses = list(set(self._licenses))
 
+    def get_file(self):
+        return self.file
     def get_row_to_print(self):
         print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
                       ','.join(self.copyright),
@@ -105,6 +108,11 @@ class ScanItem:
             self.oss_version = other.oss_version
         if not self.download_location:
             self.download_location = other.download_location
+        elif self.download_location != other.download_location:
+            if self.comment == "":
+                self.comment = "(SCANOSS URL)" + other.download_location
+            else:
+                self.comment = self.comment + "|(SCANOSS URL)" + other.download_location
         if not self.matched_lines:
             self.matched_lines = other.matched_lines
         if not self.fileURL:

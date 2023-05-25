@@ -7,11 +7,13 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
+import mmap
 from ._license_matched import MatchedLicense
 from ._scan_item import ScanItem
 from ._scan_item import is_exclude_dir
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
+import copy
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _exclude_directory = ["test", "tests", "doc", "docs"]
@@ -40,7 +42,7 @@ def get_error_from_header(header_item):
     return has_error, str_error
 
 
-def parsing_file_item(scancode_file_list, has_error, need_matched_license=False):
+def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_license=False, need_url=False):
 
     rc = True
     scancode_file_item = []
@@ -50,6 +52,8 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
     prev_dir = ""
     prev_dir_value = False
     regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
+
+    url_count = 0
 
     if scancode_file_list:
         for file in scancode_file_list:
@@ -70,7 +74,30 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                     copyright_list = file.get("copyrights", [])
 
                     result_item = ScanItem(file_path)
+                    
+                    if need_url:
+                        fullpath = path_to_scan + '/' + file_path
 
+                        urls = file.get("urls", [])
+                        url_list = []
+                        
+                        if urls:
+                            url_count += 1
+                            test_file = open(fullpath,"r")
+                            # First method. read the lines brute force
+                            for line in test_file:
+                                if "SPDX-PackageDownloadLocation: " in line:
+                                    spdx_download_location = re.sub(r'.*?SPDX-PackageDownloadLocation: ', '', line).strip()
+                                    url_list.append(spdx_download_location)
+                            # Second method. search with mmap
+                            """mapped_file = mmap.mmap(test_file.fileno(),0,access=mmap.ACCESS_READ)
+                            lines = mapped_file.read().split(b'\n')
+                            for line in lines:
+                                if line.find("SPDX-PackageDownloadLocation: ".encode()) != -1:                                    
+                                    spdx_download_location = line.decode()
+                                    spdx_download_location = re.sub(r'.*?SPDX-PackageDownloadLocation: ', '', spdx_download_location)
+                                    url_list.append(spdx_download_location)"""
+                            # result_item.download_location = ",".join(url_list)
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
                         if len(error_msg) > 0:
@@ -164,10 +191,19 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
 
                         if is_exclude_file(file_path, prev_dir, prev_dir_value):
                             result_item.exclude = True
-                        scancode_file_item.append(result_item)
-
+                        if need_url:
+                            if url_list:
+                                for url in url_list:
+                                    temp_result_item = copy.deepcopy(result_item)
+                                    temp_result_item.download_location = url
+                                    scancode_file_item.append(temp_result_item)
+                            else:
+                                scancode_file_item.append(result_item)
+                        else:
+                            scancode_file_item.append(result_item)
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")
                 rc = False
+    logger.info(f"URL FILE COUNT : {url_count}")
     msg = list(set(msg))
     return rc, scancode_file_item, msg, license_list

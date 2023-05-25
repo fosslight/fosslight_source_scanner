@@ -5,6 +5,7 @@
   * SPDX-FileCopyrightText: Copyright 2017 Free Software Foundation Europe e.V.
   * SPDX-License-Identifier: MIT
   * DownloadLocation: https://github.com/fsfe/reuse-tool 
+  * SPDX-PackageDownloadLocation: https://github.com/fosslight/fosslight_util
  */
 #include <iostream>
 
