@@ -49,7 +49,6 @@ def main():
     format = ""
     selected_scanner = ""
     correct_mode = True
-    correct_filepath = os.getcwd()
 
     scanned_result = []
     license_list = []
@@ -91,6 +90,7 @@ def main():
         selected_scanner = ''.join(args.scanner)
     if args.no_correction:
         correct_mode = False
+    correct_filepath = path_to_scan
     if args.correct_fpath:
         correct_filepath = ''.join(args.correct_fpath)
 
@@ -159,6 +159,9 @@ def create_report_file(_start_time, scanned_result, license_list, selected_scann
         output_path = os.getcwd()
     else:
         output_path = os.path.abspath(output_path)
+
+    if not correct_filepath:
+        correct_filepath = path_to_scan
 
     if output_file == "":
         if output_extension == _json_ext:
