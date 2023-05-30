@@ -38,6 +38,9 @@ def run_scan(path_to_scan, output_file_name="",
     _json_ext = ".json"
     _start_time = datetime.now().strftime('%y%m%d_%H%M')
 
+    if not correct_filepath:
+        correct_filepath = path_to_scan
+
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
     if success:
         if output_path == "":  # if json output with _write_json_file not used, output_path won't be needed.
