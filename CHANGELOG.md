@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.6.28 (02/06/2023)
+## Changes
+## 🔧 Maintenance
+
+- Update the minimum version of util @dd-jy (#123)
+- Change the default path to find sbom-info.yaml @dd-jy (#122)
+
+---
+
 ## v1.6.27 (19/05/2023)
 ## Changes
 ## 🚀 Features
@@ -303,16 +312,3 @@
 ## 🔧 Maintenance
 
 - Merge init_log & init_log_item functions @bjk7119 (#25)
-
----
-
-## v1.5.1 (29/07/2021)
-## Changes
-## 🐛 Hotfixes
-
-- Fix a bug related Release actions @soimkim (#24)
-
-## 🔧 Maintenance
-
-- Remove warning in publish-release.yml @bjk7119 (#22)
-- Update version in setup.py when release @soimkim (#21)
