@@ -8,7 +8,10 @@ import os
 import warnings
 import logging
 import copy
+
 from datetime import datetime
+import pytz
+
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
@@ -57,7 +60,9 @@ def main():
     core = -1
     print_url = False
 
-    start_time = datetime.now()
+    # Set the timezone to KST
+    kst = pytz.timezone('Asia/Seoul')
+    start_time = datetime.now(kst)
     formatted_start_time = start_time.strftime("%Y-%m-%d %H:%M:%S")
 
     parser = argparse.ArgumentParser(description='FOSSLight Source', prog='fosslight_source', add_help=False)
@@ -143,7 +148,7 @@ def main():
             logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
         except Exception as ex:
             logger.debug(f"Failed to print log.: {ex}")
-        end_time = datetime.now()
+        end_time = datetime.now(kst)
         formatted_end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
 
         duration = end_time - start_time
