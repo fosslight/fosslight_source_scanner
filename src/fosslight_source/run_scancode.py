@@ -92,7 +92,8 @@ def run_scan(path_to_scan, output_file_name="",
                             msg = "Failed to analyze :" + error_msg
                     if "files" in results:
                         print("path to scan : ", path_to_scan)
-                        rc, result_list, parsing_msg, license_list = parsing_file_item(results["files"], has_error, path_to_scan, need_license, need_url)
+                        rc, result_list, parsing_msg, license_list = parsing_file_item(results["files"], has_error,
+                                                                                       path_to_scan, need_license, need_url)
                         if parsing_msg:
                             _result_log["Parsing Log"] = parsing_msg
                         if rc:

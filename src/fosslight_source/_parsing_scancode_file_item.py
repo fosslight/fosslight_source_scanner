@@ -7,7 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
-import mmap
+# import mmap
 from ._license_matched import MatchedLicense
 from ._scan_item import ScanItem
 from ._scan_item import is_exclude_dir
@@ -74,30 +74,23 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                     copyright_list = file.get("copyrights", [])
 
                     result_item = ScanItem(file_path)
-                    
+
                     if need_url:
                         fullpath = os.path.join(path_to_scan, file_path)
 
                         urls = file.get("urls", [])
                         url_list = []
-                        
+
                         if urls:
                             url_count += 1
                             # First method. read the lines brute force
-                            test_file = open(fullpath,"r")
+                            test_file = open(fullpath, "r")
                             for line in test_file:
                                 if "SPDX-PackageDownloadLocation: " in line:
-                                    spdx_download_location = re.sub(r'.*?SPDX-PackageDownloadLocation: ', '', line).strip()
+                                    spdx_download_location = re.sub(
+                                        r'.*?SPDX-PackageDownloadLocation: ', '', line).strip()
                                     url_list.append(spdx_download_location)
                             # Second method. search with mmap
-                            """mapped_file = mmap.mmap(test_file.fileno(),0,access=mmap.ACCESS_READ)
-                            lines = mapped_file.read().split(b'\n')
-                            for line in lines:
-                                if line.find("SPDX-PackageDownloadLocation: ".encode()) != -1:                                    
-                                    spdx_download_location = line.decode()
-                                    spdx_download_location = re.sub(r'.*?SPDX-PackageDownloadLocation: ', '', spdx_download_location)
-                                    url_list.append(spdx_download_location)"""
-                            # Redo the mmap
                             """search_term = "SPDX-PackageDownloadLocation: ".encode()
                             with open(fullpath, "r") as f:
                                 with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
@@ -109,11 +102,11 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                                             break
                                         # Extract the line that contains the search term
                                         line = m[start:].split(b"\n")[0].decode()
-                                        spdx_download_location = re.sub(r'.*?SPDX-PackageDownloadLocation: ', '', line)
+                                        spdx_download_location = re.sub(
+                                            r'.*?SPDX-PackageDownloadLocation: ', '', line)
                                         url_list.append(spdx_download_location)
                                         # Move the start position to the end of the line
                                         start += len(line)"""
-                            # result_item.download_location = ",".join(url_list)
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
                         if len(error_msg) > 0:
@@ -220,6 +213,5 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")
                 rc = False
-    logger.info(f"URL FILE COUNT : {url_count}")
     msg = list(set(msg))
     return rc, scancode_file_item, msg, license_list

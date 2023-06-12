@@ -123,14 +123,12 @@ def main():
                                                                                          write_json_file, core, True,
                                                                                          print_matched_text, format, True,
                                                                                          time_out, correct_mode,
-                                                                                         correct_filepath,print_url)
+                                                                                         correct_filepath, print_url)
         elif selected_scanner == 'scanoss':
             scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         elif selected_scanner == 'all' or selected_scanner == '':
-            success, _result_log["Scan Result"], scanned_result, license_list, scanoss_result = run_all_scanners(path_to_scan, output_file_name,
-                                                                                                 write_json_file, core,
-                                                                                                 print_matched_text, format, True,
-                                                                                                 time_out,print_url)
+            success, _result_log["Scan Result"], scanned_result, license_list, scanoss_result = run_all_scanners(
+                path_to_scan, output_file_name, write_json_file, core, print_matched_text, format, True, time_out, print_url)
         else:
             print_help_msg_source_scanner()
             sys.exit(1)
@@ -250,7 +248,7 @@ def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, 
     scanoss_result_for_merging = copy.deepcopy(scanoss_result)
     for file_in_scancode_result in scancode_result:
         per_file_result = copy.deepcopy(file_in_scancode_result)
-        if per_file_result in scanoss_result_for_merging: # Remove SCANOSS result if Scancode result exist
+        if per_file_result in scanoss_result_for_merging:  # Remove SCANOSS result if Scancode result exist
             scanoss_result_for_merging.pop(scanoss_result_for_merging.index(file_in_scancode_result))
         merged_result.append(per_file_result)
     if scanoss_result_for_merging:
