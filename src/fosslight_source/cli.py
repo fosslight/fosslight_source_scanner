@@ -8,10 +8,7 @@ import os
 import warnings
 import logging
 import copy
-
 from datetime import datetime
-import pytz
-
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
@@ -59,11 +56,6 @@ def main():
     time_out = 120
     core = -1
     print_url = False
-
-    # Set the timezone to KST
-    kst = pytz.timezone('Asia/Seoul')
-    start_time = datetime.now(kst)
-    formatted_start_time = start_time.strftime("%Y-%m-%d %H:%M:%S")
 
     parser = argparse.ArgumentParser(description='FOSSLight Source', prog='fosslight_source', add_help=False)
     parser.add_argument('-h', '--help', action='store_true', required=False)
@@ -148,19 +140,6 @@ def main():
             logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
         except Exception as ex:
             logger.debug(f"Failed to print log.: {ex}")
-        end_time = datetime.now(kst)
-        formatted_end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
-
-        duration = end_time - start_time
-        total_seconds = int(duration.total_seconds())
-        
-        hours = total_seconds // 3600
-        minutes = (total_seconds % 3600) // 60
-        seconds = total_seconds % 60
-
-        logger.info(f"Start time : {formatted_start_time}")
-        logger.info(f"End time : {formatted_end_time}")
-        logger.info(f"Duration : {hours}:{minutes}:{seconds}")
     else:
         logger.error(f"Check the path to scan. : {path_to_scan}")
         sys.exit(1)
