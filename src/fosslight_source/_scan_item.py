@@ -107,11 +107,6 @@ class ScanItem:
             self.oss_version = other.oss_version
         if not self.download_location:
             self.download_location = other.download_location
-        elif self.download_location != other.download_location:
-            if self.comment == "":
-                self.comment = "(SCANOSS URL)" + other.download_location
-            else:
-                self.comment = self.comment + "|(SCANOSS URL)" + other.download_location
         if not self.matched_lines:
             self.matched_lines = other.matched_lines
         if not self.fileURL:

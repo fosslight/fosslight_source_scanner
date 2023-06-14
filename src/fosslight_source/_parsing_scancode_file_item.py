@@ -7,7 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
-# import mmap
+import mmap
 from ._license_matched import MatchedLicense
 from ._scan_item import ScanItem
 from ._scan_item import is_exclude_dir
@@ -53,8 +53,6 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
     prev_dir_value = False
     regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
 
-    url_count = 0
-
     if scancode_file_list:
         for file in scancode_file_list:
             try:
@@ -82,16 +80,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                         url_list = []
 
                         if urls:
-                            url_count += 1
-                            # First method. read the lines brute force
-                            test_file = open(fullpath, "r")
-                            for line in test_file:
-                                if "SPDX-PackageDownloadLocation: " in line:
-                                    spdx_download_location = re.sub(
-                                        r'.*?SPDX-PackageDownloadLocation: ', '', line).strip()
-                                    url_list.append(spdx_download_location)
-                            # Second method. search with mmap
-                            """search_term = "SPDX-PackageDownloadLocation: ".encode()
+                            search_term = "SPDX-PackageDownloadLocation: ".encode()
                             with open(fullpath, "r") as f:
                                 with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
                                     start = 0
@@ -106,7 +95,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                                             r'.*?SPDX-PackageDownloadLocation: ', '', line)
                                         url_list.append(spdx_download_location)
                                         # Move the start position to the end of the line
-                                        start += len(line)"""
+                                        start += len(line)
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
                         if len(error_msg) > 0:
