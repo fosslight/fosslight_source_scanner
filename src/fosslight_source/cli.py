@@ -55,7 +55,7 @@ def main():
     scanoss_result = []
     time_out = 120
     core = -1
-    print_url = False
+    # print_url = False
 
     parser = argparse.ArgumentParser(description='FOSSLight Source', prog='fosslight_source', add_help=False)
     parser.add_argument('-h', '--help', action='store_true', required=False)
@@ -70,7 +70,7 @@ def main():
     parser.add_argument('-c', '--cores', type=int, required=False, default=-1)
     parser.add_argument('--no_correction', action='store_true', required=False)
     parser.add_argument('--correct_fpath', nargs=1, type=str, required=False)
-    parser.add_argument('-u', '--url', action='store_true', required=False)
+    # parser.add_argument('-u', '--url', action='store_true', required=False)
 
     args = parser.parse_args()
 
@@ -96,8 +96,8 @@ def main():
     correct_filepath = path_to_scan
     if args.correct_fpath:
         correct_filepath = ''.join(args.correct_fpath)
-    if args.url:
-        print_url = True
+    #if args.url:
+        #print_url = True
 
     time_out = args.timeout
     core = args.cores
@@ -122,13 +122,12 @@ def main():
             success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                          write_json_file, core, True,
                                                                                          print_matched_text, format, True,
-                                                                                         time_out, correct_mode,
-                                                                                         correct_filepath, print_url)
+                                                                                         time_out, correct_mode, correct_filepath)
         elif selected_scanner == 'scanoss':
             scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         elif selected_scanner == 'all' or selected_scanner == '':
             success, _result_log["Scan Result"], scanned_result, license_list, scanoss_result = run_all_scanners(
-                path_to_scan, output_file_name, write_json_file, core, print_matched_text, format, True, time_out, print_url)
+                path_to_scan, output_file_name, write_json_file, core, print_matched_text, format, True, time_out)
         else:
             print_help_msg_source_scanner()
             sys.exit(1)
@@ -216,7 +215,7 @@ def create_report_file(_start_time, scanned_result, license_list, scanoss_result
 
 
 def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1,
-                     need_license=False, format="", called_by_cli=True, time_out=120, print_url=False):
+                     need_license=False, format="", called_by_cli=True, time_out=120):
     """
     Run Scancode and scanoss.py for the given path.
 
@@ -242,7 +241,7 @@ def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, 
                                                                                   _write_json_file, num_cores,
                                                                                   True, need_license,
                                                                                   format, called_by_cli, time_out,
-                                                                                  False, "", print_url)
+                                                                                  False, "")
     scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, called_by_cli, _write_json_file)
 
     scanoss_result_for_merging = copy.deepcopy(scanoss_result)

@@ -25,7 +25,7 @@ _PKG_NAME = "fosslight_source"
 
 def run_scan(path_to_scan, output_file_name="",
              _write_json_file=False, num_cores=-1, return_results=False, need_license=False, format="",
-             called_by_cli=False, time_out=120, correct_mode=True, correct_filepath="", need_url=False):
+             called_by_cli=False, time_out=120, correct_mode=True, correct_filepath=""):
     if not called_by_cli:
         global logger
 
@@ -75,8 +75,7 @@ def run_scan(path_to_scan, output_file_name="",
                                            processes=num_cores,
                                            output_json_pp=output_json_file,
                                            only_findings=True, license_text=True,
-                                           url=need_url,
-                                           timeout=time_out)
+                                           url=True, timeout=time_out)
 
                 if not rc:
                     msg = "Source code analysis failed."
@@ -91,9 +90,7 @@ def run_scan(path_to_scan, output_file_name="",
                             _result_log["Error_files"] = error_msg
                             msg = "Failed to analyze :" + error_msg
                     if "files" in results:
-                        print("path to scan : ", path_to_scan)
-                        rc, result_list, parsing_msg, license_list = parsing_file_item(results["files"], has_error,
-                                                                                       path_to_scan, need_license, need_url)
+                        rc, result_list, parsing_msg, license_list = parsing_file_item(results["files"], has_error, path_to_scan, need_license)
                         if parsing_msg:
                             _result_log["Parsing Log"] = parsing_msg
                         if rc:
