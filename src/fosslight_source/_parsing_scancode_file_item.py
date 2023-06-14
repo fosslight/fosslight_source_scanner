@@ -13,7 +13,6 @@ from ._scan_item import ScanItem
 from ._scan_item import is_exclude_dir
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
-import copy
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _exclude_directory = ["test", "tests", "doc", "docs"]
@@ -84,6 +83,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                             with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
                                 for word in find_word.findall(mmap_obj):
                                     url_list.append(word.decode('utf-8'))
+                    result_item.download_location = url_list
 
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
@@ -178,13 +178,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
 
                         if is_exclude_file(file_path, prev_dir, prev_dir_value):
                             result_item.exclude = True
-                        if url_list:
-                            for url in url_list:
-                                temp_result_item = copy.deepcopy(result_item)
-                                temp_result_item.download_location = url
-                                scancode_file_item.append(temp_result_item)
-                        else:
-                            scancode_file_item.append(result_item)
+                        scancode_file_item.append(result_item)
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")
                 rc = False

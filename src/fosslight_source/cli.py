@@ -172,14 +172,23 @@ def create_report_file(_start_time, scanned_result, license_list, scanoss_result
         scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
 
         if selected_scanner == 'scancode' or output_extension == _json_ext:
-            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print() for scan_item in scanned_result]
+            sheet_list[SCANOSS_SHEET_NAME] = []
+            for scan_item in scanned_result:
+                for row in scan_item.get_row_to_print():
+                    sheet_list[SCANOSS_SHEET_NAME].append(row)
 
         elif selected_scanner == 'scanoss':
-            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_scanoss() for scan_item in scanned_result]
+            sheet_list[SCANOSS_SHEET_NAME] = []
+            for scan_item in scanned_result:
+                for row in scan_item.get_row_to_print_for_scanoss():
+                    sheet_list[SCANOSS_SHEET_NAME].append(row)
             extended_header = SCANOSS_HEADER
 
         else:
-            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_all_scanner() for scan_item in scanned_result]
+            sheet_list[SCANOSS_SHEET_NAME] = []
+            for scan_item in scanned_result:
+                for row in scan_item.get_row_to_print_for_all_scanner():
+                    sheet_list[SCANOSS_SHEET_NAME].append(row)
             extended_header = MERGED_HEADER
 
         if need_license:
