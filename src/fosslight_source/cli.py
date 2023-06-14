@@ -70,7 +70,6 @@ def main():
     parser.add_argument('-c', '--cores', type=int, required=False, default=-1)
     parser.add_argument('--no_correction', action='store_true', required=False)
     parser.add_argument('--correct_fpath', nargs=1, type=str, required=False)
-    # parser.add_argument('-u', '--url', action='store_true', required=False)
 
     args = parser.parse_args()
 
@@ -96,8 +95,6 @@ def main():
     correct_filepath = path_to_scan
     if args.correct_fpath:
         correct_filepath = ''.join(args.correct_fpath)
-    #if args.url:
-        #print_url = True
 
     time_out = args.timeout
     core = args.cores

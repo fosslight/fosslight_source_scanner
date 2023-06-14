@@ -52,6 +52,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
     prev_dir = ""
     prev_dir_value = False
     regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
+    find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 
     if scancode_file_list:
         for file in scancode_file_list:
@@ -73,29 +74,17 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
 
                     result_item = ScanItem(file_path)
 
-                    fullpath = os.path.join(path_to_scan, file_path) 
+                    fullpath = os.path.join(path_to_scan, file_path)
 
                     urls = file.get("urls", [])
                     url_list = []
-                    print("!!!!!!!! : ",fullpath)
 
                     if urls:
-                        search_term = "SPDX-PackageDownloadLocation:".encode()
                         with open(fullpath, "r") as f:
-                            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
-                                start = 0
-                                while True:
-                                    # Find the next occurrence of the search term
-                                    start = m.find(search_term, start)
-                                    if start == -1:
-                                        break
-                                    # Extract the line that contains the search term
-                                    line = m[start:].split(b"\n")[0].decode()
-                                    spdx_download_location = re.sub(
-                                        r'.*?SPDX-PackageDownloadLocation: ', '', line)
-                                    url_list.append(spdx_download_location)
-                                    # Move the start position to the end of the line
-                                    start += len(line)
+                            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
+                                for word in find_word.findall(mmap_obj):
+                                    url_list.append(word.decode('utf-8'))
+
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
                         if len(error_msg) > 0:
