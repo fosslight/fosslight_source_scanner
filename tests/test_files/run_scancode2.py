@@ -1,3 +1,7 @@
+# This file is a sample code for testing.
+# It should not be listed at Scancode result and
+# should be listed at SCANOSS result.
+
 import sys
 import os
 import multiprocessing

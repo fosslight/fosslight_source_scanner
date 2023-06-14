@@ -3,7 +3,7 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-PackageDownloadLocation: https://dummy_url_for_test.com
-# GPL-2.0
+# The code is not licensed under GPL-2.0.
 
 import sys
 import os
