@@ -55,7 +55,6 @@ def main():
     scanoss_result = []
     time_out = 120
     core = -1
-    # print_url = False
 
     parser = argparse.ArgumentParser(description='FOSSLight Source', prog='fosslight_source', add_help=False)
     parser.add_argument('-h', '--help', action='store_true', required=False)
