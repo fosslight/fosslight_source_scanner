@@ -168,7 +168,7 @@ def create_report_file(_start_time, scanned_result, license_list, scanoss_result
             output_file = f"fosslight_report_src_{_start_time}"
 
     if scanned_result:
-        scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
+        scanned_result = sorted(scanned_result, key=lambda row: (row.exclude, row.file))
 
         if selected_scanner == 'scancode' or output_extension == _json_ext:
             sheet_list[SCANOSS_SHEET_NAME] = []
