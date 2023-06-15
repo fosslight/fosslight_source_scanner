@@ -68,7 +68,7 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     if num_threads > 0:
         scan_command += " -T " + str(num_threads)
     else:
-        scan_command += " -T " + "30"
+        scan_command += " -T " + "10"
 
     try:
         os.system(scan_command)

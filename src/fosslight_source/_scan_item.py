@@ -27,7 +27,7 @@ class ScanItem:
     is_license_text = False
     oss_name = ""
     oss_version = ""
-    download_location = ""
+    download_location = []
     matched_lines = ""  # Only for SCANOSS results
     fileURL = ""  # Only for SCANOSS results
     license_reference = ""
@@ -36,6 +36,7 @@ class ScanItem:
         self.file = value
         self._copyright = []
         self._licenses = []
+        self.download_location = []
         self.comment = ""
         self.exclude = False
         self.is_license_text = False
@@ -63,23 +64,42 @@ class ScanItem:
         if len(self._licenses) > 0:
             self._licenses = list(set(self._licenses))
 
+    def get_file(self):
+        return self.file
+
     def get_row_to_print(self):
-        print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
-                      ','.join(self.copyright),
-                      "Exclude" if self.exclude else "",
-                      self.comment]
+        print_rows = []
+        if not self.download_location:
+            print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses),
+                               "", "", ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment])
+        else:
+            for url in self.download_location:
+                print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses),
+                                   url, "", ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment])
         return print_rows
 
     def get_row_to_print_for_scanoss(self):
-        print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
-                      ','.join(self.copyright),
-                      "Exclude" if self.exclude else "", self.comment]
+        print_rows = []
+        if not self.download_location:
+            print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), "", "",
+                               ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment])
+        else:
+            for url in self.download_location:
+                print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), url, "",
+                                   ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment])
         return print_rows
 
     def get_row_to_print_for_all_scanner(self):
-        print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses), self.download_location, "",
-                      ','.join(self.copyright),
-                      "Exclude" if self.exclude else "", self.comment, self.license_reference]
+        print_rows = []
+        if not self.download_location:
+            print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), "", "",
+                               ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment,
+                               self.license_reference])
+        else:
+            for url in self.download_location:
+                print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), url, "",
+                                   ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment,
+                                   self.license_reference])
         return print_rows
 
     def merge_scan_item(self, other):
@@ -104,7 +124,7 @@ class ScanItem:
         if not self.oss_version:
             self.oss_version = other.oss_version
         if not self.download_location:
-            self.download_location = other.download_location
+            self.download_location = list(other.download_location)
         if not self.matched_lines:
             self.matched_lines = other.matched_lines
         if not self.fileURL:

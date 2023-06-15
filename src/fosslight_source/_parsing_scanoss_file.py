@@ -48,7 +48,7 @@ def parsing_scanResult(scanoss_report):
         if 'version' in findings[0]:
             result_item.oss_version = findings[0]['version']
         if 'url' in findings[0]:
-            result_item.download_location = findings[0]['url']
+            result_item.download_location = list([findings[0]['url']])
 
         license_detected = []
         license_w_source = {"component_declared": [], "file_spdx_tag": [],

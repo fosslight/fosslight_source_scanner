@@ -1,10 +1,6 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# Copyright (c) 2020 LG Electronics Inc.
-# SPDX-License-Identifier: Apache-2.0
-
-# SPDX-PackageDownloadLocation: https://dummy_url_for_test.com
-# The code is not licensed under GPL-2.0.
+# This file is a sample code for testing.
+# It should not be listed at Scancode result and
+# should be listed at SCANOSS result.
 
 import sys
 import os

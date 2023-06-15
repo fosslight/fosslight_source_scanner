@@ -52,6 +52,7 @@ def main():
 
     scanned_result = []
     license_list = []
+    scanoss_result = []
     time_out = 120
     core = -1
 
@@ -117,19 +118,16 @@ def main():
             success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                          write_json_file, core, True,
                                                                                          print_matched_text, format, True,
-                                                                                         time_out, correct_mode,
-                                                                                         correct_filepath)
+                                                                                         time_out, correct_mode, correct_filepath)
         elif selected_scanner == 'scanoss':
             scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         elif selected_scanner == 'all' or selected_scanner == '':
-            success, _result_log["Scan Result"], scanned_result, license_list = run_all_scanners(path_to_scan, output_file_name,
-                                                                                                 write_json_file, core,
-                                                                                                 print_matched_text, format, True,
-                                                                                                 time_out)
+            success, _result_log["Scan Result"], scanned_result, license_list, scanoss_result = run_all_scanners(
+                path_to_scan, output_file_name, write_json_file, core, print_matched_text, format, True, time_out)
         else:
             print_help_msg_source_scanner()
             sys.exit(1)
-        create_report_file(_start_time, scanned_result, license_list, selected_scanner, print_matched_text,
+        create_report_file(_start_time, scanned_result, license_list, scanoss_result, selected_scanner, print_matched_text,
                            output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
         try:
             logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
@@ -140,7 +138,7 @@ def main():
         sys.exit(1)
 
 
-def create_report_file(_start_time, scanned_result, license_list, selected_scanner, need_license=False,
+def create_report_file(_start_time, scanned_result, license_list, scanoss_result, selected_scanner, need_license=False,
                        output_path="", output_file="", output_extension="", correct_mode=True, correct_filepath="",
                        path_to_scan=""):
     """
@@ -173,24 +171,33 @@ def create_report_file(_start_time, scanned_result, license_list, selected_scann
         scanned_result = sorted(scanned_result, key=lambda row: (''.join(row.licenses)))
 
         if selected_scanner == 'scancode' or output_extension == _json_ext:
-            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print() for scan_item in scanned_result]
+            sheet_list[SCANOSS_SHEET_NAME] = []
+            for scan_item in scanned_result:
+                for row in scan_item.get_row_to_print():
+                    sheet_list[SCANOSS_SHEET_NAME].append(row)
 
         elif selected_scanner == 'scanoss':
-            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_scanoss() for scan_item in scanned_result]
+            sheet_list[SCANOSS_SHEET_NAME] = []
+            for scan_item in scanned_result:
+                for row in scan_item.get_row_to_print_for_scanoss():
+                    sheet_list[SCANOSS_SHEET_NAME].append(row)
             extended_header = SCANOSS_HEADER
 
         else:
-            sheet_list[SCANOSS_SHEET_NAME] = [scan_item.get_row_to_print_for_all_scanner() for scan_item in scanned_result]
+            sheet_list[SCANOSS_SHEET_NAME] = []
+            for scan_item in scanned_result:
+                for row in scan_item.get_row_to_print_for_all_scanner():
+                    sheet_list[SCANOSS_SHEET_NAME].append(row)
             extended_header = MERGED_HEADER
 
         if need_license:
             if selected_scanner == 'scancode' or output_extension == _json_ext:
                 sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
             elif selected_scanner == 'scanoss':
-                sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
+                sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanoss_result)
             else:
                 sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
-                sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanned_result)
+                sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanoss_result)
 
     if correct_mode:
         success, msg_correct, correct_list = correct_with_yaml(correct_filepath, path_to_scan, sheet_list)
@@ -242,16 +249,17 @@ def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, 
                                                                                   False, "")
     scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, called_by_cli, _write_json_file)
 
+    scanoss_result_for_merging = copy.deepcopy(scanoss_result)
     for file_in_scancode_result in scancode_result:
         per_file_result = copy.deepcopy(file_in_scancode_result)
-        if per_file_result in scanoss_result:
-            per_file_result.merge_scan_item(scanoss_result.pop(scanoss_result.index(file_in_scancode_result)))
+        if per_file_result in scanoss_result_for_merging:  # Remove SCANOSS result if Scancode result exist
+            scanoss_result_for_merging.pop(scanoss_result_for_merging.index(file_in_scancode_result))
         merged_result.append(per_file_result)
-    if scanoss_result:
-        for file_left_in_scanoss_result in scanoss_result:
+    if scanoss_result_for_merging:
+        for file_left_in_scanoss_result in scanoss_result_for_merging:
             merged_result.append(file_left_in_scanoss_result)
 
-    return success, _result_log["Scan Result"], merged_result, license_list
+    return success, _result_log["Scan Result"], merged_result, license_list, scanoss_result
 
 
 if __name__ == '__main__':

@@ -7,6 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
+import mmap
 from ._license_matched import MatchedLicense
 from ._scan_item import ScanItem
 from ._scan_item import is_exclude_dir
@@ -40,7 +41,7 @@ def get_error_from_header(header_item):
     return has_error, str_error
 
 
-def parsing_file_item(scancode_file_list, has_error, need_matched_license=False):
+def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_license=False):
 
     rc = True
     scancode_file_item = []
@@ -50,6 +51,7 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
     prev_dir = ""
     prev_dir_value = False
     regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
+    find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 
     if scancode_file_list:
         for file in scancode_file_list:
@@ -70,6 +72,18 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                     copyright_list = file.get("copyrights", [])
 
                     result_item = ScanItem(file_path)
+
+                    fullpath = os.path.join(path_to_scan, file_path)
+
+                    urls = file.get("urls", [])
+                    url_list = []
+
+                    if urls:
+                        with open(fullpath, "r") as f:
+                            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
+                                for word in find_word.findall(mmap_obj):
+                                    url_list.append(word.decode('utf-8'))
+                    result_item.download_location = url_list
 
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
@@ -165,7 +179,6 @@ def parsing_file_item(scancode_file_list, has_error, need_matched_license=False)
                         if is_exclude_file(file_path, prev_dir, prev_dir_value):
                             result_item.exclude = True
                         scancode_file_item.append(result_item)
-
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")
                 rc = False
