@@ -36,6 +36,7 @@ class ScanItem:
         self.file = value
         self._copyright = []
         self._licenses = []
+        self.download_location = []
         self.comment = ""
         self.exclude = False
         self.is_license_text = False
@@ -67,9 +68,6 @@ class ScanItem:
         return self.file
 
     def get_row_to_print(self):
-        print_rows = [self.file, self.oss_name, self.oss_version, ','.join(self.licenses),
-                      self.download_location, "", ','.join(self.copyright),
-                      "Exclude" if self.exclude else "", self.comment]
         print_rows = []
         if not self.download_location:
             print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses),
