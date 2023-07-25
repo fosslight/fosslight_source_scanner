@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.30 (25/07/2023)
+## Changes
+## 🔧 Maintenance
+
+- Update scancode-toolkit version @dd-jy (#127)
+
+---
+
 ## v1.6.29 (25/07/2023)
 ## Changes
 ## 🚀 Features
@@ -314,11 +322,3 @@
 - Remove duplicates from matched file @soimkim (#32)
 - Print help message when p option is missing @soimkim (#31)
 -  Set condition to use FOSSLight Util v1.1.0 or later @soimkim (#29)
-
----
-
-## v1.6.0 (13/08/2021)
-## Changes
-## 🚀 Features
-
-- Add option for printing matched text @soimkim (#28)
