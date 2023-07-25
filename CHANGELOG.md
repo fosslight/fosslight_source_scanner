@@ -1,5 +1,23 @@
 # Changelog
 
+## v1.6.29 (25/07/2023)
+## Changes
+## 🚀 Features
+
+- Read download location @JustinWonjaePark (#124)
+
+## 🐛 Hotfixes
+
+- Update FOSSLight Util version @soimkim (#126)
+
+## 🔧 Maintenance
+
+- Sort the result by file and exclude attributes @JustinWonjaePark (#125)
+- Update the minimum version of util @dd-jy (#123)
+- Change the default path to find sbom-info.yaml @dd-jy (#122)
+
+---
+
 ## v1.6.28 (02/06/2023)
 ## Changes
 ## 🔧 Maintenance
@@ -304,11 +322,3 @@
 ## 🚀 Features
 
 - Add option for printing matched text @soimkim (#28)
-
----
-
-## v1.5.2 (12/08/2021)
-## Changes
-## 🔧 Maintenance
-
-- Merge init_log & init_log_item functions @bjk7119 (#25)
