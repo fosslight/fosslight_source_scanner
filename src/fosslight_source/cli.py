@@ -21,6 +21,7 @@ from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
 import argparse
+from .run_spdx_extractor import get_spdx_downloads
 
 SCANOSS_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
@@ -114,21 +115,29 @@ def main():
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if os.path.isdir(path_to_scan):
-        if selected_scanner == 'scancode':
-            success, _result_log["Scan Result"], scanned_result, license_list = run_scan(path_to_scan, output_file_name,
-                                                                                         write_json_file, core, True,
-                                                                                         print_matched_text, format, True,
-                                                                                         time_out, correct_mode, correct_filepath)
-        elif selected_scanner == 'scanoss':
-            scanned_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
-        elif selected_scanner == 'all' or selected_scanner == '':
-            success, _result_log["Scan Result"], scanned_result, license_list, scanoss_result = run_all_scanners(
-                path_to_scan, output_file_name, write_json_file, core, print_matched_text, format, True, time_out)
+        scancode_result = []
+        scanoss_result = []
+        merged_result = []
+        success = True
+        if selected_scanner == 'test':
+            spdx_downloads = get_spdx_downloads(path_to_scan)
+            print(spdx_downloads)
+            sys.exit(1)
+        if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
+            success, _result_log["Scan Result"], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
+                                                                                          write_json_file, core, True,
+                                                                                          print_matched_text, format, True,
+                                                                                          time_out, correct_mode, correct_filepath)
+        elif selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
+            scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         else:
             print_help_msg_source_scanner()
             sys.exit(1)
-        create_report_file(_start_time, scanned_result, license_list, scanoss_result, selected_scanner, print_matched_text,
+        spdx_downloads = get_spdx_downloads(path_to_scan)
+        # merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
+        create_report_file(_start_time, scancode_result, license_list, scanoss_result, selected_scanner, print_matched_text,
                            output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
+
         try:
             logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
         except Exception as ex:
@@ -217,35 +226,18 @@ def create_report_file(_start_time, scanned_result, license_list, scanoss_result
         logger.error(f"Fail to generate result file. msg:({writing_msg})")
 
 
-def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1,
-                     need_license=False, format="", called_by_cli=True, time_out=120):
+# def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1,
+#                      need_license=False, format="", called_by_cli=True, time_out=120):
+def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     """
-    Run Scancode and scanoss.py for the given path.
+    Merge scanner results and spdx parsing result
+    :param scancode_result: list of scancode results in ScanItem.
+    :param scanoss_result: list of scanoss results in ScanItem.
+    :param spdx_downloads: dictionary of spdx parsed results.
+    :return merged_result: list of merged result in ScanItem.
+    """
 
-    :param path_to_scan: path of sourcecode to scan.
-    :param output_file_name: path or file name (with path) for the output.
-    :param _write_json_file: if requested, keep the raw files.
-    :param num_cores: number of cores used for scancode scanning.
-    :param need_license: if requested, output matched text (only for scancode).
-    :param format: output format (excel, csv, opossum).
-    :param called_by_cli: if not called by cli, initialize logger.
-    :return success: success or failure of scancode.
-    :return _result_log["Scan Result"]:
-    :return merged_result: merged scan result of scancode and scanoss.
-    :return license_list: matched text.(only for scancode)
-    """
-    scancode_result = []
-    scanoss_result = []
     merged_result = []
-    _result_log = {}
-    success = True
-
-    success, _result_log["Scan Result"], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
-                                                                                  _write_json_file, num_cores,
-                                                                                  True, need_license,
-                                                                                  format, called_by_cli, time_out,
-                                                                                  False, "")
-    scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, called_by_cli, _write_json_file)
 
     scanoss_result_for_merging = copy.deepcopy(scanoss_result)
     for file_in_scancode_result in scancode_result:
@@ -257,7 +249,8 @@ def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, 
         for file_left_in_scanoss_result in scanoss_result_for_merging:
             merged_result.append(file_left_in_scanoss_result)
 
-    return success, _result_log["Scan Result"], merged_result, license_list, scanoss_result
+    # return success, _result_log["Scan Result"], merged_result, license_list, scanoss_result
+    return merged_result
 
 
 if __name__ == '__main__':
