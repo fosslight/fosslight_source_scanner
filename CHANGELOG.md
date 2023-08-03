@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.6.31 (03/08/2023)
+## Changes
+## 🐛 Hotfixes
+
+- Revert the scancode-toolkit version @dd-jy (#129)
+
+## 🔧 Maintenance
+
+- Remove sorting @JustinWonjaePark (#128)
+
+---
+
 ## v1.6.30 (25/07/2023)
 ## Changes
 ## 🔧 Maintenance
@@ -312,13 +324,3 @@
 ## 🐛 Hotfixes
 
 - Remove required version of ScanCode @soimkim (#33)
-
----
-
-## v1.6.1 (26/08/2021)
-## Changes
-## 🔧 Maintenance
-
-- Remove duplicates from matched file @soimkim (#32)
-- Print help message when p option is missing @soimkim (#31)
--  Set condition to use FOSSLight Util v1.1.0 or later @soimkim (#29)
