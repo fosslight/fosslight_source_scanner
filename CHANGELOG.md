@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.6.32 (03/08/2023)
+## Changes
+## 🐛 Hotfixes
+
+- Fix the util version @dd-jy (#130)
+
+---
+
 ## v1.6.31 (03/08/2023)
 ## Changes
 ## 🐛 Hotfixes
@@ -316,11 +324,3 @@
 ## 🔧 Maintenance
 
 - Update datetime format @soimkim (#34)
-
----
-
-## v1.6.2 (16/09/2021)
-## Changes
-## 🐛 Hotfixes
-
-- Remove required version of ScanCode @soimkim (#33)
