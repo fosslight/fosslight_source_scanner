@@ -144,7 +144,7 @@ def parsing_scancode_32_earlier(scancode_file_list, path_to_scan, has_error=Fals
                         if license_value != "":
                             if key == KEYWORD_SCANCODE_UNKNOWN:
                                 try:
-                                    matched_txt = lic_item.get("matched_text", "")
+                                    matched_txt = lic_item.get("matched_text", "").lower()
                                     matched = regex.search(matched_txt)
                                     if matched:
                                         license_value = str(matched.group())
