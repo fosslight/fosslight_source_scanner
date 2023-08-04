@@ -19,8 +19,15 @@ _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
 _exclude_directory.append("/.")
-remove_license = ["warranty-disclaimer"]
-
+REMOVE_LICENSE = ["warranty-disclaimer"]
+regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
+find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
+KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
+KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
+KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
+SPDX_REPLACE_WORDS = ["(", ")"]
+KEY_AND = "and"
+KEY_OR = "or"
 
 def get_error_from_header(header_item):
     has_error = False
@@ -41,17 +48,13 @@ def get_error_from_header(header_item):
     return has_error, str_error
 
 
-def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_license=False):
-
+def parsing_scancode_32_earlier(scancode_file_list, path_to_scan, has_error=False):
     rc = True
+    msg = []
     scancode_file_item = []
     license_list = {}  # Key :[license]+[matched_text], value: MatchedLicense()
-    msg = []
-
     prev_dir = ""
     prev_dir_value = False
-    regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
-    find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 
     if scancode_file_list:
         for file in scancode_file_list:
@@ -100,8 +103,8 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                             copyright_data = x.get("value", "")
                         if copyright_data:
                             try:
-                                copyright_data = re.sub(r'SPDX-License-Identifier\s*[\S]+', '', copyright_data, flags=re.I)
-                                copyright_data = re.sub(r'DownloadLocation\s*[\S]+', '', copyright_data, flags=re.I).strip()
+                                copyright_data = re.sub(KEYWORD_SPDX_ID, '', copyright_data, flags=re.I)
+                                copyright_data = re.sub(KEYWORD_DOWNLOAD_LOC, '', copyright_data, flags=re.I).strip()
                             except Exception:
                                 pass
                             copyright_value_list.append(copyright_data)
@@ -122,7 +125,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                     for lic_item in licenses:
                         license_value = ""
                         key = lic_item.get("key", "")
-                        if key in remove_license:
+                        if key in REMOVE_LICENSE:
                             if key in license_expression_list:
                                 license_expression_list.remove(key)
                             continue
@@ -139,7 +142,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                             license_value = spdx.lower()
 
                         if license_value != "":
-                            if key == "unknown-spdx":
+                            if key == KEYWORD_SCANCODE_UNKNOWN:
                                 try:
                                     matched_txt = lic_item.get("matched_text", "")
                                     matched = regex.search(matched_txt)
@@ -154,7 +157,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                             license_detected.append(license_value)
 
                             # Add matched licenses
-                            if need_matched_license and "category" in lic_item:
+                            if "category" in lic_item:
                                 lic_category = lic_item["category"]
                                 if "matched_text" in lic_item:
                                     lic_matched_text = lic_item["matched_text"]
@@ -184,3 +187,122 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
                 rc = False
     msg = list(set(msg))
     return rc, scancode_file_item, msg, license_list
+
+
+def split_spdx_expression(spdx_string):
+    license = []
+    for replace in SPDX_REPLACE_WORDS:
+        spdx_string = spdx_string.replace(replace, "")
+    spdx_string = spdx_string.replace(KEY_OR, KEY_AND)
+    license = spdx_string.split(KEY_AND)
+    return license
+
+
+def parsing_scancode_32_later(scancode_file_list, path_to_scan, has_error=False):
+    rc = True
+    msg = []
+    scancode_file_item = []
+    license_list = {}  # Key :[license]+[matched_text], value: MatchedLicense()
+
+    if scancode_file_list:
+        for file in scancode_file_list:
+            file_path = file.get("path", "")
+            is_binary = file.get("is_binary", False)
+            is_dir = file.get("type", "") == "directory"
+            if (not file_path) or is_binary or is_dir:
+                continue
+
+            result_item = ScanItem(file_path)
+
+            if has_error:
+                error_msg = file.get("scan_errors", [])
+                if error_msg:
+                    result_item.comment = ",".join(error_msg)
+                    scancode_file_item.append(result_item)
+                    continue
+
+            url_list = []
+            if file.get("urls", []):
+                with open(os.path.join(path_to_scan, file_path), "r") as f:
+                    with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
+                        for word in find_word.findall(mmap_obj):
+                            url_list.append(word.decode('utf-8'))
+            result_item.download_location = url_list
+
+            copyright_value_list = []
+            for x in file.get("copyrights", []):
+                copyright_data = x.get("copyright", "")
+                if copyright_data:
+                    try:
+                        copyright_data = re.sub(KEYWORD_SPDX_ID, '', copyright_data, flags=re.I)
+                        copyright_data = re.sub(KEYWORD_DOWNLOAD_LOC, '', copyright_data, flags=re.I).strip()
+                    except Exception:
+                        pass
+                    copyright_value_list.append(copyright_data)
+            result_item.copyright = copyright_value_list
+
+            license_detected = []
+            licenses = file.get("license_detections", [])
+            if not licenses:
+                continue
+            for lic in licenses:
+                matched_lic_list = lic.get("matches", [])
+                for matched_lic in matched_lic_list:
+                    found_lic_list = matched_lic.get("license_expression", "")
+                    matched_txt = matched_lic.get("matched_text", "")
+                    if found_lic_list:
+                        found_lic_list = found_lic_list.lower()
+                        for found_lic in split_spdx_expression(found_lic_list):
+                            if found_lic:
+                                found_lic = found_lic.strip()
+                                if found_lic in REMOVE_LICENSE:
+                                    continue
+                                elif found_lic == KEYWORD_SCANCODE_UNKNOWN:
+                                    try:
+                                        matched = regex.search(matched_txt.lower())
+                                        if matched:
+                                            found_lic = str(matched.group())
+                                    except Exception:
+                                        pass
+                                for word in replace_word:
+                                    found_lic = found_lic.replace(word, "")
+                                if matched_txt:
+                                    lic_matched_key = found_lic + matched_txt
+                                    if lic_matched_key in license_list:
+                                        license_list[lic_matched_key].set_files(file_path)
+                                    else:
+                                        lic_info = MatchedLicense(found_lic, "", matched_txt, file_path)
+                                        license_list[lic_matched_key] = lic_info
+                                license_detected.append(found_lic)
+            result_item.licenses = license_detected
+            if len(license_detected) > 1:
+                license_expression_spdx = file.get("detected_license_expression_spdx", "")
+                license_expression = file.get("detected_license_expression", "")
+                if license_expression_spdx:
+                    license_expression = license_expression_spdx
+                if license_expression:
+                    result_item.comment = license_expression
+
+            result_item.exclude = is_exclude_file(file_path)
+            result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90
+            scancode_file_item.append(result_item)
+
+    return rc, scancode_file_item, msg, license_list
+
+
+def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_license=False):
+
+    rc = True
+    msg = []
+
+    first_item = next(iter(scancode_file_list or []), None)
+    if "licenses" in first_item:
+        rc, scancode_file_item, msg, license_list = parsing_scancode_32_earlier(scancode_file_list,
+                                                                                path_to_scan, has_error)
+    else:
+        rc, scancode_file_item, msg, license_list = parsing_scancode_32_later(scancode_file_list,
+                                                                              path_to_scan, has_error)
+    if not need_matched_license:
+        license_list = {}
+    return rc, scancode_file_item, msg, license_list
+            

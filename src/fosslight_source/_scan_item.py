@@ -8,7 +8,7 @@ import logging
 import fosslight_util.constant as constant
 
 logger = logging.getLogger(constant.LOGGER_NAME)
-replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-"]
+replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "licenseref-"]
 _exclude_filename = ["changelog", "config.guess", "config.sub",
                      "config.h.in", "changes", "ltmain.sh",
                      "aclocal.m4", "configure", "configure.ac",
