@@ -7,7 +7,6 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
-import mmap
 from ._license_matched import MatchedLicense
 from ._scan_item import ScanItem
 from ._scan_item import is_exclude_dir
@@ -49,7 +48,7 @@ def get_error_from_header(header_item):
     return has_error, str_error
 
 
-def parsing_scancode_32_earlier(scancode_file_list, path_to_scan, has_error=False):
+def parsing_scancode_32_earlier(scancode_file_list, has_error=False):
     rc = True
     msg = []
     scancode_file_item = []
@@ -76,18 +75,6 @@ def parsing_scancode_32_earlier(scancode_file_list, path_to_scan, has_error=Fals
                     copyright_list = file.get("copyrights", [])
 
                     result_item = ScanItem(file_path)
-
-                    fullpath = os.path.join(path_to_scan, file_path)
-
-                    urls = file.get("urls", [])
-                    url_list = []
-
-                    if urls:
-                        with open(fullpath, "r") as f:
-                            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
-                                for word in find_word.findall(mmap_obj):
-                                    url_list.append(word.decode('utf-8'))
-                    result_item.download_location = url_list
 
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
@@ -199,7 +186,7 @@ def split_spdx_expression(spdx_string):
     return license
 
 
-def parsing_scancode_32_later(scancode_file_list, path_to_scan, has_error=False):
+def parsing_scancode_32_later(scancode_file_list, has_error=False):
     rc = True
     msg = []
     scancode_file_item = []
@@ -222,14 +209,6 @@ def parsing_scancode_32_later(scancode_file_list, path_to_scan, has_error=False)
                         result_item.comment = ",".join(error_msg)
                         scancode_file_item.append(result_item)
                         continue
-
-                url_list = []
-                if file.get("urls", []):
-                    with open(os.path.join(path_to_scan, file_path), "r") as f:
-                        with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
-                            for word in find_word.findall(mmap_obj):
-                                url_list.append(word.decode('utf-8'))
-                result_item.download_location = url_list
 
                 copyright_value_list = []
                 for x in file.get("copyrights", []):
@@ -295,18 +274,16 @@ def parsing_scancode_32_later(scancode_file_list, path_to_scan, has_error=False)
     return rc, scancode_file_item, msg, license_list
 
 
-def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_license=False):
+def parsing_file_item(scancode_file_list, has_error, need_matched_license=False):
 
     rc = True
     msg = []
 
     first_item = next(iter(scancode_file_list or []), {})
     if "licenses" in first_item:
-        rc, scancode_file_item, msg, license_list = parsing_scancode_32_earlier(scancode_file_list,
-                                                                                path_to_scan, has_error)
+        rc, scancode_file_item, msg, license_list = parsing_scancode_32_earlier(scancode_file_list, has_error)
     else:
-        rc, scancode_file_item, msg, license_list = parsing_scancode_32_later(scancode_file_list,
-                                                                              path_to_scan, has_error)
+        rc, scancode_file_item, msg, license_list = parsing_scancode_32_later(scancode_file_list, has_error)
     if not need_matched_license:
         license_list = {}
     return rc, scancode_file_item, msg, license_list
