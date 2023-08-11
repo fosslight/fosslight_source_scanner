@@ -118,10 +118,7 @@ def main():
         scanoss_result = []
         merged_result = []
         success = True
-        if selected_scanner == 'test':
-            spdx_downloads = get_spdx_downloads(path_to_scan)
-            print(spdx_downloads)
-            sys.exit(1)
+
         if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
             success, _result_log["Scan Result"], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                           write_json_file, core, True,
@@ -238,25 +235,6 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     merged_result = []
     scanoss_result_for_merging = copy.deepcopy(scanoss_result)
 
-    # print("SCANCODE Result : ", len(scancode_result))
-    # if scancode_result:
-    #     i = 0
-    #     for item in scancode_result:
-    #         i += 1
-    #         print(i,'. ', item.file)
-    # print("SCANOSS Result : ", len(scanoss_result))
-    # if scanoss_result:
-    #     i = 0
-    #     for item in scanoss_result:
-    #         i += 1
-    #         print(i,'. ', item.file)
-    # print("SPDX Result : ", len(spdx_downloads))
-    # if spdx_downloads:
-    #     i = 0
-    #     for key in spdx_downloads.keys():
-    #         i += 1
-    #         print(i,'. ', key)
-
     for file_in_scancode_result in scancode_result:
         per_file_result = copy.deepcopy(file_in_scancode_result)
         if per_file_result in scanoss_result_for_merging:  # Remove SCANOSS result if Scancode result exist
@@ -274,12 +252,6 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
                 new_result_item = ScanItem(spdx_found_file)
                 new_result_item.download_location = download_list
                 merged_result.append(new_result_item)
-    # print("MERGED Result : ", len(merged_result))
-    # if merged_result:
-    #     i = 0
-    #     for item in merged_result:
-    #         i += 1
-    #         print(i,'. ', item.file)
     return merged_result
 
 
