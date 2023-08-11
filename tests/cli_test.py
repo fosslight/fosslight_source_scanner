@@ -8,7 +8,8 @@ from datetime import datetime
 import logging
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-from fosslight_source.cli import run_all_scanners
+from fosslight_source.run_scancode import run_scan
+from fosslight_source.run_scanoss import run_scanoss_py
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 
@@ -25,7 +26,8 @@ def main():
 
     logger, result_item = init_log(os.path.join(output_dir, "fosslight_log_"+_start_time+".txt"))
 
-    ret = run_all_scanners(path_to_find_bin, fosslight_report_name, True, -1, True, "", False)
+    ret = run_scan(path_to_find_bin, fosslight_report_name, True, -1, True, True, "", False)
+    ret_scanoss = run_scanoss_py(path_to_find_bin, fosslight_report_name, "", False, True, -1)
 
     logger.warning("[Scan] Result: %s" % (ret[0]))
     logger.warning("[Scan] Result_msg: %s" % (ret[1]))
@@ -36,6 +38,9 @@ def main():
                 logger.warning(scan_item.get_row_to_print())
         except Exception as ex:
             logger.error("Error:"+str(ex))
+    if ret_scanoss:
+        for scan_item in ret_scanoss:
+            logger.warning(scan_item.get_row_to_print())
 
 
 if __name__ == '__main__':

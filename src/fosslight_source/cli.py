@@ -26,13 +26,11 @@ from ._scan_item import ScanItem
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
-                                       'OSS Version', 'License', 'Download Location',
-                                       'Homepage', 'Copyright Text', 'Exclude',
-                                       'Comment']}
+                                   'OSS Version', 'License', 'Download Location',
+                                   'Homepage', 'Copyright Text', 'Exclude', 'Comment']}
 MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
-                                      'OSS Version', 'License', 'Download Location',
-                                      'Homepage', 'Copyright Text', 'Exclude',
-                                      'Comment', 'license_reference']}
+                                  'OSS Version', 'License', 'Download Location',
+                                  'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
 SCANNER_TYPE = ['scancode', 'scanoss', 'all', '']
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -128,7 +126,8 @@ def main():
             success, _result_log["Scan Result"], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                           write_json_file, core, True,
                                                                                           print_matched_text, format, True,
-                                                                                          time_out, correct_mode, correct_filepath)
+                                                                                          time_out, correct_mode,
+                                                                                          correct_filepath)
         if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
             scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         if selected_scanner not in SCANNER_TYPE:
@@ -226,6 +225,7 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
     else:
         logger.error(f"Fail to generate result file. msg:({writing_msg})")
 
+
 def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     """
     Merge scanner results and spdx parsing result
@@ -237,7 +237,7 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
 
     merged_result = []
     scanoss_result_for_merging = copy.deepcopy(scanoss_result)
-    
+
     # print("SCANCODE Result : ", len(scancode_result))
     # if scancode_result:
     #     i = 0

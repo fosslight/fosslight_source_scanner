@@ -71,11 +71,13 @@ class ScanItem:
         print_rows = []
         if not self.download_location:
             print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), "", "",
-                               ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment, self.license_reference])
+                               ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment,
+                               self.license_reference])
         else:
             for url in self.download_location:
                 print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), url, "",
-                                   ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment, self.license_reference])
+                                   ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment,
+                                   self.license_reference])
         return print_rows
 
     # remove deprecated code
