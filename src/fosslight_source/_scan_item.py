@@ -70,70 +70,50 @@ class ScanItem:
     def get_row_to_print(self):
         print_rows = []
         if not self.download_location:
-            print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses),
-                               "", "", ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment])
-        else:
-            for url in self.download_location:
-                print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses),
-                                   url, "", ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment])
-        return print_rows
-
-    def get_row_to_print_for_scanoss(self):
-        print_rows = []
-        if not self.download_location:
             print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), "", "",
-                               ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment])
+                               ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment, self.license_reference])
         else:
             for url in self.download_location:
                 print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), url, "",
-                                   ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment])
+                                   ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment, self.license_reference])
         return print_rows
 
-    def get_row_to_print_for_all_scanner(self):
-        print_rows = []
-        if not self.download_location:
-            print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), "", "",
-                               ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment,
-                               self.license_reference])
-        else:
-            for url in self.download_location:
-                print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), url, "",
-                                   ','.join(self.copyright), "Exclude" if self.exclude else "", self.comment,
-                                   self.license_reference])
-        return print_rows
+    # remove deprecated code
+    # def merge_scan_item(self, other):
+    #     """
+    #     Merge two ScanItem instance into one.
+    #     """
+    #     if sorted(self.licenses) != sorted(other.licenses):
+    #         self.license_reference = f"(Scancode) {', '.join(self.licenses)} / (Scanoss)  {', '.join(other.licenses)}"
 
-    def merge_scan_item(self, other):
-        """
-        Merge two ScanItem instance into one.
-        """
-        if sorted(self.licenses) != sorted(other.licenses):
-            self.license_reference = f"(Scancode) {', '.join(self.licenses)} / (Scanoss)  {', '.join(other.licenses)}"
+    #     self.licenses = list(set(self.licenses + other.licenses))
 
-        self.licenses = list(set(self.licenses + other.licenses))
+    #     if len(self.copyright) > 0:
+    #         self.copyright = list(set(self.copyright))
 
-        if len(self.copyright) > 0:
-            self.copyright = list(set(self.copyright))
+    #     if self.exclude and other.exclude:
+    #         self.exclude = True
+    #     else:
+    #         self.exclude = False
 
-        if self.exclude and other.exclude:
-            self.exclude = True
-        else:
-            self.exclude = False
-
-        if not self.oss_name:
-            self.oss_name = other.oss_name
-        if not self.oss_version:
-            self.oss_version = other.oss_version
-        if not self.download_location:
-            self.download_location = list(other.download_location)
-        if not self.matched_lines:
-            self.matched_lines = other.matched_lines
-        if not self.fileURL:
-            self.fileURL = other.fileURL
-        if not self.scanoss_reference:
-            self.scanoss_reference = other.scanoss_reference
+    #     if not self.oss_name:
+    #         self.oss_name = other.oss_name
+    #     if not self.oss_version:
+    #         self.oss_version = other.oss_version
+    #     if not self.download_location:
+    #         self.download_location = list(other.download_location)
+    #     if not self.matched_lines:
+    #         self.matched_lines = other.matched_lines
+    #     if not self.fileURL:
+    #         self.fileURL = other.fileURL
+    #     if not self.scanoss_reference:
+    #         self.scanoss_reference = other.scanoss_reference
 
     def __eq__(self, other):
-        return self.file == other.file
+        if type(other) == str:
+            return self.file == other
+        else:
+            return self.file == other.file
 
 
 def is_exclude_dir(dir_path):

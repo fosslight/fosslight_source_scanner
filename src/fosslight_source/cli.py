@@ -22,16 +22,18 @@ from .run_scanoss import get_scanoss_extra_info
 import yaml
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
+from ._scan_item import ScanItem
 
-SCANOSS_SHEET_NAME = 'SRC_FL_Source'
-SCANOSS_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
+SRC_SHEET_NAME = 'SRC_FL_Source'
+SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
                                        'OSS Version', 'License', 'Download Location',
                                        'Homepage', 'Copyright Text', 'Exclude',
                                        'Comment']}
-MERGED_HEADER = {SCANOSS_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
+MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
                                       'OSS Version', 'License', 'Download Location',
                                       'Homepage', 'Copyright Text', 'Exclude',
                                       'Comment', 'license_reference']}
+SCANNER_TYPE = ['scancode', 'scanoss', 'all', '']
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -51,7 +53,6 @@ def main():
     selected_scanner = ""
     correct_mode = True
 
-    scanned_result = []
     license_list = []
     scanoss_result = []
     time_out = 120
@@ -128,14 +129,14 @@ def main():
                                                                                           write_json_file, core, True,
                                                                                           print_matched_text, format, True,
                                                                                           time_out, correct_mode, correct_filepath)
-        elif selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
+        if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
             scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
-        else:
+        if selected_scanner not in SCANNER_TYPE:
             print_help_msg_source_scanner()
             sys.exit(1)
         spdx_downloads = get_spdx_downloads(path_to_scan)
-        # merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
-        create_report_file(_start_time, scancode_result, license_list, scanoss_result, selected_scanner, print_matched_text,
+        merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
+        create_report_file(_start_time, merged_result, license_list, scanoss_result, selected_scanner, print_matched_text,
                            output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
 
         try:
@@ -147,7 +148,7 @@ def main():
         sys.exit(1)
 
 
-def create_report_file(_start_time, scanned_result, license_list, scanoss_result, selected_scanner, need_license=False,
+def create_report_file(_start_time, merged_result, license_list, scanoss_result, selected_scanner, need_license=False,
                        output_path="", output_file="", output_extension="", correct_mode=True, correct_filepath="",
                        path_to_scan=""):
     """
@@ -176,25 +177,25 @@ def create_report_file(_start_time, scanned_result, license_list, scanoss_result
         else:
             output_file = f"fosslight_report_src_{_start_time}"
 
-    if scanned_result:
+    if merged_result:
         if selected_scanner == 'scancode' or output_extension == _json_ext:
-            sheet_list[SCANOSS_SHEET_NAME] = []
-            for scan_item in scanned_result:
+            sheet_list[SRC_SHEET_NAME] = []
+            for scan_item in merged_result:
                 for row in scan_item.get_row_to_print():
-                    sheet_list[SCANOSS_SHEET_NAME].append(row)
+                    sheet_list[SRC_SHEET_NAME].append(row)
 
         elif selected_scanner == 'scanoss':
-            sheet_list[SCANOSS_SHEET_NAME] = []
-            for scan_item in scanned_result:
-                for row in scan_item.get_row_to_print_for_scanoss():
-                    sheet_list[SCANOSS_SHEET_NAME].append(row)
+            sheet_list[SRC_SHEET_NAME] = []
+            for scan_item in merged_result:
+                for row in scan_item.get_row_to_print():
+                    sheet_list[SRC_SHEET_NAME].append(row)
             extended_header = SCANOSS_HEADER
 
         else:
-            sheet_list[SCANOSS_SHEET_NAME] = []
-            for scan_item in scanned_result:
-                for row in scan_item.get_row_to_print_for_all_scanner():
-                    sheet_list[SCANOSS_SHEET_NAME].append(row)
+            sheet_list[SRC_SHEET_NAME] = []
+            for scan_item in merged_result:
+                for row in scan_item.get_row_to_print():
+                    sheet_list[SRC_SHEET_NAME].append(row)
             extended_header = MERGED_HEADER
 
         if need_license:
@@ -225,9 +226,6 @@ def create_report_file(_start_time, scanned_result, license_list, scanoss_result
     else:
         logger.error(f"Fail to generate result file. msg:({writing_msg})")
 
-
-# def run_all_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1,
-#                      need_license=False, format="", called_by_cli=True, time_out=120):
 def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     """
     Merge scanner results and spdx parsing result
@@ -238,8 +236,27 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     """
 
     merged_result = []
-
     scanoss_result_for_merging = copy.deepcopy(scanoss_result)
+    
+    # print("SCANCODE Result : ", len(scancode_result))
+    # if scancode_result:
+    #     i = 0
+    #     for item in scancode_result:
+    #         i += 1
+    #         print(i,'. ', item.file)
+    # print("SCANOSS Result : ", len(scanoss_result))
+    # if scanoss_result:
+    #     i = 0
+    #     for item in scanoss_result:
+    #         i += 1
+    #         print(i,'. ', item.file)
+    # print("SPDX Result : ", len(spdx_downloads))
+    # if spdx_downloads:
+    #     i = 0
+    #     for key in spdx_downloads.keys():
+    #         i += 1
+    #         print(i,'. ', key)
+
     for file_in_scancode_result in scancode_result:
         per_file_result = copy.deepcopy(file_in_scancode_result)
         if per_file_result in scanoss_result_for_merging:  # Remove SCANOSS result if Scancode result exist
@@ -248,8 +265,21 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     if scanoss_result_for_merging:
         for file_left_in_scanoss_result in scanoss_result_for_merging:
             merged_result.append(file_left_in_scanoss_result)
-
-    # return success, _result_log["Scan Result"], merged_result, license_list, scanoss_result
+    if spdx_downloads:
+        for spdx_found_file in spdx_downloads.keys():
+            download_list = spdx_downloads.get(spdx_found_file)
+            if spdx_found_file in merged_result:
+                merged_result[merged_result.index(spdx_found_file)].download_location = download_list
+            else:
+                new_result_item = ScanItem(spdx_found_file)
+                new_result_item.download_location = download_list
+                merged_result.append(new_result_item)
+    # print("MERGED Result : ", len(merged_result))
+    # if merged_result:
+    #     i = 0
+    #     for item in merged_result:
+    #         i += 1
+    #         print(i,'. ', item.file)
     return merged_result
 
 
