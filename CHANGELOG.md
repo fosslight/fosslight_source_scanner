@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.7.0 (14/08/2023)
+## Changes
+- Fix the bug when nothing is detected @soimkim (#134)
+
+## 🚀 Features
+
+- Load v32 and later of ScanCode @soimkim (#131)
+
+## 🔧 Maintenance
+
+- Fix the scancdoe and util version @dd-jy (#132)
+
+---
+
 ## v1.6.32 (03/08/2023)
 ## Changes
 ## 🐛 Hotfixes
@@ -316,11 +330,3 @@
 - Update version of fosslight_util @dd-jy (#39)
 - Update required version of fosslight_util @soimkim (#38)
 - Add format(-f) option and modify the function to write output @dd-jy (#37)
-
----
-
-## v1.6.3 (30/09/2021)
-## Changes
-## 🔧 Maintenance
-
-- Update datetime format @soimkim (#34)
