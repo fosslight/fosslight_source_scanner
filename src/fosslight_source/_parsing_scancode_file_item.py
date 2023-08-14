@@ -300,7 +300,7 @@ def parsing_file_item(scancode_file_list, has_error, path_to_scan, need_matched_
     rc = True
     msg = []
 
-    first_item = next(iter(scancode_file_list or []), None)
+    first_item = next(iter(scancode_file_list or []), {})
     if "licenses" in first_item:
         rc, scancode_file_item, msg, license_list = parsing_scancode_32_earlier(scancode_file_list,
                                                                                 path_to_scan, has_error)
