@@ -39,5 +39,6 @@ def get_spdx_downloads(path_to_scan):
                             else:
                                 download_dict[rel_path_file] = [word.decode('utf-8')]
         except Exception as ex:
-            logger.warning(f"Failed to extract SPDX download location. {ex}")
+            msg = str(ex)
+            logger.warning(f"Failed to extract SPDX download location. {rel_path_file}, {msg}")
     return download_dict
