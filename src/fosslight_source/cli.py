@@ -233,27 +233,25 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     :return merged_result: list of merged result in ScanItem.
     """
 
-    merged_result = []
     scanoss_result_for_merging = copy.deepcopy(scanoss_result)
 
+    # Remove SCANOSS result if Scancode result exist
     for file_in_scancode_result in scancode_result:
-        per_file_result = copy.deepcopy(file_in_scancode_result)
-        if per_file_result in scanoss_result_for_merging:  # Remove SCANOSS result if Scancode result exist
+        if file_in_scancode_result in scanoss_result_for_merging:
             scanoss_result_for_merging.pop(scanoss_result_for_merging.index(file_in_scancode_result))
-        merged_result.append(per_file_result)
+    # If anything that is found at SCANOSS only exist, add it to result
     if scanoss_result_for_merging:
-        for file_left_in_scanoss_result in scanoss_result_for_merging:
-            merged_result.append(file_left_in_scanoss_result)
+        scancode_result.extend(scanoss_result_for_merging)
     if spdx_downloads:
-        for spdx_found_file in spdx_downloads.keys():
-            download_list = spdx_downloads.get(spdx_found_file)
-            if spdx_found_file in merged_result:
-                merged_result[merged_result.index(spdx_found_file)].download_location = download_list
+        for file_name, download_location in spdx_downloads.items():
+            if file_name in scancode_result:
+                merged_result_item = scancode_result[scancode_result.index(file_name)]
+                merged_result_item.download_location = download_location
             else:
-                new_result_item = ScanItem(spdx_found_file)
-                new_result_item.download_location = download_list
-                merged_result.append(new_result_item)
-    return merged_result
+                new_result_item = ScanItem(file_name)
+                new_result_item.download_location = download_location
+                scancode_result.append(new_result_item)
+    return scancode_result
 
 
 if __name__ == '__main__':
