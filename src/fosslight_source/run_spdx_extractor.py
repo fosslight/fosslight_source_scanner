@@ -27,14 +27,17 @@ def get_spdx_downloads(path_to_scan):
     file_list = get_file_list(path_to_scan)
 
     for file in file_list:
-        rel_path_file = os.path.relpath(file, path_to_scan)
-        # remove the path_to_scan from the file paths
-        if os.path.getsize(file) > 0:
-            with open(file, "r") as f:
-                with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
-                    for word in find_word.findall(mmap_obj):
-                        if rel_path_file in download_dict:
-                            download_dict[rel_path_file].append(word.decode('utf-8'))
-                        else:
-                            download_dict[rel_path_file] = [word.decode('utf-8')]
+        try:
+            rel_path_file = os.path.relpath(file, path_to_scan)
+            # remove the path_to_scan from the file paths
+            if os.path.getsize(file) > 0:
+                with open(file, "r") as f:
+                    with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
+                        for word in find_word.findall(mmap_obj):
+                            if rel_path_file in download_dict:
+                                download_dict[rel_path_file].append(word.decode('utf-8'))
+                            else:
+                                download_dict[rel_path_file] = [word.decode('utf-8')]
+        except Exception as ex:
+            logger.warning(f"Failed to extract SPDX download location. {ex}")
     return download_dict

@@ -117,6 +117,7 @@ def main():
         scancode_result = []
         scanoss_result = []
         merged_result = []
+        spdx_downloads = {}
         success = True
 
         if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
