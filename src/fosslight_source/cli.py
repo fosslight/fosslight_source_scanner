@@ -7,7 +7,6 @@ import sys
 import os
 import warnings
 import logging
-import copy
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
@@ -226,22 +225,18 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
 
 def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     """
-    Merge scanner results and spdx parsing result
+    Merge scanner results and spdx parsing result.
     :param scancode_result: list of scancode results in ScanItem.
     :param scanoss_result: list of scanoss results in ScanItem.
     :param spdx_downloads: dictionary of spdx parsed results.
     :return merged_result: list of merged result in ScanItem.
     """
 
-    scanoss_result_for_merging = copy.deepcopy(scanoss_result)
+    # If anything that is found at SCANOSS only exist, add it to result.
+    scancode_result.extend([item for item in scanoss_result if item not in scancode_result])
 
-    # Remove SCANOSS result if Scancode result exist
-    for file_in_scancode_result in scancode_result:
-        if file_in_scancode_result in scanoss_result_for_merging:
-            scanoss_result_for_merging.pop(scanoss_result_for_merging.index(file_in_scancode_result))
-    # If anything that is found at SCANOSS only exist, add it to result
-    if scanoss_result_for_merging:
-        scancode_result.extend(scanoss_result_for_merging)
+    # If download loc. in SPDX form found, overwrite the scanner result.
+    # If scanner result doesn't exist, create a new row.
     if spdx_downloads:
         for file_name, download_location in spdx_downloads.items():
             if file_name in scancode_result:

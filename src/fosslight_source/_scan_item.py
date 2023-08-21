@@ -44,6 +44,9 @@ class ScanItem:
     def __del__(self):
         pass
 
+    def __hash__(self):
+        return hash(self.file)
+
     @property
     def copyright(self):
         return self._copyright
