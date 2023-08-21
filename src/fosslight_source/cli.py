@@ -112,6 +112,21 @@ def main():
     logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
                                    True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
+    # scan_real_path = os.path.realpath(path_to_scan)
+    # output_real_path = os.path.realpath(output_file_name)
+    # print("!!! output_real_path : ", output_real_path)
+    # # currentpath = os.path.realpath("./")
+    # currentpath = os.getcwd()
+    # scan_prefix = os.path.commonpath([currentpath, scan_real_path])
+    # output_prefix = os.path.commonpath([currentpath, output_real_path])
+
+    # if scan_prefix != currentpath:
+    #     logger.error(f"Check the path to scan. : {path_to_scan}")
+    #     sys.exit(1)
+    # elif output_prefix != currentpath:
+    #     logger.error(f"Check the output path. : {output_file_name}")
+    #     sys.exit(1)
+    # elif os.path.isdir(path_to_scan):
     if os.path.isdir(path_to_scan):
         scancode_result = []
         scanoss_result = []
@@ -126,6 +141,11 @@ def main():
                                                                                           time_out, correct_mode,
                                                                                           correct_filepath)
         if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
+            # realpath = os.path.realpath(path_to_scan)
+            # currentpath = os.getcwd()
+            # prefix = os.path.commonpath([currentpath, realpath])
+            # if prefix == currentpath:
+            #     scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
             scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
         if selected_scanner not in SCANNER_TYPE:
             print_help_msg_source_scanner()

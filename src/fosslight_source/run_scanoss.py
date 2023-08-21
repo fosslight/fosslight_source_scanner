@@ -56,6 +56,21 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
         logger.warning("Please install scanoss and dataclasses before run fosslight_source with scanoss option.")
         return scanoss_file_list
 
+    scan_real_path = os.path.realpath(path_to_scan)
+    output_real_path = os.path.realpath(output_file_name)
+    # print("!!! output_real_path : ", output_real_path)
+    # currentpath = os.path.realpath("./")
+    currentpath = os.getcwd()
+    scan_prefix = os.path.commonpath([currentpath, scan_real_path])
+    output_prefix = os.path.commonpath([currentpath, output_real_path])
+    if scan_prefix != currentpath:
+        logger.error(f"Check the path to scan. : {path_to_scan}")
+        return []
+    elif output_prefix != currentpath:
+        logger.error(f"Check the output path. : {output_file_name}")
+        return []
+
+    
     if output_path == "":  # if json output with _write_json_file not used, output_path won't be needed.
         output_path = os.getcwd()
     else:
