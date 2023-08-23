@@ -75,9 +75,9 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
         output_path = os.getcwd()
     else:
         output_path = os.path.abspath(output_path)
-        # currentpath = os.getcwd()
-        output_prefix = os.path.commonpath([os.getcwd(),output_path])
-        if output_prefix != os.getcwd():
+        currentpath = os.getcwd()
+        output_prefix = os.path.commonpath([currentpath,output_path])
+        if output_prefix != currentpath:
             logger.error(f"Check the output path. : {output_file_name}")
             return[]
         if not os.path.isdir(output_path):
