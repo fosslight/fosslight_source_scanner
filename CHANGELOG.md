@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.7.1 (31/08/2023)
+## Changes
+## 🔧 Maintenance
+
+- Priority change between Download Location extraction and scanner operation @JustinWonjaePark (#133)
+
+---
+
 ## v1.7.0 (14/08/2023)
 ## Changes
 - Fix the bug when nothing is detected @soimkim (#134)
@@ -320,13 +328,3 @@
 ## 🔧 Maintenance
 
 - Add python version to github PR action @soimkim (#43)
-
----
-
-## v1.6.4 (21/10/2021)
-## Changes
-## 🔧 Maintenance
-
-- Update version of fosslight_util @dd-jy (#39)
-- Update required version of fosslight_util @soimkim (#38)
-- Add format(-f) option and modify the function to write output @dd-jy (#37)
