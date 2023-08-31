@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.7.2 (31/08/2023)
+## Changes
+## 🐛 Hotfixes
+
+- Fix vulnerability from requirements.txt @JustinWonjaePark (#138)
+
+---
+
 ## v1.7.1 (31/08/2023)
 ## Changes
 ## 🔧 Maintenance
@@ -315,16 +323,3 @@
 
 - Add the -v option to print the installed version of FOSSLight Source Scanner @soimkim (#57)
 - Update README.md to add description for SCANOSS @JustinWonjaePark (#56)
-
----
-
-## v1.6.5 (30/12/2021)
-## 🚀 Features
-
-- Add scanoss information on excel @JustinWonjaePark (#53)
-- Add scanoss thread feature and amend tox test @JustinWonjaePark (#51)
-- Add scanoss.py as a scanner @JustinWonjaePark (#50)
-
-## 🔧 Maintenance
-
-- Add python version to github PR action @soimkim (#43)
