@@ -15,8 +15,7 @@ from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from ._license_matched import get_license_list_to_print
-from fosslight_util.output_format import check_output_format, write_output_file
-from fosslight_util.correct import correct_with_yaml
+from fosslight_util.output_format import check_output_format
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
