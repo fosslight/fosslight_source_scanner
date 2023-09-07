@@ -16,6 +16,7 @@ from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_format
+from fosslight_binary.binary_analysis import check_binary
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -98,6 +99,11 @@ def run_scan(path_to_scan, output_file_name="",
                                 success = True
                             result_list = sorted(
                                 result_list, key=lambda row: (''.join(row.licenses)))
+
+                            for scan_item in result_list:
+                                if check_binary(os.path.join(path_to_scan, scan_item.file)):
+                                    scan_item.exclude = True
+
                             sheet_list["SRC_FL_Source"] = [scan_item.get_row_to_print() for scan_item in result_list]
                             if need_license:
                                 sheet_list["matched_text"] = get_license_list_to_print(license_list)
