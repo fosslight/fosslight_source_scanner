@@ -103,23 +103,6 @@ def run_scan(path_to_scan, output_file_name="",
                             if need_license:
                                 sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
-                            output_file_without_ext = os.path.join(output_path, output_file)
-                            if not called_by_cli:
-                                if correct_mode:
-                                    correct_success = True
-                                    correct_success, msg_correct, correct_list = correct_with_yaml(correct_filepath,
-                                                                                                   path_to_scan, sheet_list)
-                                    if not correct_success:
-                                        logger.info(f"No correction with yaml: {msg_correct}")
-                                    else:
-                                        sheet_list = correct_list
-                                        logger.info("Success to correct with yaml.")
-                                success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext,
-                                                                                               output_extension, sheet_list)
-                                if success_to_write:
-                                    logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
-                                else:
-                                    logger.error(f"Fail to generate result file. msg:({writing_msg})")
             except Exception as ex:
                 success = False
                 msg = str(ex)
