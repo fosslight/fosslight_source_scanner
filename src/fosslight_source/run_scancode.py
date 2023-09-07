@@ -106,9 +106,10 @@ def run_scan(path_to_scan, output_file_name="",
                             output_file_without_ext = os.path.join(output_path, output_file)
                             if not called_by_cli:
                                 if correct_mode:
-                                    success, msg_correct, correct_list = correct_with_yaml(correct_filepath,
-                                                                                           path_to_scan, sheet_list)
-                                    if not success:
+                                    correct_success = True
+                                    correct_success, msg_correct, correct_list = correct_with_yaml(correct_filepath,
+                                                                                                   path_to_scan, sheet_list)
+                                    if not correct_success:
                                         logger.info(f"No correction with yaml: {msg_correct}")
                                     else:
                                         sheet_list = correct_list
