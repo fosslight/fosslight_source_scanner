@@ -39,7 +39,6 @@ _PKG_NAME = "fosslight_source"
 
 def main():
     global logger
-    success = True
     _result_log = {}
 
     path_to_scan = os.getcwd()
@@ -99,22 +98,10 @@ def main():
     timer.setDaemon(True)
     timer.start()
 
-    _start_time = datetime.now().strftime('%y%m%d_%H%M')
-    success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
-    if output_extension != '.xlsx' and output_extension != "" and print_matched_text:
-        logger.warning("-m option is only available for excel.")
-        print_matched_text = False
-    if not success:
-        logger.error(f"Format error. {msg}")
-        sys.exit(1)
-    logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
-                                   True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
-
     if os.path.isdir(path_to_scan):
         result = []
         result = run_scanners(path_to_scan, output_file_name, write_json_file, core, True,
-                              print_matched_text, format, time_out, correct_mode, correct_filepath, output_path, output_file,
-                              output_extension, selected_scanner)
+                              print_matched_text, format, time_out, correct_mode, correct_filepath, selected_scanner)
         _result_log["Scan Result"] = result[1]
 
         try:
@@ -233,7 +220,6 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
 
 def run_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1, called_by_cli=True,
                  print_matched_text=False, format="", time_out=120, correct_mode=True, correct_filepath="",
-                 output_path="", output_file="", output_extension="",
                  selected_scanner='all'):
     """
     Run Scancode and scanoss.py for the given path.
@@ -250,13 +236,23 @@ def run_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_
     :return merged_result: merged scan result of scancode and scanoss.
     :return license_list: matched text.(only for scancode)
     """
+    global logger
+
     _start_time = datetime.now().strftime('%y%m%d_%H%M')
     scancode_result = []
     scanoss_result = []
     merged_result = []
     spdx_downloads = {}
-    success = True
-    _result_log = {}
+
+    success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
+    if output_extension != '.xlsx' and output_extension != "" and print_matched_text:
+        logger.warning("-m option is only available for excel.")
+        print_matched_text = False
+    if not success:
+        logger.error(f"Format error. {msg}")
+        sys.exit(1)
+    logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
+                                   True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
 
     if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
         success, _result_log["Scan Result"], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
@@ -272,9 +268,8 @@ def run_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_
     spdx_downloads = get_spdx_downloads(path_to_scan)
     merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
 
-    if called_by_cli:
-        create_report_file(_start_time, merged_result, license_list, scanoss_result, selected_scanner, print_matched_text,
-                           output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
+    create_report_file(_start_time, merged_result, license_list, scanoss_result, selected_scanner, print_matched_text,
+                       output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
 
     return success, _result_log["Scan Result"], merged_result, license_list, scanoss_result
 
