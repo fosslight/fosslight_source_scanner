@@ -5,3 +5,4 @@ typecode-libmagic
 fosslight_util>=1.4.28
 PyYAML
 wheel>=0.38.1
+intbitset
