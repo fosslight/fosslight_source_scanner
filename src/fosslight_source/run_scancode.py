@@ -15,8 +15,8 @@ from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from ._license_matched import get_license_list_to_print
-from fosslight_util.output_format import check_output_format, write_output_file
-from fosslight_util.correct import correct_with_yaml
+from fosslight_util.output_format import check_output_format
+from fosslight_binary.binary_analysis import check_binary
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -99,26 +99,15 @@ def run_scan(path_to_scan, output_file_name="",
                                 success = True
                             result_list = sorted(
                                 result_list, key=lambda row: (''.join(row.licenses)))
+
+                            for scan_item in result_list:
+                                if check_binary(os.path.join(path_to_scan, scan_item.file)):
+                                    scan_item.exclude = True
+
                             sheet_list["SRC_FL_Source"] = [scan_item.get_row_to_print() for scan_item in result_list]
                             if need_license:
                                 sheet_list["matched_text"] = get_license_list_to_print(license_list)
 
-                            output_file_without_ext = os.path.join(output_path, output_file)
-                            if not called_by_cli:
-                                if correct_mode:
-                                    success, msg_correct, correct_list = correct_with_yaml(correct_filepath,
-                                                                                           path_to_scan, sheet_list)
-                                    if not success:
-                                        logger.info(f"No correction with yaml: {msg_correct}")
-                                    else:
-                                        sheet_list = correct_list
-                                        logger.info("Success to correct with yaml.")
-                                success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext,
-                                                                                               output_extension, sheet_list)
-                                if success_to_write:
-                                    logger.info(f"Writing Output file({result_file}, success:{success_to_write}")
-                                else:
-                                    logger.error(f"Fail to generate result file. msg:({writing_msg})")
             except Exception as ex:
                 success = False
                 msg = str(ex)
