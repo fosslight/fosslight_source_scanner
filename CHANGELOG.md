@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.7.3 (14/09/2023)
+## Changes
+## 🔧 Maintenance
+
+- Create run_scanners for api and exclude unwanted outputs @JustinWonjaePark (#140)
+- Add test for fl scanner and fl android @JustinWonjaePark (#139)
+
+---
+
 ## v1.7.2 (31/08/2023)
 ## Changes
 ## 🐛 Hotfixes
@@ -310,16 +319,3 @@
 ## 🔧 Maintenance
 
 - Amend to print output file name and deal with format option error @JustinWonjaePark (#62)
-
----
-
-## v1.6.6 (17/01/2022)
-## Changes
-## 🐛 Hotfixes
-
-- Add package to fix installation errors @soimkim (#55)
-
-## 🔧 Maintenance
-
-- Add the -v option to print the installed version of FOSSLight Source Scanner @soimkim (#57)
-- Update README.md to add description for SCANOSS @JustinWonjaePark (#56)

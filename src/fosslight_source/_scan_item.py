@@ -14,6 +14,7 @@ _exclude_filename = ["changelog", "config.guess", "config.sub",
                      "aclocal.m4", "configure", "configure.ac",
                      "depcomp", "compile", "missing", "libtool.m4",
                      "makefile"]
+_exclude_extension = [".m4"]
 _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
@@ -104,6 +105,8 @@ def is_exclude_dir(dir_path):
 def is_exclude_file(file_path, prev_dir=None, prev_dir_exclude_value=None):
     file_path = file_path.lower()
     filename = os.path.basename(file_path)
+    if os.path.splitext(filename)[1] in _exclude_extension:
+        return True
     if filename in _exclude_filename:
         return True
 
