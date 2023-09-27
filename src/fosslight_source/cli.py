@@ -35,6 +35,7 @@ SCANNER_TYPE = ['scancode', 'scanoss', 'all', '']
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
+RESULT_KEY = "Scan Result"
 
 
 def main():
@@ -218,7 +219,7 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     return scancode_result
 
 
-def run_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_cores=-1, called_by_cli=True,
+def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_cores=-1, called_by_cli=True,
                  print_matched_text=False, format="", time_out=120, correct_mode=True, correct_filepath="",
                  selected_scanner='all'):
     """
@@ -226,52 +227,55 @@ def run_scanners(path_to_scan, output_file_name="", _write_json_file=False, num_
 
     :param path_to_scan: path of sourcecode to scan.
     :param output_file_name: path or file name (with path) for the output.
-    :param _write_json_file: if requested, keep the raw files.
+    :param write_json_file: if requested, keep the raw files.
     :param num_cores: number of cores used for scancode scanning.
     :param called_by_cli: if not called by cli, initialize logger.
     :param print_matched_text: if requested, output matched text (only for scancode).
     :param format: output format (excel, csv, opossum).
     :return success: success or failure of scancode.
-    :return _result_log["Scan Result"]:
+    :return result_log["Scan Result"]:
     :return merged_result: merged scan result of scancode and scanoss.
     :return license_list: matched text.(only for scancode)
     """
     global logger
 
-    _start_time = datetime.now().strftime('%y%m%d_%H%M')
+    start_time = datetime.now().strftime('%y%m%d_%H%M')
     scancode_result = []
     scanoss_result = []
     merged_result = []
+    license_list = []
     spdx_downloads = {}
+    result_log = {}
 
     success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
-    if output_extension != '.xlsx' and output_extension != "" and print_matched_text:
+    logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
+                                  True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
+    if output_extension != '.xlsx' and output_extension and print_matched_text:
         logger.warning("-m option is only available for excel.")
         print_matched_text = False
-    if not success:
-        logger.error(f"Format error. {msg}")
-        sys.exit(1)
-    logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
-                                   True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
-
-    if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
-        success, _result_log["Scan Result"], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
-                                                                                      _write_json_file, num_cores, True,
+    if success:
+        if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
+            success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
+                                                                                      write_json_file, num_cores, True,
                                                                                       print_matched_text, format, called_by_cli,
                                                                                       time_out, correct_mode, correct_filepath)
-    if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
-        scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, _write_json_file)
-    if selected_scanner not in SCANNER_TYPE:
-        print_help_msg_source_scanner()
-        sys.exit(1)
+        if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
+            scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
+        if selected_scanner in SCANNER_TYPE:
+            spdx_downloads = get_spdx_downloads(path_to_scan)
+            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
 
-    spdx_downloads = get_spdx_downloads(path_to_scan)
-    merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
+            create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner, print_matched_text,
+                               output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
+        else:
+            print_help_msg_source_scanner()
+            result_log[RESULT_KEY] = "Unsupported scanner"
+            success = False
+    else:
+        result_log[RESULT_KEY] = f"Format error. {msg}"
+        success = False
 
-    create_report_file(_start_time, merged_result, license_list, scanoss_result, selected_scanner, print_matched_text,
-                       output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
-
-    return success, _result_log["Scan Result"], merged_result, license_list, scanoss_result
+    return success, result_log.get(RESULT_KEY, ""), merged_result, license_list, scanoss_result
 
 
 if __name__ == '__main__':
