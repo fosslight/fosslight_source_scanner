@@ -243,6 +243,7 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
     scancode_result = []
     scanoss_result = []
     merged_result = []
+    license_list = []
     spdx_downloads = {}
     result_log = {}
 
@@ -272,7 +273,6 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
             success = False
     else:
         result_log[RESULT_KEY] = f"Format error. {msg}"
-        logger.error(f"Format error. {msg}")
         success = False
 
     return success, result_log.get(RESULT_KEY, ""), merged_result, license_list, scanoss_result
