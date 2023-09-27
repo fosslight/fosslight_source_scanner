@@ -265,7 +265,7 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
 
             create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner, print_matched_text,
-                            output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
+                               output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"
