@@ -26,14 +26,12 @@ if __name__ == "__main__":
         download_url='https://github.com/fosslight/fosslight_source_scanner',
         classifiers=['License :: OSI Approved :: Apache Software License',
                      "Programming Language :: Python :: 3",
-                     "Programming Language :: Python :: 3.7",
                      "Programming Language :: Python :: 3.8",
-                     "Programming Language :: Python :: 3.9", ],
-        python_requires=">=3.7",
+                     "Programming Language :: Python :: 3.9",
+                     "Programming Language :: Python :: 3.10",
+                     "Programming Language :: Python :: 3.11", ],
+        python_requires=">=3.8",
         install_requires=required,
-        extras_require={":python_version>'3.7'": ["scanoss>=0.7.0"],
-                        ":python_version<'3.7'": ["dataclasses", "scanoss"],
-                        ":python_version=='3.7'": ["scanoss>=0.7.0", "fingerprints==1.0.3"]},
         entry_points={
             "console_scripts": [
                 "fosslight_convert = fosslight_source.convert_scancode:main",
