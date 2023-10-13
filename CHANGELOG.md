@@ -9,6 +9,22 @@
 
 ---
 
+## v1.7.4 (13/10/2023)
+## Changes
+- Optimize Dockerfile to reduce image size @jaehee329 (#136)
+
+## 🐛 Hotfixes
+
+- Modify it to work on mac ARM chip @soimkim (#145)
+
+## 🔧 Maintenance
+
+- Upgrade minimum version of python to 3.8 @JustinWonjaePark (#144)
+- Modify run_scanners to return @soimkim (#143)
+- Fetch base-check-commit-message.yml from .github @jaehee329 (#142)
+
+---
+
 ## v1.7.2 (31/08/2023)
 ## Changes
 ## 🐛 Hotfixes
@@ -307,15 +323,3 @@
 ## 🔧 Maintenance
 
 - Change the scanoss-related packages @soimkim (#63)
-
----
-
-## v1.6.7 (10/02/2022)
-## Changes
-## 🚀 Features
-
-- Add license reference column @JustinWonjaePark (#59)
-
-## 🔧 Maintenance
-
-- Amend to print output file name and deal with format option error @JustinWonjaePark (#62)
