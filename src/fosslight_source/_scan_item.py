@@ -9,12 +9,9 @@ import fosslight_util.constant as constant
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "licenseref-"]
-_exclude_filename = ["changelog", "config.guess", "config.sub",
-                     "config.h.in", "changes", "ltmain.sh",
-                     "aclocal.m4", "configure", "configure.ac",
-                     "depcomp", "compile", "missing", "libtool.m4",
-                     "makefile"]
-_exclude_extension = [".m4"]
+_exclude_filename = ["changelog", "config.guess", "config.sub", "changes", "ltmain.sh",
+                     "configure", "configure.ac", "depcomp", "compile", "missing", "makefile"]
+_exclude_extension = [".m4", ".in", ".po"]
 _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
