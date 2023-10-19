@@ -9,6 +9,15 @@
 
 ---
 
+## v1.7.5 (19/10/2023)
+## Changes
+## 🔧 Maintenance
+
+- Merge copyrights with new line @JustinWonjaePark (#147)
+- Add .in and .po to the excluded extensions @JustinWonjaePark (#146)
+
+---
+
 ## v1.7.4 (13/10/2023)
 ## Changes
 - Optimize Dockerfile to reduce image size @jaehee329 (#136)
@@ -316,10 +325,3 @@
 ## 🔧 Maintenance
 
 - Add a commit message checker @soimkim (#66)
----
-
-## v1.6.8 (11/03/2022)
-## Changes
-## 🔧 Maintenance
-
-- Change the scanoss-related packages @soimkim (#63)
