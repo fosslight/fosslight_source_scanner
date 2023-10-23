@@ -19,10 +19,9 @@ def main():
 
     path_to_find_bin = os.path.abspath("tests/test_files/test")
     _start_time = datetime.now().strftime('%y%m%d_%H%M')
-    output_file_name = ""
 
     fosslight_report_name = "test_result_func_call/result"
-    output_dir = os.path.dirname(os.path.abspath(output_file_name))
+    output_dir = os.path.abspath(fosslight_report_name)
 
     logger, result_item = init_log(os.path.join(output_dir, "fosslight_log_"+_start_time+".txt"))
 
