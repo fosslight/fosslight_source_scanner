@@ -12,10 +12,6 @@ _HELP_MESSAGE_SOURCE_SCANNER = """
     Some files (ex- build script), binary files, directory and files in specific
     directories (ex-test) are excluded from the result.
 
-    FOSSLight Convert Usage: fosslight_convert [option1] <arg1> [option2] <arg2>...
-
-    FOSSLigtht Converter converts the result of ScanCode in json format into FOSSLight Report format.
-
     Options:
         Optional
             -p <source_path>\t   Path to analyze source (Default: current directory)
