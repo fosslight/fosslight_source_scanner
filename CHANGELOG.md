@@ -9,6 +9,19 @@
 
 ---
 
+## v1.7.6 (29/02/2024)
+## Changes
+## 🐛 Hotfixes
+
+- Fix cli_test log path @JustinWonjaePark (#148)
+
+## 🔧 Maintenance
+
+- Change SCANOSS thread using -c option @JustinWonjaePark (#151)
+- Remove fosslight_convert @JustinWonjaePark (#150)
+
+---
+
 ## v1.7.5 (19/10/2023)
 ## Changes
 ## 🔧 Maintenance
@@ -313,15 +326,3 @@
 ## 🐛 Hotfixes
 
 - Fix cli.py to remove redundant report @JustinWonjaePark (#71)
-
----
-
-## v1.6.9 (06/04/2022)
-## Changes
-## 🐛 Hotfixes
-
-- Fix errors that occur in Python 3.6.7 or lower @soimkim (#67)
-
-## 🔧 Maintenance
-
-- Add a commit message checker @soimkim (#66)
