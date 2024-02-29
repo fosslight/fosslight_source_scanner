@@ -260,7 +260,7 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
                                                                                       print_matched_text, format, called_by_cli,
                                                                                       time_out, correct_mode, correct_filepath)
         if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
-            scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file)
+            scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file, num_cores)
         if selected_scanner in SCANNER_TYPE:
             spdx_downloads = get_spdx_downloads(path_to_scan)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
