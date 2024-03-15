@@ -44,9 +44,9 @@ def main():
 
     path_to_scan = os.getcwd()
     write_json_file = False
-    output_file_name = ""
+    output_file_names = ""
     print_matched_text = False
-    format = ""
+    formats = ""
     selected_scanner = ""
     correct_mode = True
 
@@ -58,9 +58,9 @@ def main():
     parser.add_argument('-v', '--version', action='store_true', required=False)
     parser.add_argument('-p', '--path', nargs=1, type=str, required=False)
     parser.add_argument('-j', '--json', action='store_true', required=False)
-    parser.add_argument('-o', '--output', nargs=1, type=str, required=False, default="")
+    parser.add_argument('-o', '--outputs', nargs="*", type=str, required=False)
     parser.add_argument('-m', '--matched', action='store_true', required=False)
-    parser.add_argument('-f', '--format', nargs=1, type=str, required=False)
+    parser.add_argument('-f', '--formats', nargs='*', type=str, required=False)
     parser.add_argument('-s', '--scanner', nargs=1, type=str, required=False, default='all')
     parser.add_argument('-t', '--timeout', type=int, required=False, default=120)
     parser.add_argument('-c', '--cores', type=int, required=False, default=-1)
@@ -79,11 +79,14 @@ def main():
         path_to_scan = ''.join(args.path)
     if args.json:
         write_json_file = True
-    output_file_name = ''.join(args.output)
+    if args.outputs:
+        output_file_names = list(args.outputs)
+        print("Type : ", type(output_file_names), " | Value of outputs: ", output_file_names, " | size of outputs: ", len(output_file_names))
     if args.matched:
         print_matched_text = True
-    if args.format:
-        format = ''.join(args.format)
+    if args.formats:
+        formats = list(args.formats)
+        print("Type : ", type(formats), " | Value of format: ", formats, " | size of formats: ", len(formats))
     if args.scanner:
         selected_scanner = ''.join(args.scanner)
     if args.no_correction:
@@ -101,8 +104,8 @@ def main():
 
     if os.path.isdir(path_to_scan):
         result = []
-        result = run_scanners(path_to_scan, output_file_name, write_json_file, core, True,
-                              print_matched_text, format, time_out, correct_mode, correct_filepath, selected_scanner)
+        result = run_scanners(path_to_scan, output_file_names, write_json_file, core, True,
+                              print_matched_text, formats, time_out, correct_mode, correct_filepath, selected_scanner)
         _result_log["Scan Result"] = result[1]
 
         try:
@@ -219,8 +222,8 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     return scancode_result
 
 
-def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_cores=-1, called_by_cli=True,
-                 print_matched_text=False, format="", time_out=120, correct_mode=True, correct_filepath="",
+def run_scanners(path_to_scan, output_file_names=[], write_json_file=False, num_cores=-1, called_by_cli=True,
+                 print_matched_text=False, formats=[], time_out=120, correct_mode=True, correct_filepath="",
                  selected_scanner='all'):
     """
     Run Scancode and scanoss.py for the given path.
@@ -247,7 +250,7 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
     spdx_downloads = {}
     result_log = {}
 
-    success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
+    success, msg, output_path, output_file, output_extension = check_output_format(output_file_names, formats)
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
     if output_extension != '.xlsx' and output_extension and print_matched_text:
@@ -255,12 +258,12 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
         print_matched_text = False
     if success:
         if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
-            success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
+            success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_names,
                                                                                       write_json_file, num_cores, True,
-                                                                                      print_matched_text, format, called_by_cli,
+                                                                                      print_matched_text, formats, called_by_cli,
                                                                                       time_out, correct_mode, correct_filepath)
         if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
-            scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True, write_json_file, num_cores)
+            scanoss_result = run_scanoss_py(path_to_scan, output_file_names, formats, True, write_json_file, num_cores)
         if selected_scanner in SCANNER_TYPE:
             spdx_downloads = get_spdx_downloads(path_to_scan)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
