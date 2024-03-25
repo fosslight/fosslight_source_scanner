@@ -12,6 +12,7 @@ from ._scan_item import ScanItem
 from ._scan_item import is_exclude_dir
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
+from ._scan_item import is_notice_file
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _exclude_directory = ["test", "tests", "doc", "docs"]
@@ -265,7 +266,7 @@ def parsing_scancode_32_later(scancode_file_list, has_error=False):
                         result_item.comment = license_expression
 
                 result_item.exclude = is_exclude_file(file_path)
-                result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90
+                result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90 or is_notice_file(file_path)
                 scancode_file_item.append(result_item)
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")
