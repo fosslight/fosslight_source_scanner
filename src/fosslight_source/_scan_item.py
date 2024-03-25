@@ -5,10 +5,14 @@
 
 import os
 import logging
+import re
 import fosslight_util.constant as constant
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "licenseref-"]
+_notice_filename = ['licen[cs]e[s]?', 'notice[s]?', 'legal', 'copyright[s]?', 'copying*', 'patent[s]?', 'unlicen[cs]e', 'eula',
+                    '[a,l]?gpl[-]?[1-3]?[.,-,_]?[0-1]?', 'mit', 'bsd[-]?[0-4]?', 'bsd[-]?[0-4][-]?clause[s]?',
+                    'apache[-,_]?[1-2]?[.,-,_]?[0-2]?']
 _exclude_filename = ["changelog", "config.guess", "config.sub", "changes", "ltmain.sh",
                      "configure", "configure.ac", "depcomp", "compile", "missing", "makefile"]
 _exclude_extension = [".m4", ".in", ".po"]
@@ -119,3 +123,10 @@ def is_exclude_file(file_path, prev_dir=None, prev_dir_exclude_value=None):
     else:  # running SCANOSS
         return is_exclude_dir(dir_path)
     return False
+
+
+def is_notice_file(file_path):
+    pattern = r"({})(?<!w)".format("|".join(_notice_filename))
+    file_path = file_path.lower()
+    filename = os.path.basename(file_path)
+    return bool(re.match(pattern, filename))
