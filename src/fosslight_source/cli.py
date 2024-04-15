@@ -22,6 +22,7 @@ import yaml
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from ._scan_item import ScanItem
+from fosslight_util.cover import CoverItem
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Name or Path', 'OSS Name',
@@ -143,25 +144,26 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
         else:
             output_file = f"fosslight_report_src_{_start_time}"
 
-    if merged_result:
-        if selected_scanner == 'scancode' or output_extension == _json_ext:
-            sheet_list[SRC_SHEET_NAME] = []
-            for scan_item in merged_result:
-                for row in scan_item.get_row_to_print():
-                    sheet_list[SRC_SHEET_NAME].append(row)
-
-        elif selected_scanner == 'scanoss':
-            sheet_list[SRC_SHEET_NAME] = []
-            for scan_item in merged_result:
-                for row in scan_item.get_row_to_print():
-                    sheet_list[SRC_SHEET_NAME].append(row)
-            extended_header = SCANOSS_HEADER
-
+    cover = CoverItem(tool_name=_PKG_NAME,
+                      start_time=_start_time,
+                      input_path=path_to_scan)
+    files_count = sum([len(files) for r, d, files in os.walk(path_to_scan)])
+    cover.comment = f"Total number of files: {files_count} "
+    if len(merged_result) == 0:
+        if files_count < 1:
+            cover.comment += "(No file detected.)"
         else:
-            sheet_list[SRC_SHEET_NAME] = []
-            for scan_item in merged_result:
-                for row in scan_item.get_row_to_print():
-                    sheet_list[SRC_SHEET_NAME].append(row)
+            cover.comment += "(No OSS detected.)"
+
+    sheet_list[SRC_SHEET_NAME] = []
+    if merged_result:
+        for scan_item in merged_result:
+            for row in scan_item.get_row_to_print():
+                sheet_list[SRC_SHEET_NAME].append(row)
+
+        if selected_scanner == 'scanoss':
+            extended_header = SCANOSS_HEADER
+        else:
             extended_header = MERGED_HEADER
 
         if need_license:
@@ -183,10 +185,11 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
 
     output_file_without_ext = os.path.join(output_path, output_file)
     success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension,
-                                                                   sheet_list, extended_header)
+                                                                   sheet_list, extended_header, "", cover)
     if success_to_write:
         if result_file:
             logger.info(f"Output file:{result_file}")
+            logger.info(f'{cover.comment}')
         else:
             logger.warning(f"{writing_msg}")
     else:
@@ -264,7 +267,6 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
         if selected_scanner in SCANNER_TYPE:
             spdx_downloads = get_spdx_downloads(path_to_scan)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
-
             create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner, print_matched_text,
                                output_path, output_file, output_extension, correct_mode, correct_filepath, path_to_scan)
         else:
