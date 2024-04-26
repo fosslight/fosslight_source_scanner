@@ -1,11 +1,14 @@
 # Changelog
 
-## v1.7.3 (14/09/2023)
+## v1.7.7 (26/04/2024)
 ## Changes
+## 🚀 Features
+
+- Add detection summary message (cover sheet) @dd-jy (#153)
+
 ## 🔧 Maintenance
 
-- Create run_scanners for api and exclude unwanted outputs @JustinWonjaePark (#140)
-- Add test for fl scanner and fl android @JustinWonjaePark (#139)
+- Check notice file name for scancode @JustinWonjaePark (#152)
 
 ---
 
@@ -44,6 +47,15 @@
 - Upgrade minimum version of python to 3.8 @JustinWonjaePark (#144)
 - Modify run_scanners to return @soimkim (#143)
 - Fetch base-check-commit-message.yml from .github @jaehee329 (#142)
+
+---
+
+## v1.7.3 (14/09/2023)
+## Changes
+## 🔧 Maintenance
+
+- Create run_scanners for api and exclude unwanted outputs @JustinWonjaePark (#140)
+- Add test for fl scanner and fl android @JustinWonjaePark (#139)
 
 ---
 
@@ -310,19 +322,3 @@
 ## 🔧 Maintenance
 
 - update minimum version of fosslight_util @dd-jy (#76)
-
----
-
-## v1.6.10 (02/06/2022)
-## Changes
-- Amend how to handle path without files to scan for SCANOSS @JustinWonjaePark (#73)
-- Refine license name on SCANOSS results @JustinWonjaePark (#74)
-
-## 🚀 Features
-
-- Print SCANOSS info in a separate sheet @JustinWonjaePark (#72)
-- Add Dockerfile to build on ubuntu @soimkim (#69)
-
-## 🐛 Hotfixes
-
-- Fix cli.py to remove redundant report @JustinWonjaePark (#71)
