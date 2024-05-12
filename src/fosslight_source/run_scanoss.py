@@ -29,7 +29,8 @@ def get_scanoss_extra_info(scanned_result):
     return parsing_extraInfo(scanned_result)
 
 
-def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=False, write_json_file=False, num_threads=-1):
+def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=False,
+                   write_json_file=False, num_threads=-1, path_to_exclude=[]):
     """
     Run scanoss.py for the given path.
 
@@ -46,7 +47,7 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
         global logger
         _start_time = datetime.now().strftime('%y%m%d_%H%M')
         logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
-                                       True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
+                                       True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
 
     scanoss_file_list = []
     try:
@@ -73,9 +74,30 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     try:
         os.system(scan_command)
         if os.path.isfile(output_json_file):
+            total_files_to_excluded = []
+            if path_to_exclude:
+                for path in path_to_exclude:
+                    path = os.path.join(path_to_scan, path)
+                    if os.path.isdir(path):
+                        for root, _, files in os.walk(path):
+                            root = root[len(path_to_scan) + 1:]
+                            total_files_to_excluded.extend([os.path.normpath(os.path.join(root, file)).replace('\\', '/')
+                                                            for file in files])
+                    elif os.path.isfile(path):
+                        path = path[len(path_to_scan) + 1:]
+                        total_files_to_excluded.append(os.path.normpath(path).replace('\\', '/'))
+
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
-                scanoss_file_list = parsing_scanResult(st_python)
+                for key_to_exclude in total_files_to_excluded:
+                    if key_to_exclude in st_python:
+                        del st_python[key_to_exclude]
+            with open(output_json_file, 'w') as st_json:
+                json.dump(st_python, st_json, indent=4)
+            with open(output_json_file, "r") as st_json:
+                st_python = json.load(st_json)
+                scanoss_file_list = parsing_scanResult(st_python, path_to_scan, path_to_exclude)
+
     except Exception as error:
         logger.debug(f"SCANOSS Parsing {path_to_scan}: {error}")
 

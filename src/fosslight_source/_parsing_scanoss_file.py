@@ -3,6 +3,7 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+import os
 import logging
 import fosslight_util.constant as constant
 from ._scan_item import ScanItem
@@ -34,10 +35,14 @@ def parsing_extraInfo(scanned_result):
     return scanoss_extra_info
 
 
-def parsing_scanResult(scanoss_report):
+def parsing_scanResult(scanoss_report, path_to_scan="", path_to_exclude=[]):
     scanoss_file_item = []
+    abs_path_to_exclude = [os.path.abspath(os.path.join(path_to_scan, path)) for path in path_to_exclude]
 
     for file_path, findings in scanoss_report.items():
+        abs_file_path = os.path.abspath(os.path.join(path_to_scan, file_path))
+        if any(os.path.commonpath([abs_file_path, exclude_path]) == exclude_path for exclude_path in abs_path_to_exclude):
+            continue
         result_item = ScanItem(file_path)
         if 'id' in findings[0]:
             if "none" == findings[0]['id']:

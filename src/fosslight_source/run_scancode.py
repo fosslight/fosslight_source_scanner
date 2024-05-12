@@ -25,7 +25,7 @@ _PKG_NAME = "fosslight_source"
 
 def run_scan(path_to_scan, output_file_name="",
              _write_json_file=False, num_cores=-1, return_results=False, need_license=False, format="",
-             called_by_cli=False, time_out=120, correct_mode=True, correct_filepath=""):
+             called_by_cli=False, time_out=120, correct_mode=True, correct_filepath="", path_to_exclude=[]):
     if not called_by_cli:
         global logger
 
@@ -62,20 +62,35 @@ def run_scan(path_to_scan, output_file_name="",
 
         if not called_by_cli:
             logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
-                                           True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan)
+                                           True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
 
         num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores
 
         if os.path.isdir(path_to_scan):
             try:
                 time_out = float(time_out)
+                pretty_params = {}
+                pretty_params["path_to_scan"] = path_to_scan
+                pretty_params["path_to_exclude"] = path_to_exclude
+                pretty_params["output_file"] = output_file_name
+                total_files_to_excluded = []
+                if path_to_exclude:
+                    for path in path_to_exclude:
+                        path = os.path.join(path_to_scan, path)
+                        if os.path.isdir(path):
+                            for root, _, files in os.walk(path):
+                                total_files_to_excluded.extend([os.path.normpath(os.path.join(root, file)).replace("\\", "/")
+                                                                for file in files])
+                        elif os.path.isfile(path):
+                            total_files_to_excluded.append(os.path.normpath(path).replace("\\", "/"))
+
                 rc, results = cli.run_scan(path_to_scan, max_depth=100,
                                            strip_root=True, license=True,
                                            copyright=True, return_results=True,
-                                           processes=num_cores,
-                                           output_json_pp=output_json_file,
-                                           only_findings=True, license_text=True,
-                                           url=True, timeout=time_out)
+                                           processes=num_cores, pretty_params=pretty_params,
+                                           output_json_pp=output_json_file, only_findings=True,
+                                           license_text=True, url=True, timeout=time_out,
+                                           include=(), ignore=tuple(total_files_to_excluded))
 
                 if not rc:
                     msg = "Source code analysis failed."
