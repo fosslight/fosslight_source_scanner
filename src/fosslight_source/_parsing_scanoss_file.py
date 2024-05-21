@@ -12,7 +12,7 @@ from ._scan_item import replace_word
 logger = logging.getLogger(constant.LOGGER_NAME)
 SCANOSS_INFO_HEADER = ['No', 'Source Name or Path', 'Component Declared', 'SPDX Tag',
                        'File Header', 'License File', 'Scancode',
-                       'scanoss_matched_lines', 'scanoss_fileURL']
+                       'Matched Rate (line number)', 'scanoss_fileURL']
 
 
 def parsing_extraInfo(scanned_result):
