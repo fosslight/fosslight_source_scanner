@@ -18,6 +18,7 @@ _HELP_MESSAGE_SOURCE_SCANNER = """
             -h\t\t\t   Print help message
             -v\t\t\t   Print FOSSLight Source Scanner version
             -m\t\t\t   Print additional information for scan result on separate sheets
+            -e <path>\t\t   Path to exclude from analysis (file and directory)
             -o <output_path>\t   Output path (Path or file name)
             -f <format>\t\t   Output file format (excel, csv, opossum, yaml)
         Options only for FOSSLight Source Scanner
