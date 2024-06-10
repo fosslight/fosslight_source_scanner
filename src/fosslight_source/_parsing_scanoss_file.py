@@ -11,7 +11,7 @@ from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
 
 logger = logging.getLogger(constant.LOGGER_NAME)
-SCANOSS_INFO_HEADER = ['No', 'Source Name or Path', 'Component Declared', 'SPDX Tag',
+SCANOSS_INFO_HEADER = ['No', 'Source Path', 'Component Declared', 'SPDX Tag',
                        'File Header', 'License File', 'Scancode',
                        'Matched Rate (line number)', 'scanoss_fileURL']
 
