@@ -1,5 +1,18 @@
 # Changelog
 
+## v1.7.8 (10/06/2024)
+## Changes
+## 🚀 Features
+
+- Supports for excluding paths @SeongjunJo (#154)
+
+## 🔧 Maintenance
+
+- Modify column name @bjk7119 (#156)
+- Change column name for SCANOSS reference @JustinWonjaePark (#155)
+
+---
+
 ## v1.7.7 (26/04/2024)
 ## Changes
 ## 🚀 Features
@@ -310,15 +323,3 @@
 ## 🐛 Hotfixes
 
 - Fix typecode-libmagic-from-sources installation bug @soimkim (#77)
-
----
-
-## v1.6.11 (16/06/2022)
-## Changes
-## 🚀 Features
-
-- Add yaml format for FOSSLight Report @dd-jy (#75)
-
-## 🔧 Maintenance
-
-- update minimum version of fosslight_util @dd-jy (#76)
