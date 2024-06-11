@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.7.9 (11/06/2024)
+## Changes
+## 🔧 Maintenance
+
+- Limit the maximum number of characters in the license @soimkim (#157)
+
+---
+
 ## v1.7.8 (10/06/2024)
 ## Changes
 ## 🚀 Features
@@ -315,11 +323,3 @@
 ## 🚀 Features
 
 - Add option for time out @soimkim (#79)
-
----
-
-## v1.6.12 (17/06/2022)
-## Changes
-## 🐛 Hotfixes
-
-- Fix typecode-libmagic-from-sources installation bug @soimkim (#77)
