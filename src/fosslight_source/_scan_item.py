@@ -71,10 +71,10 @@ class ScanItem:
         if value:
             max_length_exceed = False
             for new_lic in value:
+                if len(new_lic) > MAX_LICENSE_LENGTH:
+                    new_lic = new_lic[:MAX_LICENSE_LENGTH]
+                    max_length_exceed = True
                 if new_lic not in self._licenses:
-                    if len(new_lic) > MAX_LICENSE_LENGTH:
-                        new_lic = new_lic[:MAX_LICENSE_LENGTH]
-                        max_length_exceed = True
                     self._licenses.append(new_lic)
                     if len(",".join(self._licenses)) > MAX_LICENSE_TOTAL_LENGTH:
                         self._licenses.remove(new_lic)
