@@ -20,6 +20,9 @@ _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
 _exclude_directory.append("/.")
+MAX_LICENSE_LENGTH = 200
+MAX_LICENSE_TOTAL_LENGTH = 600
+SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
 
 
 class ScanItem:
@@ -74,13 +77,28 @@ class ScanItem:
 
     def get_row_to_print(self):
         print_rows = []
+        licenses = []
+        max_length_exceed = False
+        for lic in self.licenses:
+            if len(lic) > MAX_LICENSE_LENGTH:
+                lic = lic[:MAX_LICENSE_LENGTH]
+                max_length_exceed = True
+            licenses.append(lic)
+        str_license = ",".join(licenses)
+        if len(str_license) > MAX_LICENSE_TOTAL_LENGTH:
+            max_length_exceed = True
+            str_license = str_license[:MAX_LICENSE_TOTAL_LENGTH]
+
+        if max_length_exceed:
+            self.comment = f"{self.comment}/ {SUBSTRING_LICENSE_COMMENT}" if self.comment else SUBSTRING_LICENSE_COMMENT
+
         if not self.download_location:
-            print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), "", "",
+            print_rows.append([self.file, self.oss_name, self.oss_version, str_license, "", "",
                                "\n".join(self.copyright), "Exclude" if self.exclude else "", self.comment,
                                self.license_reference])
         else:
             for url in self.download_location:
-                print_rows.append([self.file, self.oss_name, self.oss_version, ','.join(self.licenses), url, "",
+                print_rows.append([self.file, self.oss_name, self.oss_version, str_license, url, "",
                                    "\n".join(self.copyright), "Exclude" if self.exclude else "", self.comment,
                                    self.license_reference])
         return print_rows
