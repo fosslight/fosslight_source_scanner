@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.7.11 (11/06/2024)
+## Changes
+## 🐛 Hotfixes
+
+- Bug fix related to license duplication @soimkim (#159)
+
+## 🔧 Maintenance
+
+- Check empty license @soimkim (#160)
+
+---
+
 ## v1.7.10 (11/06/2024)
 ## Changes
 ## 🐛 Hotfixes
@@ -308,18 +320,3 @@
 ## v1.6.15 (12/08/2022)
 ## Changes
 - Remove the required option from the help message @soimkim (#87)
-
----
-
-## v1.6.14 (04/08/2022)
-## Changes
-## 🐛 Hotfixes
-
-- Fix the bug that convert mode does not run @soimkim (#84)
-- Fix package download bug during docker build @soimkim (#80)
-
-## 🔧 Maintenance
-
-- Print tool information to log @soimkim (#86)
-- Analyze the current path if path is null @soimkim (#85)
-- Print the message if there is nothing to print @soimkim (#83)
