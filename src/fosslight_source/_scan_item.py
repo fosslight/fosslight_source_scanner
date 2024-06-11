@@ -71,15 +71,16 @@ class ScanItem:
         if value:
             max_length_exceed = False
             for new_lic in value:
-                if len(new_lic) > MAX_LICENSE_LENGTH:
-                    new_lic = new_lic[:MAX_LICENSE_LENGTH]
-                    max_length_exceed = True
-                if new_lic not in self._licenses:
-                    self._licenses.append(new_lic)
-                    if len(",".join(self._licenses)) > MAX_LICENSE_TOTAL_LENGTH:
-                        self._licenses.remove(new_lic)
+                if new_lic:
+                    if len(new_lic) > MAX_LICENSE_LENGTH:
+                        new_lic = new_lic[:MAX_LICENSE_LENGTH]
                         max_length_exceed = True
-                        break
+                    if new_lic not in self._licenses:
+                        self._licenses.append(new_lic)
+                        if len(",".join(self._licenses)) > MAX_LICENSE_TOTAL_LENGTH:
+                            self._licenses.remove(new_lic)
+                            max_length_exceed = True
+                            break
             if max_length_exceed and (SUBSTRING_LICENSE_COMMENT not in self.comment):
                 self.comment = f"{self.comment}/ {SUBSTRING_LICENSE_COMMENT}" if self.comment else SUBSTRING_LICENSE_COMMENT
 
