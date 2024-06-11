@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.7.10 (11/06/2024)
+## Changes
+## 🐛 Hotfixes
+
+- Move method to limit license characters @soimkim (#158)
+
+---
+
 ## v1.7.9 (11/06/2024)
 ## Changes
 ## 🔧 Maintenance
@@ -315,11 +323,3 @@
 - Print tool information to log @soimkim (#86)
 - Analyze the current path if path is null @soimkim (#85)
 - Print the message if there is nothing to print @soimkim (#83)
-
----
-
-## v1.6.13 (27/06/2022)
-## Changes
-## 🚀 Features
-
-- Add option for time out @soimkim (#79)
