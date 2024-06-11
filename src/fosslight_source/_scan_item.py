@@ -68,37 +68,33 @@ class ScanItem:
 
     @licenses.setter
     def licenses(self, value):
-        self._licenses.extend(value)
-        if len(self._licenses) > 0:
-            self._licenses = list(set(self._licenses))
+        if value:
+            max_length_exceed = False
+            for new_lic in value:
+                if new_lic not in self._licenses:
+                    if len(new_lic) > MAX_LICENSE_LENGTH:
+                        new_lic = new_lic[:MAX_LICENSE_LENGTH]
+                        max_length_exceed = True
+                    self._licenses.append(new_lic)
+                    if len(",".join(self._licenses)) > MAX_LICENSE_TOTAL_LENGTH:
+                        self._licenses.remove(new_lic)
+                        max_length_exceed = True
+                        break
+            if max_length_exceed and (SUBSTRING_LICENSE_COMMENT not in self.comment):
+                self.comment = f"{self.comment}/ {SUBSTRING_LICENSE_COMMENT}" if self.comment else SUBSTRING_LICENSE_COMMENT
 
     def get_file(self):
         return self.file
 
     def get_row_to_print(self):
         print_rows = []
-        licenses = []
-        max_length_exceed = False
-        for lic in self.licenses:
-            if len(lic) > MAX_LICENSE_LENGTH:
-                lic = lic[:MAX_LICENSE_LENGTH]
-                max_length_exceed = True
-            licenses.append(lic)
-        str_license = ",".join(licenses)
-        if len(str_license) > MAX_LICENSE_TOTAL_LENGTH:
-            max_length_exceed = True
-            str_license = str_license[:MAX_LICENSE_TOTAL_LENGTH]
-
-        if max_length_exceed:
-            self.comment = f"{self.comment}/ {SUBSTRING_LICENSE_COMMENT}" if self.comment else SUBSTRING_LICENSE_COMMENT
-
         if not self.download_location:
-            print_rows.append([self.file, self.oss_name, self.oss_version, str_license, "", "",
+            print_rows.append([self.file, self.oss_name, self.oss_version, ",".join(self.licenses), "", "",
                                "\n".join(self.copyright), "Exclude" if self.exclude else "", self.comment,
                                self.license_reference])
         else:
             for url in self.download_location:
-                print_rows.append([self.file, self.oss_name, self.oss_version, str_license, url, "",
+                print_rows.append([self.file, self.oss_name, self.oss_version, ",".join(self.licenses), url, "",
                                    "\n".join(self.copyright), "Exclude" if self.exclude else "", self.comment,
                                    self.license_reference])
         return print_rows
