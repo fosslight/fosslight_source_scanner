@@ -74,15 +74,23 @@ def run_scan(path_to_scan, output_file_name="",
                 pretty_params["path_to_exclude"] = path_to_exclude
                 pretty_params["output_file"] = output_file_name
                 total_files_to_excluded = []
+
                 if path_to_exclude:
+                    target_path = os.path.basename(path_to_scan) if os.path.isabs(path_to_scan) else path_to_scan
+
                     for path in path_to_exclude:
-                        path = os.path.join(path_to_scan, path)
-                        if os.path.isdir(path):
-                            for root, _, files in os.walk(path):
+                        exclude_path = path
+                        isabs_exclude = os.path.isabs(path)
+                        if isabs_exclude:
+                            exclude_path = os.path.relpath(path, os.path.abspath(path_to_scan))
+
+                        exclude_path = os.path.join(target_path, exclude_path)
+                        if os.path.isdir(exclude_path):
+                            for root, _, files in os.walk(exclude_path):
                                 total_files_to_excluded.extend([os.path.normpath(os.path.join(root, file)).replace("\\", "/")
                                                                 for file in files])
-                        elif os.path.isfile(path):
-                            total_files_to_excluded.append(os.path.normpath(path).replace("\\", "/"))
+                        elif os.path.isfile(exclude_path):
+                            total_files_to_excluded.append(os.path.normpath(exclude_path).replace("\\", "/"))
 
                 rc, results = cli.run_scan(path_to_scan, max_depth=100,
                                            strip_root=True, license=True,
