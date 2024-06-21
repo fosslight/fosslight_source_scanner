@@ -13,7 +13,7 @@ from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
-from fosslight_util.output_format import check_output_format, write_output_file
+from fosslight_util.output_format import check_output_formats, write_output_file
 from fosslight_util.correct import correct_with_yaml
 from .run_scancode import run_scan
 from .run_scanoss import run_scanoss_py
@@ -48,7 +48,7 @@ def main():
     write_json_file = False
     output_file_name = ""
     print_matched_text = False
-    format = ""
+    formats = ""
     selected_scanner = ""
     correct_mode = True
 
@@ -62,7 +62,7 @@ def main():
     parser.add_argument('-j', '--json', action='store_true', required=False)
     parser.add_argument('-o', '--output', nargs=1, type=str, required=False, default="")
     parser.add_argument('-m', '--matched', action='store_true', required=False)
-    parser.add_argument('-f', '--format', nargs=1, type=str, required=False)
+    parser.add_argument('-f', '--formats', nargs='*', type=str, required=False)
     parser.add_argument('-s', '--scanner', nargs=1, type=str, required=False, default='all')
     parser.add_argument('-t', '--timeout', type=int, required=False, default=120)
     parser.add_argument('-c', '--cores', type=int, required=False, default=-1)
@@ -87,8 +87,8 @@ def main():
     output_file_name = ''.join(args.output)
     if args.matched:
         print_matched_text = True
-    if args.format:
-        format = ''.join(args.format)
+    if args.formats:
+        formats = list(args.formats)
     if args.scanner:
         selected_scanner = ''.join(args.scanner)
     if args.no_correction:
@@ -107,8 +107,9 @@ def main():
     if os.path.isdir(path_to_scan):
         result = []
         result = run_scanners(path_to_scan, output_file_name, write_json_file, core, True,
-                              print_matched_text, format, time_out, correct_mode, correct_filepath,
+                              print_matched_text, formats, time_out, correct_mode, correct_filepath,
                               selected_scanner, path_to_exclude)
+
         _result_log["Scan Result"] = result[1]
 
         try:
@@ -138,7 +139,7 @@ def count_files(path_to_scan, path_to_exclude):
 
 
 def create_report_file(_start_time, merged_result, license_list, scanoss_result, selected_scanner, need_license=False,
-                       output_path="", output_file="", output_extension="", correct_mode=True, correct_filepath="",
+                       output_path="", output_files=[], output_extensions=[], correct_mode=True, correct_filepath="",
                        path_to_scan="", path_to_exclude=[]):
     """
     Create report files for given scanned result.
@@ -157,21 +158,29 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
     else:
         output_path = os.path.abspath(output_path)
 
+    if output_files and output_files[0]:
+        # If -o contains file name, set all output file name and dont' use default name
+        output_files = [output_files[0] for _ in range(len(output_extensions))]
+    else:
+        # If -o does not contains file name, set default name
+        while len(output_files) < len(output_extensions):
+            output_files.append(None)
+        for i, output_extension in enumerate(output_extensions):
+            if output_files[i] is None or output_files[i] == "":
+                if output_extension == _json_ext:
+                    output_files[i] = f"fosslight_opossum_src_{_start_time}"
+                else:
+                    output_files[i] = f"fosslight_report_src_{_start_time}"
+
     if not correct_filepath:
         correct_filepath = path_to_scan
-
-    if output_file == "":
-        if output_extension == _json_ext:
-            output_file = f"fosslight_opossum_src_{_start_time}"
-        else:
-            output_file = f"fosslight_report_src_{_start_time}"
-
     cover = CoverItem(tool_name=_PKG_NAME,
                       start_time=_start_time,
                       input_path=path_to_scan,
                       exclude_path=path_to_exclude)
     files_count, removed_files_count = count_files(path_to_scan, path_to_exclude)
     cover.comment = f"Total number of files / removed files: {files_count} / {removed_files_count}"
+
     if len(merged_result) == 0:
         if files_count < 1:
             cover.comment += "(No file detected.)"
@@ -190,7 +199,7 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
             extended_header = MERGED_HEADER
 
         if need_license:
-            if selected_scanner == 'scancode' or output_extension == _json_ext:
+            if selected_scanner == 'scancode':
                 sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
             elif selected_scanner == 'scanoss':
                 sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanoss_result)
@@ -206,17 +215,23 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
             sheet_list = correct_list
             logger.info("Success to correct with yaml.")
 
-    output_file_without_ext = os.path.join(output_path, output_file)
-    success_to_write, writing_msg, result_file = write_output_file(output_file_without_ext, output_extension,
-                                                                   sheet_list, extended_header, "", cover)
-    if success_to_write:
-        if result_file:
-            logger.info(f"Output file:{result_file}")
-            logger.info(f'{cover.comment}')
+    combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
+    results = []
+    for combined_path_and_file, output_extension in zip(combined_paths_and_files, output_extensions):
+        if need_license:
+            if output_extension == _json_ext:
+                sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
+            elif selected_scanner == 'scanoss':
+                if "scancode_reference" in sheet_list:
+                    del sheet_list["scancode_reference"]
+        results.append(write_output_file(combined_path_and_file, output_extension, sheet_list, extended_header, "", cover))
+    for success, msg, result_file in results:
+        if success:
+            logger.info(f"Output file: {result_file}")
+            if cover:
+                logger.info(f'{cover.comment}')
         else:
-            logger.warning(f"{writing_msg}")
-    else:
-        logger.error(f"Fail to generate result file. msg:({writing_msg})")
+            logger.error(f"Fail to generate result file {result_file}. msg:({msg})")
 
 
 def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
@@ -246,7 +261,7 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
 
 
 def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_cores=-1, called_by_cli=True,
-                 print_matched_text=False, format="", time_out=120, correct_mode=True, correct_filepath="",
+                 print_matched_text=False, formats=[], time_out=120, correct_mode=True, correct_filepath="",
                  selected_scanner='all', path_to_exclude=[]):
     """
     Run Scancode and scanoss.py for the given path.
@@ -273,27 +288,29 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
     spdx_downloads = {}
     result_log = {}
 
-    success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
+    success, msg, output_path, output_files, output_extensions = check_output_formats(output_file_name, formats)
+
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
-    if output_extension != '.xlsx' and output_extension and print_matched_text:
+
+    if '.xlsx' not in output_extensions and print_matched_text:
         logger.warning("-m option is only available for excel.")
         print_matched_text = False
+
     if success:
         if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
             success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                       write_json_file, num_cores, True,
-                                                                                      print_matched_text, format, called_by_cli,
-                                                                                      time_out, correct_mode, correct_filepath,
-                                                                                      path_to_exclude)
+                                                                                      print_matched_text, formats, called_by_cli,
+                                                                                      time_out, correct_mode, correct_filepath)
         if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
-            scanoss_result = run_scanoss_py(path_to_scan, output_file_name, format, True,
-                                            write_json_file, num_cores, path_to_exclude)
+            scanoss_result = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file, num_cores,
+                                            path_to_exclude)
         if selected_scanner in SCANNER_TYPE:
             spdx_downloads = get_spdx_downloads(path_to_scan, path_to_exclude)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
             create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
-                               print_matched_text, output_path, output_file, output_extension, correct_mode,
+                               print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                correct_filepath, path_to_scan, path_to_exclude)
         else:
             print_help_msg_source_scanner()
@@ -302,7 +319,6 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
     else:
         result_log[RESULT_KEY] = f"Format error. {msg}"
         success = False
-
     return success, result_log.get(RESULT_KEY, ""), merged_result, license_list, scanoss_result
 
 
