@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.7.12 (21/06/2024)
+## Changes
+## 🔧 Maintenance
+
+- Update scancode version for web service @soimkim (#161)
+
+---
+
 ## v1.7.11 (11/06/2024)
 ## Changes
 ## 🐛 Hotfixes
@@ -314,9 +322,3 @@
 
 - Do not print empty parsing messages @soimkim (#91)
 - Change the required version of Python to 3.7 @soimkim (#90)
-
----
-
-## v1.6.15 (12/08/2022)
-## Changes
-- Remove the required option from the help message @soimkim (#87)
