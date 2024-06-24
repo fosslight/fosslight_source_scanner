@@ -77,7 +77,8 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
             total_files_to_excluded = []
             if path_to_exclude:
                 for path in path_to_exclude:
-                    path = os.path.join(path_to_scan, path)
+                    path = os.path.join(path_to_scan, os.path.relpath(path, os.path.abspath(path_to_scan))) \
+                           if not os.path.isabs(path_to_scan) and os.path.isabs(path) else os.path.join(path_to_scan, path)
                     if os.path.isdir(path):
                         for root, _, files in os.walk(path):
                             root = root[len(path_to_scan) + 1:]
