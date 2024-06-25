@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.7.13 (25/06/2024)
+## Changes
+## 🐛 Hotfixes
+
+- Amend exclude option @SeongjunJo (#162)
+
+---
+
 ## v1.7.12 (21/06/2024)
 ## Changes
 ## 🔧 Maintenance
@@ -309,16 +317,3 @@
 ## 🐛 Hotfixes
 
 - Fix the bug that can't extract copyright @soimkim (#92)
-
----
-
-## v1.6.16 (01/09/2022)
-## Changes
-## 🐛 Hotfixes
-
-- Fix a bug when reading a non-existent key @soimkim (#89)
-
-## 🔧 Maintenance
-
-- Do not print empty parsing messages @soimkim (#91)
-- Change the required version of Python to 3.7 @soimkim (#90)
