@@ -20,7 +20,7 @@ _HELP_MESSAGE_SOURCE_SCANNER = """
             -m\t\t\t   Print additional information for scan result on separate sheets
             -e <path>\t\t   Path to exclude from analysis (file and directory)
             -o <output_path>\t   Output path (Path or file name)
-            -f <format>\t\t   Output file format (excel, csv, opossum, yaml)
+            -f <format>\t\t   Output file formats (excel, csv, opossum, yaml). Multi formats are supported.
         Options only for FOSSLight Source Scanner
             -s <scanner>\t   Select which scanner to be run (scancode, scanoss, all)
             -j\t\t\t   Generate raw result of scanners in json format

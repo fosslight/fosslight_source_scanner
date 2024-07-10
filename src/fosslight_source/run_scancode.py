@@ -15,7 +15,7 @@ from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from ._license_matched import get_license_list_to_print
-from fosslight_util.output_format import check_output_format
+from fosslight_util.output_format import check_output_formats
 from fosslight_binary.binary_analysis import check_binary
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -24,7 +24,7 @@ _PKG_NAME = "fosslight_source"
 
 
 def run_scan(path_to_scan, output_file_name="",
-             _write_json_file=False, num_cores=-1, return_results=False, need_license=False, format="",
+             _write_json_file=False, num_cores=-1, return_results=False, need_license=False, formats=[],
              called_by_cli=False, time_out=120, correct_mode=True, correct_filepath="", path_to_exclude=[]):
     if not called_by_cli:
         global logger
@@ -41,19 +41,21 @@ def run_scan(path_to_scan, output_file_name="",
     if not correct_filepath:
         correct_filepath = path_to_scan
 
-    success, msg, output_path, output_file, output_extension = check_output_format(output_file_name, format)
+    success, msg, output_path, output_files, output_extensions = check_output_formats(output_file_name, formats)
     if success:
         if output_path == "":  # if json output with _write_json_file not used, output_path won't be needed.
             output_path = os.getcwd()
         else:
             output_path = os.path.abspath(output_path)
-
         if not called_by_cli:
-            if output_file == "":
-                if output_extension == _json_ext:
-                    output_file = f"fosslight_opossum_src_{_start_time}"
-                else:
-                    output_file = f"fosslight_report_src_{_start_time}"
+            while len(output_files) < len(output_extensions):
+                output_files.append(None)
+            for i, output_extension in enumerate(output_extensions):
+                if output_files[i] is None or output_files[i] == "":
+                    if output_extension == _json_ext:
+                        output_files[i] = f"fosslight_opossum_src_{_start_time}"
+                    else:
+                        output_files[i] = f"fosslight_report_src_{_start_time}"
 
         if _write_json_file:
             output_json_file = os.path.join(output_path, "scancode_raw_result.json")
@@ -63,7 +65,6 @@ def run_scan(path_to_scan, output_file_name="",
         if not called_by_cli:
             logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
                                            True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
-
         num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores
 
         if os.path.isdir(path_to_scan):
