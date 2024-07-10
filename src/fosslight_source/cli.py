@@ -158,10 +158,7 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
     else:
         output_path = os.path.abspath(output_path)
 
-    if output_files and output_files[0]:
-        # If -o contains file name, set all output file name and dont' use default name
-        output_files = [output_files[0] for _ in range(len(output_extensions))]
-    else:
+    if not output_files:
         # If -o does not contains file name, set default name
         while len(output_files) < len(output_extensions):
             output_files.append(None)
@@ -218,12 +215,8 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
     for combined_path_and_file, output_extension in zip(combined_paths_and_files, output_extensions):
-        if need_license:
-            if output_extension == _json_ext:
-                sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
-            elif selected_scanner == 'scanoss':
-                if "scancode_reference" in sheet_list:
-                    del sheet_list["scancode_reference"]
+        if need_license and output_extension == _json_ext and "scanoss_reference" in sheet_list:
+            del sheet_list["scanoss_reference"]
         results.append(write_output_file(combined_path_and_file, output_extension, sheet_list, extended_header, "", cover))
     for success, msg, result_file in results:
         if success:
