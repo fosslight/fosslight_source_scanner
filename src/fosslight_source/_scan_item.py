@@ -123,7 +123,7 @@ def is_exclude_file(file_path, prev_dir=None, prev_dir_exclude_value=None):
     filename = os.path.basename(file_path)
     if os.path.splitext(filename)[1] in _exclude_extension:
         return True
-    if filename in _exclude_filename:
+    if filename.startswith('.') or filename in _exclude_filename:
         return True
 
     dir_path = os.path.dirname(file_path)
