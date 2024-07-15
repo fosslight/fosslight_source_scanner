@@ -1,5 +1,22 @@
 # Changelog
 
+## v1.7.14 (15/07/2024)
+## 🚀 Features
+
+- Enable multiple input for -f and -o option @JustinWonjaePark (#164)
+
+## 🐛 Hotfixes
+
+- Update scancode version for mac @soimkim (#168)
+- Fix SPDX expression split bug @JustinWonjaePark (#165)
+- Revert "Fix SPDX expression split bug" @soimkim (#169)
+
+## 🔧 Maintenance
+
+- Check hidden files and mark 'Exlcude'. @JustinWonjaePark (#166)
+
+---
+
 ## v1.7.13 (25/06/2024)
 ## Changes
 ## 🐛 Hotfixes
@@ -309,11 +326,3 @@
 ## 🔧 Maintenance
 
 - Change the output file name @JustinWonjaePark (#93)
-
----
-
-## v1.6.17 (13/09/2022)
-## Changes
-## 🐛 Hotfixes
-
-- Fix the bug that can't extract copyright @soimkim (#92)
