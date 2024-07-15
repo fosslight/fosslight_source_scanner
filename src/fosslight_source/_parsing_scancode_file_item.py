@@ -26,8 +26,8 @@ KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
 KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
 SPDX_REPLACE_WORDS = ["(", ")"]
-KEY_AND = "and"
-KEY_OR = "or"
+KEY_AND = r"(?<=\s)and(?=\s)"
+KEY_OR = r"(?<=\s)or(?=\s)"
 
 
 def get_error_from_header(header_item):
@@ -182,8 +182,7 @@ def split_spdx_expression(spdx_string):
     license = []
     for replace in SPDX_REPLACE_WORDS:
         spdx_string = spdx_string.replace(replace, "")
-    spdx_string = spdx_string.replace(KEY_OR, KEY_AND)
-    license = spdx_string.split(KEY_AND)
+    license = re.split(KEY_AND + "|" + KEY_OR, spdx_string)
     return license
 
 
