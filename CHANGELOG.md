@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.7.15 (17/07/2024)
+## Changes
+## 🐛 Hotfixes
+
+- Version up FOSSLight util to fix default file bug @JustinWonjaePark (#170)
+- Complying with SPDX License expression spec @JustinWonjaePark (#167)
+
+---
+
 ## v1.7.14 (15/07/2024)
 ## 🚀 Features
 
@@ -318,11 +327,3 @@
 ## 🔧 Maintenance
 
 - Change argument parsing for convert to argpars @JustinWonjaePark (#94, #96)
-
----
-
-## v1.6.18 (15/09/2022)
-## Changes
-## 🔧 Maintenance
-
-- Change the output file name @JustinWonjaePark (#93)
