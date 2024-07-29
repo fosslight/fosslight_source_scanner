@@ -22,7 +22,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 SCANOSS_RESULT_FILE = "scanner_output.wfp"
 SCANOSS_OUTPUT_FILE = "scanoss_raw_result.json"
-SCANOSS_COMMAND_PREFIX = "scanoss-py scan -o "
+SCANOSS_COMMAND_PREFIX = "scanoss-py scan --ignore-cert-errors -o "
 
 
 def get_scanoss_extra_info(scanned_result):
