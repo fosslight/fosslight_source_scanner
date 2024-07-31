@@ -117,7 +117,7 @@ def main():
         except Exception as ex:
             logger.debug(f"Failed to print log.: {ex}")
     else:
-        logger.error(f"Check the path to scan. : {path_to_scan}")
+        logger.error(f"Input path({path_to_scan}) is not a directory. Please enter a valid path.")
         sys.exit(1)
 
 
