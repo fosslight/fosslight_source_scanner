@@ -1,0 +1,388 @@
+{
+    "run_scancode.py": [
+        {
+            "component": "fosslight_source_scanner",
+            "file": "tests/test_files/run_scancode.py",
+            "file_hash": "7aace3cee77ce2be64a680c3a3455bf7",
+            "file_url": "https://api.osskb.org/file_contents/7aace3cee77ce2be64a680c3a3455bf7",
+            "id": "file",
+            "latest": "1.7.13",
+            "licenses": [
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "component_declared",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "file_spdx_tag",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/GPL-2.0-only.txt",
+                    "copyleft": "yes",
+                    "incompatible_with": "Apache-1.0, Apache-1.1, Apache-2.0, BSD-4-Clause, BSD-4-Clause-UC, ECL-2.0, FTL, IJG, Minpack, OpenSSL, PHP-3.01, Python-2.0, zlib-acknowledgement, XFree86-1.1",
+                    "name": "GPL-2.0-only",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/GPL-2.0-only.html"
+                },
+                {
+                    "name": "LicenseRef-scancode-unknown-license-reference",
+                    "source": "scancode"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "license_file",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                }
+            ],
+            "lines": "all",
+            "matched": "100%",
+            "oss_lines": "all",
+            "purl": [
+                "pkg:github/fosslight/fosslight_source_scanner"
+            ],
+            "release_date": "2023-07-25",
+            "server": {
+                "kb_version": {
+                    "daily": "24.07.29",
+                    "monthly": "24.07"
+                },
+                "version": "5.4.7"
+            },
+            "source_hash": "7aace3cee77ce2be64a680c3a3455bf7",
+            "status": "pending",
+            "url": "https://github.com/fosslight/fosslight_source_scanner",
+            "url_hash": "5872e8aeaf6c6907ca4a5466aaeaff26",
+            "url_stats": {},
+            "vendor": "fosslight",
+            "version": "1.6.29"
+        }
+    ],
+    "run_scancode2.py": [
+        {
+            "component": "fosslight_source_scanner",
+            "file": "tests/test_files/run_scancode2.py",
+            "file_hash": "6e72b47a4b978e8f953b697e34d87795",
+            "file_url": "https://api.osskb.org/file_contents/6e72b47a4b978e8f953b697e34d87795",
+            "id": "file",
+            "latest": "1.7.13",
+            "licenses": [
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "component_declared",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "license_file",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                }
+            ],
+            "lines": "all",
+            "matched": "100%",
+            "oss_lines": "all",
+            "purl": [
+                "pkg:github/fosslight/fosslight_source_scanner"
+            ],
+            "release_date": "2023-07-25",
+            "server": {
+                "kb_version": {
+                    "daily": "24.07.29",
+                    "monthly": "24.07"
+                },
+                "version": "5.4.7"
+            },
+            "source_hash": "6e72b47a4b978e8f953b697e34d87795",
+            "status": "pending",
+            "url": "https://github.com/fosslight/fosslight_source_scanner",
+            "url_hash": "5872e8aeaf6c6907ca4a5466aaeaff26",
+            "url_stats": {},
+            "vendor": "fosslight",
+            "version": "1.6.29"
+        }
+    ],
+    "sample.cpp": [
+        {
+            "component": "fosslight_source_scanner",
+            "file": "tests/test_files/sample.cpp",
+            "file_hash": "d6018d62af601d09941159ab6980fb72",
+            "file_url": "https://api.osskb.org/file_contents/d6018d62af601d09941159ab6980fb72",
+            "id": "file",
+            "latest": "1.7.13",
+            "licenses": [
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "component_declared",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "file_spdx_tag",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "license_file",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                }
+            ],
+            "lines": "all",
+            "matched": "100%",
+            "oss_lines": "all",
+            "purl": [
+                "pkg:github/fosslight/fosslight_source_scanner"
+            ],
+            "release_date": "2023-07-25",
+            "server": {
+                "kb_version": {
+                    "daily": "24.07.29",
+                    "monthly": "24.07"
+                },
+                "version": "5.4.7"
+            },
+            "source_hash": "d6018d62af601d09941159ab6980fb72",
+            "status": "pending",
+            "url": "https://github.com/fosslight/fosslight_source_scanner",
+            "url_hash": "5872e8aeaf6c6907ca4a5466aaeaff26",
+            "url_stats": {},
+            "vendor": "fosslight",
+            "version": "1.6.29"
+        }
+    ],
+    "temp.cpp": [
+        {
+            "component": "fosslight_source_scanner",
+            "file": "tests/test_files/temp.cpp",
+            "file_hash": "0e199bbda022959e303bc874c484d5ac",
+            "file_url": "https://api.osskb.org/file_contents/0e199bbda022959e303bc874c484d5ac",
+            "id": "file",
+            "latest": "1.7.13",
+            "licenses": [
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "component_declared",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "file_spdx_tag",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "license_file",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                }
+            ],
+            "lines": "all",
+            "matched": "100%",
+            "oss_lines": "all",
+            "purl": [
+                "pkg:github/fosslight/fosslight_source_scanner"
+            ],
+            "release_date": "2023-05-19",
+            "server": {
+                "kb_version": {
+                    "daily": "24.07.29",
+                    "monthly": "24.07"
+                },
+                "version": "5.4.7"
+            },
+            "source_hash": "0e199bbda022959e303bc874c484d5ac",
+            "status": "pending",
+            "url": "https://github.com/fosslight/fosslight_source_scanner",
+            "url_hash": "4b1cbcf96f21ff9bfb1a97548182d937",
+            "url_stats": {},
+            "vendor": "fosslight",
+            "version": "1.6.27"
+        }
+    ],
+    "test/temp.cpp": [
+        {
+            "component": "fosslight_source_scanner",
+            "file": "tests/test_files/temp.cpp",
+            "file_hash": "0e199bbda022959e303bc874c484d5ac",
+            "file_url": "https://api.osskb.org/file_contents/0e199bbda022959e303bc874c484d5ac",
+            "id": "file",
+            "latest": "1.7.13",
+            "licenses": [
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "component_declared",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "file_spdx_tag",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "scancode",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                },
+                {
+                    "checklist_url": "https://www.osadl.org/fileadmin/checklists/unreflicenses/Apache-2.0.txt",
+                    "copyleft": "no",
+                    "name": "Apache-2.0",
+                    "osadl_updated": "2024-07-28T02:25:00+00:00",
+                    "patent_hints": "yes",
+                    "source": "license_file",
+                    "url": "https://spdx.org/licenses/Apache-2.0.html"
+                }
+            ],
+            "lines": "all",
+            "matched": "100%",
+            "oss_lines": "all",
+            "purl": [
+                "pkg:github/fosslight/fosslight_source_scanner"
+            ],
+            "release_date": "2023-05-19",
+            "server": {
+                "kb_version": {
+                    "daily": "24.07.29",
+                    "monthly": "24.07"
+                },
+                "version": "5.4.7"
+            },
+            "source_hash": "0e199bbda022959e303bc874c484d5ac",
+            "status": "pending",
+            "url": "https://github.com/fosslight/fosslight_source_scanner",
+            "url_hash": "4b1cbcf96f21ff9bfb1a97548182d937",
+            "url_stats": {},
+            "vendor": "fosslight",
+            "version": "1.6.27"
+        }
+    ]
+}

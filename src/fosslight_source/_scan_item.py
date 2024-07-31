@@ -7,6 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
+from typing import List, Dict, Optional, Union
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "licenseref-"]
@@ -37,7 +38,7 @@ class ScanItem:
     fileURL = ""  # Only for SCANOSS results
     license_reference = ""
 
-    def __init__(self, value):
+    def __init__(self, value :str) -> None:
         self.file = value
         self._copyright = []
         self._licenses = []
@@ -46,28 +47,28 @@ class ScanItem:
         self.exclude = False
         self.is_license_text = False
 
-    def __del__(self):
+    def __del__(self) -> None:
         pass
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.file)
 
     @property
-    def copyright(self):
+    def copyright(self) -> List[str]:
         return self._copyright
 
     @copyright.setter
-    def copyright(self, value):
+    def copyright(self, value: List[str]) -> None:
         self._copyright.extend(value)
         if len(self._copyright) > 0:
             self._copyright = list(set(self._copyright))
 
     @property
-    def licenses(self):
+    def licenses(self) ->List[str]:
         return self._licenses
 
     @licenses.setter
-    def licenses(self, value):
+    def licenses(self, value: List[str]) -> None:
         if value:
             max_length_exceed = False
             for new_lic in value:
@@ -84,10 +85,10 @@ class ScanItem:
             if max_length_exceed and (SUBSTRING_LICENSE_COMMENT not in self.comment):
                 self.comment = f"{self.comment}/ {SUBSTRING_LICENSE_COMMENT}" if self.comment else SUBSTRING_LICENSE_COMMENT
 
-    def get_file(self):
+    def get_file(self) -> str:
         return self.file
 
-    def get_row_to_print(self):
+    def get_row_to_print(self) -> List[List[str]]:
         print_rows = []
         if not self.download_location:
             print_rows.append([self.file, self.oss_name, self.oss_version, ",".join(self.licenses), "", "",
@@ -100,14 +101,14 @@ class ScanItem:
                                    self.license_reference])
         return print_rows
 
-    def __eq__(self, other):
+    def __eq__(self, other: Union[str, 'ScanItem']) -> bool:
         if type(other) == str:
             return self.file == other
         else:
             return self.file == other.file
 
 
-def is_exclude_dir(dir_path):
+def is_exclude_dir(dir_path: str) -> bool:
     if dir_path != "":
         dir_path = dir_path.lower()
         dir_path = dir_path if dir_path.endswith(
@@ -118,7 +119,7 @@ def is_exclude_dir(dir_path):
     return False
 
 
-def is_exclude_file(file_path, prev_dir=None, prev_dir_exclude_value=None):
+def is_exclude_file(file_path: str, prev_dir: Optional[str] =None, prev_dir_exclude_value: Optional[bool] =None) -> bool:
     file_path = file_path.lower()
     filename = os.path.basename(file_path)
     if os.path.splitext(filename)[1] in _exclude_extension:
@@ -140,7 +141,7 @@ def is_exclude_file(file_path, prev_dir=None, prev_dir_exclude_value=None):
     return False
 
 
-def is_notice_file(file_path):
+def is_notice_file(file_path: str) -> bool:
     pattern = r"({})(?<!w)".format("|".join(_notice_filename))
     file_path = file_path.lower()
     filename = os.path.basename(file_path)

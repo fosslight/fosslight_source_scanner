@@ -16,6 +16,7 @@ from ._parsing_scanoss_file import parsing_scanResult  # scanoss
 from ._parsing_scanoss_file import parsing_extraInfo  # scanoss
 import shutil
 from pathlib import Path
+from typing import List, Dict
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -25,12 +26,12 @@ SCANOSS_OUTPUT_FILE = "scanoss_raw_result.json"
 SCANOSS_COMMAND_PREFIX = "scanoss-py scan -o "
 
 
-def get_scanoss_extra_info(scanned_result):
+def get_scanoss_extra_info(scanned_result: Dict) -> Dict:
     return parsing_extraInfo(scanned_result)
 
 
-def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=False,
-                   write_json_file=False, num_threads=-1, path_to_exclude=[]):
+def run_scanoss_py(path_to_scan: str, output_file_name: str="", format: str="", called_by_cli: bool=False,
+                   write_json_file: bool=False, num_threads: int=-1, path_to_exclude: List[str]=[]) -> List[dict]:
     """
     Run scanoss.py for the given path.
 

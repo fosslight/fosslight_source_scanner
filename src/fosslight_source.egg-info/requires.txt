@@ -1,0 +1,12 @@
+pyparsing
+scancode-toolkit==32.0.*,>=32.0.2
+scanoss
+XlsxWriter
+fosslight_util>=1.4.47
+PyYAML
+wheel>=0.38.1
+intbitset
+fosslight_binary
+
+[:sys_platform != "darwin"]
+typecode-libmagic

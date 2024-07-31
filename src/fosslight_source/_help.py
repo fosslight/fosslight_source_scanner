@@ -30,10 +30,10 @@ _HELP_MESSAGE_SOURCE_SCANNER = """
             --correct_fpath <path> Path to the sbom-info.yaml file"""
 
 
-def print_version(pkg_name):
+def print_version(pkg_name: str) -> None:
     print_package_version(pkg_name, "FOSSLight Source Scanner Version:")
 
 
-def print_help_msg_source_scanner():
+def print_help_msg_source_scanner() -> None:
     helpMsg = PrintHelpMsg(_HELP_MESSAGE_SOURCE_SCANNER)
     helpMsg.print_help_msg(True)
