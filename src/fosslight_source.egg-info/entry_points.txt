@@ -1,0 +1,3 @@
+[console_scripts]
+fosslight_source = fosslight_source.cli:main
+run_scancode = fosslight_source.run_scancode:main

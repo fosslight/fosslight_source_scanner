@@ -1,0 +1,10 @@
+[   INFO] Output Directory: /Users/hkkim/fosslight_source_scanner/test_scan
+Scan Result: 'True'
+
+[  DEBUG] SCANOSS Parsing tests/test_files: name 'path_to_exclude' is not defined
+[   INFO] |---Number of files detected with SCANOSS: 0
+[   INFO] [FOSSLIGHT_SOURCE] No correction with yaml: Cannot find sbom-info.yaml in tests/test_files.
+[   INFO] [FOSSLIGHT_SOURCE] Output file: /Users/hkkim/fosslight_source_scanner/test_scan/fosslight_report_src_240731_0600.xlsx
+[   INFO] [FOSSLIGHT_SOURCE] Total number of files / removed files: 13 / 0
+[   INFO] [FOSSLIGHT_SOURCE] Scan Result: 'True'
+
