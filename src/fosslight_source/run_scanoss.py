@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-import pkg_resources
+import importlib_metadata
 import warnings
 import logging
 import json
@@ -16,13 +16,13 @@ from ._parsing_scanoss_file import parsing_scanResult  # scanoss
 from ._parsing_scanoss_file import parsing_extraInfo  # scanoss
 import shutil
 from pathlib import Path
+from scanoss.scanner import Scanner, ScanType
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 SCANOSS_RESULT_FILE = "scanner_output.wfp"
 SCANOSS_OUTPUT_FILE = "scanoss_raw_result.json"
-SCANOSS_COMMAND_PREFIX = "scanoss-py scan --ignore-cert-errors -o "
 
 
 def get_scanoss_extra_info(scanned_result):
@@ -51,7 +51,7 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
 
     scanoss_file_list = []
     try:
-        pkg_resources.get_distribution("scanoss")
+        importlib_metadata.distribution("scanoss")
     except Exception as error:
         logger.warning(f"{error}. Skipping scan with scanoss.")
         logger.warning("Please install scanoss and dataclasses before run fosslight_source with scanoss option.")
@@ -65,14 +65,16 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
             Path(output_path).mkdir(parents=True, exist_ok=True)
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
 
-    scan_command = f"{SCANOSS_COMMAND_PREFIX} {output_json_file} {path_to_scan}"
-    if num_threads > 0:
-        scan_command += " -T " + str(num_threads)
-    else:
-        scan_command += " -T " + "10"
-
     try:
-        os.system(scan_command)
+        scanner = Scanner(
+            ignore_cert_errors=True,
+            skip_folders=path_to_exclude,
+            scan_output=output_json_file,
+            scan_options=ScanType.SCAN_SNIPPETS.value,
+            nb_threads=num_threads if num_threads > 0 else 10
+        )
+        scanner.scan_folder_with_options(scan_dir=path_to_scan)
+
         if os.path.isfile(output_json_file):
             total_files_to_excluded = []
             if path_to_exclude:
