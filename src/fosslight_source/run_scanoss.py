@@ -16,7 +16,7 @@ from ._parsing_scanoss_file import parsing_scanResult  # scanoss
 from ._parsing_scanoss_file import parsing_extraInfo  # scanoss
 import shutil
 from pathlib import Path
-from scanoss.scanner import Scanner
+from scanoss.scanner import Scanner, ScanType
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -68,12 +68,12 @@ def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=F
     try:
         scanner = Scanner(
             ignore_cert_errors=True,
-            output_format="json",
-            no_wfp_file=True,
+            skip_folders=path_to_exclude,
             scan_output=output_json_file,
+            scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10
         )
-        scanner.scan_folder(path_to_scan)
+        scanner.scan_folder_with_options(scan_dir=path_to_scan)
 
         if os.path.isfile(output_json_file):
             total_files_to_excluded = []
