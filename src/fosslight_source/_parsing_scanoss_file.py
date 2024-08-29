@@ -6,7 +6,7 @@
 import os
 import logging
 import fosslight_util.constant as constant
-from ._scan_item import ScanItem
+from ._scan_item import SourceItem
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
 
@@ -22,14 +22,14 @@ def parsing_extraInfo(scanned_result):
         license_w_source = scan_item.scanoss_reference
         if scan_item.matched_lines:
             if license_w_source:
-                extra_item = [scan_item.file, ','.join(license_w_source['component_declared']),
+                extra_item = [scan_item.source_name_or_path, ','.join(license_w_source['component_declared']),
                               ','.join(license_w_source['file_spdx_tag']),
                               ','.join(license_w_source['file_header']),
                               ','.join(license_w_source['license_file']),
                               ','.join(license_w_source['scancode']),
                               scan_item.matched_lines, scan_item.fileURL]
             else:
-                extra_item = [scan_item.file, '', '', '', '', '', scan_item.matched_lines, scan_item.fileURL]
+                extra_item = [scan_item.source_name_or_path, '', '', '', '', '', scan_item.matched_lines, scan_item.fileURL]
             scanoss_extra_info.append(extra_item)
     scanoss_extra_info.insert(0, SCANOSS_INFO_HEADER)
     return scanoss_extra_info
@@ -43,7 +43,7 @@ def parsing_scanResult(scanoss_report, path_to_scan="", path_to_exclude=[]):
         abs_file_path = os.path.abspath(os.path.join(path_to_scan, file_path))
         if any(os.path.commonpath([abs_file_path, exclude_path]) == exclude_path for exclude_path in abs_path_to_exclude):
             continue
-        result_item = ScanItem(file_path)
+        result_item = SourceItem(file_path)
         if 'id' in findings[0]:
             if "none" == findings[0]['id']:
                 continue

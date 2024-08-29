@@ -21,8 +21,8 @@ from .run_scanoss import get_scanoss_extra_info
 import yaml
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
-from ._scan_item import ScanItem
-from fosslight_util.cover import CoverItem
+from ._scan_item import SourceItem
+from fosslight_util.oss_item import ScannerItem
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
@@ -35,7 +35,7 @@ SCANNER_TYPE = ['scancode', 'scanoss', 'all', '']
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
-_PKG_NAME = "fosslight_source"
+PKG_NAME = "fosslight_source"
 RESULT_KEY = "Scan Result"
 
 
@@ -75,7 +75,7 @@ def main():
     if args.help:
         print_help_msg_source_scanner()
     if args.version:
-        print_version(_PKG_NAME)
+        print_version(PKG_NAME)
     if not args.path:
         path_to_scan = os.getcwd()
     else:
@@ -171,24 +171,21 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
 
     if not correct_filepath:
         correct_filepath = path_to_scan
-    cover = CoverItem(tool_name=_PKG_NAME,
-                      start_time=_start_time,
-                      input_path=path_to_scan,
-                      exclude_path=path_to_exclude)
+
+    scan_item = ScannerItem(PKG_NAME, _start_time)
+    scan_item.set_cover_pathinfo(path_to_scan, path_to_exclude)
     files_count, removed_files_count = count_files(path_to_scan, path_to_exclude)
-    cover.comment = f"Total number of files / removed files: {files_count} / {removed_files_count}"
+    scan_item.set_cover_comment(f"Total number of files / removed files: {files_count} / {removed_files_count}")
 
-    if len(merged_result) == 0:
+    if not merged_result:
         if files_count < 1:
-            cover.comment += "(No file detected.)"
+            scan_item.set_cover_comment("(No file detected.)")
         else:
-            cover.comment += "(No OSS detected.)"
+            scan_item.set_cover_comment("(No OSS detected.)")
 
-    sheet_list[SRC_SHEET_NAME] = []
     if merged_result:
-        for scan_item in merged_result:
-            for row in scan_item.get_row_to_print():
-                sheet_list[SRC_SHEET_NAME].append(row)
+        sheet_list = {}
+        scan_item.append_file_items(merged_result, PKG_NAME)
 
         if selected_scanner == 'scanoss':
             extended_header = SCANOSS_HEADER
@@ -203,26 +200,28 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
             else:
                 sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
                 sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanoss_result)
+            if sheet_list:
+                scan_item.external_sheets = sheet_list
 
-    if correct_mode:
-        success, msg_correct, correct_list = correct_with_yaml(correct_filepath, path_to_scan, sheet_list)
-        if not success:
-            logger.info(f"No correction with yaml: {msg_correct}")
-        else:
-            sheet_list = correct_list
-            logger.info("Success to correct with yaml.")
+    # if correct_mode:
+    #     success, msg_correct, correct_list = correct_with_yaml(correct_filepath, path_to_scan, sheet_list)
+    #     if not success:
+    #         logger.info(f"No correction with yaml: {msg_correct}")
+    #     else:
+    #         sheet_list = correct_list
+    #         logger.info("Success to correct with yaml.")
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
     for combined_path_and_file, output_extension in zip(combined_paths_and_files, output_extensions):
-        if need_license and output_extension == _json_ext and "scanoss_reference" in sheet_list:
-            del sheet_list["scanoss_reference"]
-        results.append(write_output_file(combined_path_and_file, output_extension, sheet_list, extended_header, "", cover))
+        # if need_license and output_extension == _json_ext and "scanoss_reference" in sheet_list:
+        #     del sheet_list["scanoss_reference"]
+        results.append(write_output_file(combined_path_and_file, output_extension, scan_item, extended_header, ""))
     for success, msg, result_file in results:
         if success:
             logger.info(f"Output file: {result_file}")
-            if cover:
-                logger.info(f'{cover.comment}')
+            for row in scan_item.get_cover_comment():
+                logger.info(row)
         else:
             logger.error(f"Fail to generate result file {result_file}. msg:({msg})")
 
@@ -230,10 +229,10 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
 def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
     """
     Merge scanner results and spdx parsing result.
-    :param scancode_result: list of scancode results in ScanItem.
-    :param scanoss_result: list of scanoss results in ScanItem.
+    :param scancode_result: list of scancode results in SourceItem.
+    :param scanoss_result: list of scanoss results in SourceItem.
     :param spdx_downloads: dictionary of spdx parsed results.
-    :return merged_result: list of merged result in ScanItem.
+    :return merged_result: list of merged result in SourceItem.
     """
 
     # If anything that is found at SCANOSS only exist, add it to result.
@@ -247,9 +246,13 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
                 merged_result_item = scancode_result[scancode_result.index(file_name)]
                 merged_result_item.download_location = download_location
             else:
-                new_result_item = ScanItem(file_name)
+                new_result_item = SourceItem(file_name)
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
+    
+    for item in scancode_result:
+        item.set_oss_item()
+
     return scancode_result
 
 
@@ -284,7 +287,7 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
     success, msg, output_path, output_files, output_extensions = check_output_formats(output_file_name, formats)
 
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
-                                  True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
+                                  True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
 
     if '.xlsx' not in output_extensions and print_matched_text:
         logger.warning("-m option is only available for excel.")
