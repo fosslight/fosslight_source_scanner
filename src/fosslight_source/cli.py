@@ -203,13 +203,13 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
             if sheet_list:
                 scan_item.external_sheets = sheet_list
 
-    # if correct_mode:
-    #     success, msg_correct, correct_list = correct_with_yaml(correct_filepath, path_to_scan, sheet_list)
-    #     if not success:
-    #         logger.info(f"No correction with yaml: {msg_correct}")
-    #     else:
-    #         sheet_list = correct_list
-    #         logger.info("Success to correct with yaml.")
+    if correct_mode:
+        success, msg_correct, correct_item = correct_with_yaml(correct_filepath, path_to_scan, scan_item)
+        if not success:
+            logger.info(f"No correction with yaml: {msg_correct}")
+        else:
+            scan_item = correct_item
+            logger.info("Success to correct with yaml.")
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
