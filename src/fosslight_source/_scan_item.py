@@ -76,17 +76,19 @@ class SourceItem(FileItem):
             for url in self.download_location:
                 item = OssItem(self.oss_name, self.oss_version, self.licenses, url)
                 item.copyright = "\n".join(self.copyright)
+                item.comment = self.comment
                 self.oss_items.append(item)
         else:
             item = OssItem(self.oss_name, self.oss_version, self.licenses)
             item.copyright = "\n".join(self.copyright)
+            item.comment = self.comment
             self.oss_items.append(item)
 
     def get_print_array(self):
         print_rows = []
         for item in self.oss_items:
             print_rows.append([self.source_name_or_path, item.name, item.version, ",".join(item.license), item.download_location, "",
-                               item.copyright, "Exclude" if self.exclude else "", self.comment,
+                               item.copyright, "Exclude" if self.exclude else "", item.comment,
                                self.license_reference])
         return print_rows
 
