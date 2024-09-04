@@ -224,6 +224,7 @@ def create_report_file(_start_time, merged_result, license_list, scanoss_result,
                 logger.info(row)
         else:
             logger.error(f"Fail to generate result file {result_file}. msg:({msg})")
+    return scan_item
 
 
 def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
@@ -305,7 +306,7 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
         if selected_scanner in SCANNER_TYPE:
             spdx_downloads = get_spdx_downloads(path_to_scan, path_to_exclude)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
-            create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
+            scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                correct_filepath, path_to_scan, path_to_exclude)
         else:
@@ -315,7 +316,7 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
     else:
         result_log[RESULT_KEY] = f"Format error. {msg}"
         success = False
-    return success, result_log.get(RESULT_KEY, ""), merged_result, license_list, scanoss_result
+    return success, result_log.get(RESULT_KEY, ""), scan_item, license_list, scanoss_result
 
 
 if __name__ == '__main__':
