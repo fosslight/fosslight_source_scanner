@@ -34,12 +34,12 @@ def main():
     if len(ret) > 2:
         try:
             for scan_item in ret[2]:
-                logger.warning(scan_item.get_row_to_print())
+                logger.warning(scan_item.get_print_array())
         except Exception as ex:
             logger.error("Error:"+str(ex))
     if ret_scanoss:
         for scan_item in ret_scanoss:
-            logger.warning(scan_item.get_row_to_print())
+            logger.warning(scan_item.get_print_array())
 
 
 if __name__ == '__main__':

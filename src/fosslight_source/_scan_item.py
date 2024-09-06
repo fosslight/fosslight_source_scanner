@@ -7,6 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
+from fosslight_util.oss_item import FileItem, OssItem
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "licenseref-"]
@@ -25,42 +26,27 @@ MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
 
 
-class ScanItem:
-    file = ""
-    scanoss_reference = {}
-    exclude = False
-    is_license_text = False
-    oss_name = ""
-    oss_version = ""
-    download_location = []
-    matched_lines = ""  # Only for SCANOSS results
-    fileURL = ""  # Only for SCANOSS results
-    license_reference = ""
+class SourceItem(FileItem):
 
     def __init__(self, value):
-        self.file = value
-        self._copyright = []
-        self._licenses = []
-        self.download_location = []
-        self.comment = ""
-        self.exclude = False
+        super().__init__("")
+        self.source_name_or_path = value
         self.is_license_text = False
+        self.license_reference = ""
+        self.scanoss_reference = {}
+        self.matched_lines = ""  # Only for SCANOSS results
+        self.fileURL = ""  # Only for SCANOSS results
+        self.download_location = []
+        self.copyright = []
+        self._licenses = []
+        self.oss_name = ""
+        self.oss_version = ""
 
     def __del__(self):
         pass
 
     def __hash__(self):
         return hash(self.file)
-
-    @property
-    def copyright(self):
-        return self._copyright
-
-    @copyright.setter
-    def copyright(self, value):
-        self._copyright.extend(value)
-        if len(self._copyright) > 0:
-            self._copyright = list(set(self._copyright))
 
     @property
     def licenses(self):
@@ -84,27 +70,34 @@ class ScanItem:
             if max_length_exceed and (SUBSTRING_LICENSE_COMMENT not in self.comment):
                 self.comment = f"{self.comment}/ {SUBSTRING_LICENSE_COMMENT}" if self.comment else SUBSTRING_LICENSE_COMMENT
 
-    def get_file(self):
-        return self.file
-
-    def get_row_to_print(self):
-        print_rows = []
-        if not self.download_location:
-            print_rows.append([self.file, self.oss_name, self.oss_version, ",".join(self.licenses), "", "",
-                               "\n".join(self.copyright), "Exclude" if self.exclude else "", self.comment,
-                               self.license_reference])
-        else:
+    def set_oss_item(self):
+        self.oss_items = []
+        if self.download_location:
             for url in self.download_location:
-                print_rows.append([self.file, self.oss_name, self.oss_version, ",".join(self.licenses), url, "",
-                                   "\n".join(self.copyright), "Exclude" if self.exclude else "", self.comment,
-                                   self.license_reference])
+                item = OssItem(self.oss_name, self.oss_version, self.licenses, url)
+                item.copyright = "\n".join(self.copyright)
+                item.comment = self.comment
+                self.oss_items.append(item)
+        else:
+            item = OssItem(self.oss_name, self.oss_version, self.licenses)
+            item.copyright = "\n".join(self.copyright)
+            item.comment = self.comment
+            self.oss_items.append(item)
+
+    def get_print_array(self):
+        print_rows = []
+        for item in self.oss_items:
+            print_rows.append([self.source_name_or_path, item.name, item.version, ",".join(item.license),
+                               item.download_location, "",
+                               item.copyright, "Exclude" if self.exclude else "", item.comment,
+                               self.license_reference])
         return print_rows
 
     def __eq__(self, other):
         if type(other) == str:
-            return self.file == other
+            return self.source_name_or_path == other
         else:
-            return self.file == other.file
+            return self.source_name_or_path == other.source_name_or_path
 
 
 def is_exclude_dir(dir_path):

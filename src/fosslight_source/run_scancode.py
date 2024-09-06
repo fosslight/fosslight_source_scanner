@@ -14,7 +14,6 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
-from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats
 from fosslight_binary.binary_analysis import check_binary
 
@@ -100,13 +99,10 @@ def run_scan(path_to_scan, output_file_name="",
                                            output_json_pp=output_json_file, only_findings=True,
                                            license_text=True, url=True, timeout=time_out,
                                            include=(), ignore=tuple(total_files_to_excluded))
-
                 if not rc:
                     msg = "Source code analysis failed."
                     success = False
-
                 if results:
-                    sheet_list = {}
                     has_error = False
                     if "headers" in results:
                         has_error, error_msg = get_error_from_header(results["headers"])
@@ -125,13 +121,8 @@ def run_scan(path_to_scan, output_file_name="",
                                 result_list, key=lambda row: (''.join(row.licenses)))
 
                             for scan_item in result_list:
-                                if check_binary(os.path.join(path_to_scan, scan_item.file)):
+                                if check_binary(os.path.join(path_to_scan, scan_item.source_name_or_path)):
                                     scan_item.exclude = True
-
-                            sheet_list["SRC_FL_Source"] = [scan_item.get_row_to_print() for scan_item in result_list]
-                            if need_license:
-                                sheet_list["matched_text"] = get_license_list_to_print(license_list)
-
             except Exception as ex:
                 success = False
                 msg = str(ex)

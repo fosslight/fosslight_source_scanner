@@ -8,7 +8,7 @@ import logging
 import re
 import fosslight_util.constant as constant
 from ._license_matched import MatchedLicense
-from ._scan_item import ScanItem
+from ._scan_item import SourceItem
 from ._scan_item import is_exclude_dir
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
@@ -75,7 +75,7 @@ def parsing_scancode_32_earlier(scancode_file_list, has_error=False):
                     licenses = file.get("licenses", [])
                     copyright_list = file.get("copyrights", [])
 
-                    result_item = ScanItem(file_path)
+                    result_item = SourceItem(file_path)
 
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
@@ -201,7 +201,7 @@ def parsing_scancode_32_later(scancode_file_list, has_error=False):
                 if (not file_path) or is_binary or is_dir:
                     continue
 
-                result_item = ScanItem(file_path)
+                result_item = SourceItem(file_path)
 
                 if has_error:
                     error_msg = file.get("scan_errors", [])
