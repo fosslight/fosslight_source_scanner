@@ -2,9 +2,9 @@ pyparsing
 scancode-toolkit>=32.0.2,==32.0.*
 scanoss
 XlsxWriter
-fosslight_util~=1.4.47
+fosslight_util>=2.0.0
 PyYAML
 wheel>=0.38.1
 intbitset
-fosslight_binary
+fosslight_binary>=5.0.0
 typecode-libmagic;sys_platform!="darwin"
