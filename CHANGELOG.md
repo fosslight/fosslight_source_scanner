@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.0.0 (06/09/2024)
+## Changes
+## 🔧 Maintenance
+
+- Refactoring OSS Item @soimkim (#183)
+
+---
+
 ## v1.7.16 (06/09/2024)
 ## Changes
 ## 🔧 Maintenance
@@ -316,11 +324,3 @@
 ## 🔧 Maintenance
 
 - Add parameter for Scancode cores @soimkim (#100)
-
----
-
-## v1.6.20 (18/11/2022)
-## Changes
-## 🐛 Hotfixes
-
-- Block -m option for opossum,yaml and csv @JustinWonjaePark (#98)
