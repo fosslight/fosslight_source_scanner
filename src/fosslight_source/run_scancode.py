@@ -14,7 +14,6 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
-from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats
 from fosslight_binary.binary_analysis import check_binary
 

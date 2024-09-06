@@ -87,7 +87,8 @@ class SourceItem(FileItem):
     def get_print_array(self):
         print_rows = []
         for item in self.oss_items:
-            print_rows.append([self.source_name_or_path, item.name, item.version, ",".join(item.license), item.download_location, "",
+            print_rows.append([self.source_name_or_path, item.name, item.version, ",".join(item.license),
+                               item.download_location, "",
                                item.copyright, "Exclude" if self.exclude else "", item.comment,
                                self.license_reference])
         return print_rows

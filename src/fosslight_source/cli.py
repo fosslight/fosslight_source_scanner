@@ -250,7 +250,7 @@ def merge_results(scancode_result=[], scanoss_result=[], spdx_downloads={}):
                 new_result_item = SourceItem(file_name)
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
-    
+
     for item in scancode_result:
         item.set_oss_item()
 
@@ -307,8 +307,8 @@ def run_scanners(path_to_scan, output_file_name="", write_json_file=False, num_c
             spdx_downloads = get_spdx_downloads(path_to_scan, path_to_exclude)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
-                               print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                               correct_filepath, path_to_scan, path_to_exclude)
+                                           print_matched_text, output_path, output_files, output_extensions, correct_mode,
+                                           correct_filepath, path_to_scan, path_to_exclude)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"
