@@ -1,5 +1,16 @@
 # Changelog
 
+## v1.7.16 (06/09/2024)
+## Changes
+## 🔧 Maintenance
+
+- Limit installation to fosslight_util 1.4.* @soimkim (#182)
+- Change SCANOSS Invocation Method from Command Line to Library Function @YongGoose (#178)
+- Modify error comment @bjk7119 (#176)
+- Add --ignore-cert-errors to ScanOSS command @soimkim (#174)
+
+---
+
 ## v1.7.15 (17/07/2024)
 ## Changes
 ## 🐛 Hotfixes
@@ -313,17 +324,3 @@
 ## 🐛 Hotfixes
 
 - Block -m option for opossum,yaml and csv @JustinWonjaePark (#98)
-
----
-
-## v1.6.19 (04/11/2022)
-## Changes
-- Unify help message for source scanner and converter @JustinWonjaePark (#97)
-
-## 🐛 Hotfixes
-
-- Remove the last dot from the result in scanoss license finding @JustinWonjaePark (#95)
-
-## 🔧 Maintenance
-
-- Change argument parsing for convert to argpars @JustinWonjaePark (#94, #96)
