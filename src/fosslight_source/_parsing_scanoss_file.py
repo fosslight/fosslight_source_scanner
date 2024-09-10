@@ -16,7 +16,7 @@ SCANOSS_INFO_HEADER = ['No', 'Source Path', 'Component Declared', 'SPDX Tag',
                        'Matched Rate (line number)', 'scanoss_fileURL']
 
 
-def parsing_extraInfo(scanned_result):
+def parsing_extraInfo(scanned_result: dict) -> list:
     scanoss_extra_info = []
     for scan_item in scanned_result:
         license_w_source = scan_item.scanoss_reference
@@ -35,7 +35,7 @@ def parsing_extraInfo(scanned_result):
     return scanoss_extra_info
 
 
-def parsing_scanResult(scanoss_report, path_to_scan="", path_to_exclude=[]):
+def parsing_scanResult(scanoss_report: dict, path_to_scan: str="", path_to_exclude: list=[]) -> tuple[bool, list]:
     scanoss_file_item = []
     abs_path_to_exclude = [os.path.abspath(os.path.join(path_to_scan, path)) for path in path_to_exclude]
 

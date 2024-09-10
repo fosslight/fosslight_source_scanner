@@ -30,7 +30,7 @@ KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
 
 
-def get_error_from_header(header_item):
+def get_error_from_header(header_item: list) -> tuple[bool, str]:
     has_error = False
     str_error = ""
     key_error = "errors"
@@ -49,7 +49,7 @@ def get_error_from_header(header_item):
     return has_error, str_error
 
 
-def parsing_scancode_32_earlier(scancode_file_list, has_error=False):
+def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool=False) -> tuple[bool, list, list, dict]:
     rc = True
     msg = []
     scancode_file_item = []
@@ -178,7 +178,7 @@ def parsing_scancode_32_earlier(scancode_file_list, has_error=False):
     return rc, scancode_file_item, msg, license_list
 
 
-def split_spdx_expression(spdx_string):
+def split_spdx_expression(spdx_string: str) -> list:
     license = []
     for replace in SPDX_REPLACE_WORDS:
         spdx_string = spdx_string.replace(replace, "")
@@ -186,7 +186,7 @@ def split_spdx_expression(spdx_string):
     return license
 
 
-def parsing_scancode_32_later(scancode_file_list, has_error=False):
+def parsing_scancode_32_later(scancode_file_list: list, has_error: bool=False) -> tuple[bool, list, list, dict]:
     rc = True
     msg = []
     scancode_file_item = []
@@ -274,7 +274,7 @@ def parsing_scancode_32_later(scancode_file_list, has_error=False):
     return rc, scancode_file_item, msg, license_list
 
 
-def parsing_file_item(scancode_file_list, has_error, need_matched_license=False):
+def parsing_file_item(scancode_file_list: list, has_error: bool, need_matched_license:bool =False) -> tuple[bool, list, list, dict]:
 
     rc = True
     msg = []

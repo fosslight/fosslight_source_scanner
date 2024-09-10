@@ -22,9 +22,9 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 
 
-def run_scan(path_to_scan, output_file_name="",
-             _write_json_file=False, num_cores=-1, return_results=False, need_license=False, formats=[],
-             called_by_cli=False, time_out=120, correct_mode=True, correct_filepath="", path_to_exclude=[]):
+def run_scan(path_to_scan: str, output_file_name: str="",
+             _write_json_file: bool=False, num_cores: int=-1, return_results: bool=False, need_license: bool=False, formats: list=[],
+             called_by_cli: bool=False, time_out: int=120, correct_mode: bool=True, correct_filepath: str="", path_to_exclude: list=[]) -> tuple[bool, str, list, list]:
     if not called_by_cli:
         global logger
 

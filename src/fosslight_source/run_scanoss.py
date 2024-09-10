@@ -25,12 +25,12 @@ SCANOSS_RESULT_FILE = "scanner_output.wfp"
 SCANOSS_OUTPUT_FILE = "scanoss_raw_result.json"
 
 
-def get_scanoss_extra_info(scanned_result):
+def get_scanoss_extra_info(scanned_result: dict) -> list:
     return parsing_extraInfo(scanned_result)
 
 
-def run_scanoss_py(path_to_scan, output_file_name="", format="", called_by_cli=False,
-                   write_json_file=False, num_threads=-1, path_to_exclude=[]):
+def run_scanoss_py(path_to_scan: str, output_file_name: str="", format: str="", called_by_cli: bool=False,
+                   write_json_file: bool=False, num_threads: int=-1, path_to_exclude: list=[]) -> list:
     """
     Run scanoss.py for the given path.
 

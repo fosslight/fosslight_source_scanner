@@ -12,7 +12,7 @@ import mmap
 logger = logging.getLogger(constant.LOGGER_NAME)
 
 
-def get_file_list(path_to_scan, path_to_exclude=[]):
+def get_file_list(path_to_scan: str, path_to_exclude: list=[]) -> list:
     file_list = []
     abs_path_to_exclude = [os.path.abspath(os.path.join(path_to_scan, path)) for path in path_to_exclude]
     for root, dirs, files in os.walk(path_to_scan):
@@ -26,7 +26,7 @@ def get_file_list(path_to_scan, path_to_exclude=[]):
     return file_list
 
 
-def get_spdx_downloads(path_to_scan, path_to_exclude=[]):
+def get_spdx_downloads(path_to_scan: str, path_to_exclude: list=[]) -> dict:
     download_dict = {}
     find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 
