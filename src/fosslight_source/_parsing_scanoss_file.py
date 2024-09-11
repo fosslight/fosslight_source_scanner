@@ -9,6 +9,7 @@ import fosslight_util.constant as constant
 from ._scan_item import SourceItem
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
+from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 SCANOSS_INFO_HEADER = ['No', 'Source Path', 'Component Declared', 'SPDX Tag',
@@ -35,7 +36,7 @@ def parsing_extraInfo(scanned_result: dict) -> list:
     return scanoss_extra_info
 
 
-def parsing_scanResult(scanoss_report: dict, path_to_scan: str="", path_to_exclude: list=[]) -> tuple[bool, list]:
+def parsing_scanResult(scanoss_report: dict, path_to_scan: str="", path_to_exclude: list=[]) -> Tuple[bool, list]:
     scanoss_file_item = []
     abs_path_to_exclude = [os.path.abspath(os.path.join(path_to_scan, path)) for path in path_to_exclude]
 

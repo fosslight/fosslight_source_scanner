@@ -13,6 +13,7 @@ from ._scan_item import is_exclude_dir
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
 from ._scan_item import is_notice_file
+from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 _exclude_directory = ["test", "tests", "doc", "docs"]
@@ -30,7 +31,7 @@ KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
 
 
-def get_error_from_header(header_item: list) -> tuple[bool, str]:
+def get_error_from_header(header_item: list) -> Tuple[bool, str]:
     has_error = False
     str_error = ""
     key_error = "errors"
@@ -49,7 +50,7 @@ def get_error_from_header(header_item: list) -> tuple[bool, str]:
     return has_error, str_error
 
 
-def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool=False) -> tuple[bool, list, list, dict]:
+def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool=False) -> Tuple[bool, list, list, dict]:
     rc = True
     msg = []
     scancode_file_item = []
@@ -186,7 +187,7 @@ def split_spdx_expression(spdx_string: str) -> list:
     return license
 
 
-def parsing_scancode_32_later(scancode_file_list: list, has_error: bool=False) -> tuple[bool, list, list, dict]:
+def parsing_scancode_32_later(scancode_file_list: list, has_error: bool=False) -> Tuple[bool, list, list, dict]:
     rc = True
     msg = []
     scancode_file_item = []
@@ -274,7 +275,7 @@ def parsing_scancode_32_later(scancode_file_list: list, has_error: bool=False) -
     return rc, scancode_file_item, msg, license_list
 
 
-def parsing_file_item(scancode_file_list: list, has_error: bool, need_matched_license:bool =False) -> tuple[bool, list, list, dict]:
+def parsing_file_item(scancode_file_list: list, has_error: bool, need_matched_license:bool =False) -> Tuple[bool, list, list, dict]:
 
     rc = True
     msg = []

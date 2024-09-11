@@ -23,6 +23,7 @@ import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from ._scan_item import SourceItem
 from fosslight_util.oss_item import ScannerItem
+from typing import Tuple
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
@@ -121,7 +122,7 @@ def main() -> None:
         sys.exit(1)
 
 
-def count_files(path_to_scan: str, path_to_exclude: list) -> tuple[int, int]:
+def count_files(path_to_scan: str, path_to_exclude: list) -> Tuple[int, int]:
     total_files = 0
     excluded_files = 0
     abs_path_to_exclude = [os.path.abspath(os.path.join(path_to_scan, path)) for path in path_to_exclude]
@@ -259,7 +260,7 @@ def merge_results(scancode_result: list=[], scanoss_result: list=[], spdx_downlo
 
 def run_scanners(path_to_scan: str, output_file_name: str="", write_json_file: bool=False, num_cores: int=-1, called_by_cli: bool=True,
                  print_matched_text: bool=False, formats: list=[], time_out: int=120, correct_mode: bool=True, correct_filepath: str="",
-                 selected_scanner: str='all', path_to_exclude: list=[]) -> tuple[bool, str, 'ScannerItem', list, list]:
+                 selected_scanner: str='all', path_to_exclude: list=[]) -> Tuple[bool, str, 'ScannerItem', list, list]:
     """
     Run Scancode and scanoss.py for the given path.
 
