@@ -36,7 +36,7 @@ def parsing_extraInfo(scanned_result: dict) -> list:
     return scanoss_extra_info
 
 
-def parsing_scanResult(scanoss_report: dict, path_to_scan: str="", path_to_exclude: list=[]) -> Tuple[bool, list]:
+def parsing_scanResult(scanoss_report: dict, path_to_scan: str = "", path_to_exclude: list = []) -> Tuple[bool, list]:
     scanoss_file_item = []
     abs_path_to_exclude = [os.path.abspath(os.path.join(path_to_scan, path)) for path in path_to_exclude]
 

@@ -29,8 +29,8 @@ def get_scanoss_extra_info(scanned_result: dict) -> list:
     return parsing_extraInfo(scanned_result)
 
 
-def run_scanoss_py(path_to_scan: str, output_file_name: str="", format: str="", called_by_cli: bool=False,
-                   write_json_file: bool=False, num_threads: int=-1, path_to_exclude: list=[]) -> list:
+def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: str = "", called_by_cli: bool = False,
+                   write_json_file: bool = False, num_threads: int = -1, path_to_exclude: list = []) -> list:
     """
     Run scanoss.py for the given path.
 

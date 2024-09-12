@@ -46,7 +46,7 @@ class MatchedLicense:
     def set_matched_text(self, value: str) -> None:
         self.matched_text = value
 
-    def get_row_to_print(self, result_for_32_earlier: bool=True) -> list:
+    def get_row_to_print(self, result_for_32_earlier: bool = True) -> list:
         if result_for_32_earlier:
             print_rows = [self.category, self.license, self.matched_text, str(len(self.files)), ','.join(self.files)]
         else:

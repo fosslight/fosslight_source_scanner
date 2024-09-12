@@ -84,7 +84,7 @@ class SourceItem(FileItem):
             item.comment = self.comment
             self.oss_items.append(item)
 
-    def get_print_array(self) ->list:
+    def get_print_array(self) -> list:
         print_rows = []
         for item in self.oss_items:
             print_rows.append([self.source_name_or_path, item.name, item.version, ",".join(item.license),
@@ -111,7 +111,7 @@ def is_exclude_dir(dir_path: str) -> bool:
     return False
 
 
-def is_exclude_file(file_path: str, prev_dir: str=None, prev_dir_exclude_value: bool=None) -> bool:
+def is_exclude_file(file_path: str, prev_dir: str = None, prev_dir_exclude_value: bool = None) -> bool:
     file_path = file_path.lower()
     filename = os.path.basename(file_path)
     if os.path.splitext(filename)[1] in _exclude_extension:

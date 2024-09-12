@@ -50,7 +50,7 @@ def get_error_from_header(header_item: list) -> Tuple[bool, str]:
     return has_error, str_error
 
 
-def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool=False) -> Tuple[bool, list, list, dict]:
+def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = False) -> Tuple[bool, list, list, dict]:
     rc = True
     msg = []
     scancode_file_item = []
@@ -187,7 +187,8 @@ def split_spdx_expression(spdx_string: str) -> list:
     return license
 
 
-def parsing_scancode_32_later(scancode_file_list: list, has_error: bool=False) -> Tuple[bool, list, list, dict]:
+def parsing_scancode_32_later(scancode_file_list: list, has_error: bool = False
+                ) -> Tuple[bool, list, list, dict]:
     rc = True
     msg = []
     scancode_file_item = []
@@ -275,7 +276,7 @@ def parsing_scancode_32_later(scancode_file_list: list, has_error: bool=False) -
     return rc, scancode_file_item, msg, license_list
 
 
-def parsing_file_item(scancode_file_list: list, has_error: bool, need_matched_license:bool =False) -> Tuple[bool, list, list, dict]:
+def parsing_file_item(scancode_file_list: list, has_error: bool, need_matched_license: bool = False) -> Tuple[bool, list, list, dict]:
 
     rc = True
     msg = []
