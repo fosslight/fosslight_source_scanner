@@ -28,7 +28,7 @@ def run_scan(
     _write_json_file: bool = False, num_cores: int = -1,
     return_results: bool = False, need_license: bool = False,
     formats: list = [], called_by_cli: bool = False,
-    time_out: int = 120, correct_mode: bool = True, 
+    time_out: int = 120, correct_mode: bool = True,
     correct_filepath: str = "", path_to_exclude: list = []
 ) -> Tuple[bool, str, list, list]:
     if not called_by_cli:
