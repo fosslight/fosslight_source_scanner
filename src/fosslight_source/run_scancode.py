@@ -16,15 +16,21 @@ from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.output_format import check_output_formats
 from fosslight_binary.binary_analysis import check_binary
+from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 
 
-def run_scan(path_to_scan, output_file_name="",
-             _write_json_file=False, num_cores=-1, return_results=False, need_license=False, formats=[],
-             called_by_cli=False, time_out=120, correct_mode=True, correct_filepath="", path_to_exclude=[]):
+def run_scan(
+    path_to_scan: str, output_file_name: str = "",
+    _write_json_file: bool = False, num_cores: int = -1,
+    return_results: bool = False, need_license: bool = False,
+    formats: list = [], called_by_cli: bool = False,
+    time_out: int = 120, correct_mode: bool = True,
+    correct_filepath: str = "", path_to_exclude: list = []
+) -> Tuple[bool, str, list, list]:
     if not called_by_cli:
         global logger
 

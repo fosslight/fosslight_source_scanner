@@ -28,7 +28,7 @@ SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
 
 class SourceItem(FileItem):
 
-    def __init__(self, value):
+    def __init__(self, value: str) -> None:
         super().__init__("")
         self.source_name_or_path = value
         self.is_license_text = False
@@ -42,18 +42,18 @@ class SourceItem(FileItem):
         self.oss_name = ""
         self.oss_version = ""
 
-    def __del__(self):
+    def __del__(self) -> None:
         pass
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.file)
 
     @property
-    def licenses(self):
+    def licenses(self) -> list:
         return self._licenses
 
     @licenses.setter
-    def licenses(self, value):
+    def licenses(self, value: list) -> None:
         if value:
             max_length_exceed = False
             for new_lic in value:
@@ -70,7 +70,7 @@ class SourceItem(FileItem):
             if max_length_exceed and (SUBSTRING_LICENSE_COMMENT not in self.comment):
                 self.comment = f"{self.comment}/ {SUBSTRING_LICENSE_COMMENT}" if self.comment else SUBSTRING_LICENSE_COMMENT
 
-    def set_oss_item(self):
+    def set_oss_item(self) -> None:
         self.oss_items = []
         if self.download_location:
             for url in self.download_location:
@@ -84,7 +84,7 @@ class SourceItem(FileItem):
             item.comment = self.comment
             self.oss_items.append(item)
 
-    def get_print_array(self):
+    def get_print_array(self) -> list:
         print_rows = []
         for item in self.oss_items:
             print_rows.append([self.source_name_or_path, item.name, item.version, ",".join(item.license),
@@ -93,14 +93,14 @@ class SourceItem(FileItem):
                                self.license_reference])
         return print_rows
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
         if type(other) == str:
             return self.source_name_or_path == other
         else:
             return self.source_name_or_path == other.source_name_or_path
 
 
-def is_exclude_dir(dir_path):
+def is_exclude_dir(dir_path: str) -> bool:
     if dir_path != "":
         dir_path = dir_path.lower()
         dir_path = dir_path if dir_path.endswith(
@@ -111,7 +111,7 @@ def is_exclude_dir(dir_path):
     return False
 
 
-def is_exclude_file(file_path, prev_dir=None, prev_dir_exclude_value=None):
+def is_exclude_file(file_path: str, prev_dir: str = None, prev_dir_exclude_value: bool = None) -> bool:
     file_path = file_path.lower()
     filename = os.path.basename(file_path)
     if os.path.splitext(filename)[1] in _exclude_extension:
@@ -133,7 +133,7 @@ def is_exclude_file(file_path, prev_dir=None, prev_dir_exclude_value=None):
     return False
 
 
-def is_notice_file(file_path):
+def is_notice_file(file_path: str) -> bool:
     pattern = r"({})(?<!w)".format("|".join(_notice_filename))
     file_path = file_path.lower()
     filename = os.path.basename(file_path)
