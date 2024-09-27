@@ -19,7 +19,6 @@ def test_run():
 
     assert scan_success is True, "Test Run: Scan command failed"
     assert scan_exclude_success is True, "Test Run: Exclude command failed"
-    
     assert len(scan_files) > 0, "Test Run: No scan files created in test_scan directory"
     assert len(scan2_files) > 0, "Test Run: No scan files created in test_scan2 directory"
 
@@ -43,8 +42,9 @@ def test_scan_command():
 
 
 def test_exclude_command():
-    success, _ = run_command("fosslight_source -p tests -e test_files/test cli_test.py "
-                                            "-j -m -o test_scan2/scan_exclude_result.csv")
+    success, _ = run_command(
+        "fosslight_source -p tests -e test_files/test cli_test.py -j -m -o test_scan2/scan_exclude_result.csv"
+    )
     assert success is True, "Test release: Exclude scan failded"
 
     assert os.path.exists("test_scan2/scan_exclude_result.csv"), "Test Release: scan_exclude_result.csv file not generated"
