@@ -1,0 +1,15 @@
+ID	Source Path	OSS Name	OSS Version	License	Download Location	Homepage	Copyright Text	Exclude	Comment	license_reference
+1	LICENSE			apache-2.0						
+2	Sample_MIT_LICENSE.txt			mit						
+3	dual.txt			gpl-2.0,mit			Copyright (c) 2020 LG Electronics Inc., Copyright (c) 2021 LG Electronics Inc. REUSE-IgnoreStart		GPL-2.0-only OR MIT	
+4	run_scancode.py			unknown-license-reference,gpl-2.0,apache-2.0	https://dummy_url_for_test.com		Copyright (c) 2020 LG Electronics Inc.		Apache-2.0 AND LicenseRef-scancode-unknown-license-reference AND GPL-2.0-only	
+5	sample.cpp			apache-2.0,mit	https://dummy_url_for_test.com		Copyright 2022 LG Electronics Inc., Copyright 2017 Free Software Foundation Europe e.V.		Apache-2.0 AND MIT	
+6	sample.cpp			apache-2.0,mit	https://second_dummy_url_for_test.com		Copyright 2022 LG Electronics Inc., Copyright 2017 Free Software Foundation Europe e.V.		Apache-2.0 AND MIT	
+7	sample.cpp			apache-2.0,mit	https://third_dummy_url_for_test.com		Copyright 2022 LG Electronics Inc., Copyright 2017 Free Software Foundation Europe e.V.		Apache-2.0 AND MIT	
+8	sample_license.txt			apache-2.0						
+9	spdx_lic.txt			temp_license						
+10	temp.cpp			apache-2.0			Copyright 2022 LG Electronics Inc.			
+11	test_known_spdx.txt			apache-2.0			Copyright (c) 2020 LG Electronics Inc.			
+12	test_unknown_spdx.txt			mit-like			Copyright (c) 2020 LG Electronics Inc.			
+13	test/MIT_TEST.txt			mit				Exclude		
+14	test/temp.cpp			apache-2.0			Copyright 2022 LG Electronics Inc.	Exclude		

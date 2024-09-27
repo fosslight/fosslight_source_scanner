@@ -7,12 +7,9 @@ def run_command(command):
     success= (process.returncode ==0)
     return success, process.stdout if success else process.stderr
 
-@pytest.fixture(scope="module", autouse=True)
-def setup_and_cleanup():
+def test_run():
     run_command("rm -rf test_scan test_scan2 test_scan3")
     os.makedirs("test_scan")
-
-def test_run():
     scan_success,_ = run_command("fosslight_source -p tests/test_files -j -m -o test_scan")
     scan_exclude_success,_=run_command("fosslight_source -p tests -e test_files/test cli_test.py -j -m -o test_scan2")
 

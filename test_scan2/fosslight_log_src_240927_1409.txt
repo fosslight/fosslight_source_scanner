@@ -1,0 +1,14 @@
+[WARNING] [FOSSLIGHT_SOURCE] -m option is only available for excel.
+[   INFO] Output Directory: /Users/hkkim/Desktop/OSS/tox_to_pytest/fosslight_source_scanner/test_scan2
+Scan Result: 'True'
+
+[  DEBUG] SCANOSS Parsing tests: 'Scanner' object has no attribute 'post_processor'
+[   INFO] |---Number of files detected with SCANOSS: 0
+[  DEBUG] Moving scanoss raw files failed.: Destination path '/Users/hkkim/Desktop/OSS/tox_to_pytest/fosslight_source_scanner/test_scan2/scanner_output.wfp' already exists
+[   INFO] [FOSSLIGHT_SOURCE] No correction with yaml: Cannot find sbom-info.yaml in tests.
+[   INFO] [FOSSLIGHT_SOURCE] Output file: /Users/hkkim/Desktop/OSS/tox_to_pytest/fosslight_source_scanner/test_scan2/scan_exclude_result.csv
+[   INFO] [FOSSLIGHT_SOURCE] Total number of files
+[   INFO] [FOSSLIGHT_SOURCE] removed files: 19
+[   INFO] [FOSSLIGHT_SOURCE] 3
+[   INFO] [FOSSLIGHT_SOURCE] Scan Result: 'True'
+
