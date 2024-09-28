@@ -68,5 +68,5 @@ def test_ls_test_scan3_command():
 
 
 def test_flake8():
-    success, _ = run_command("flake8")
+    success, _ = run_command("flake8 -j 4")
     assert success is True, "Flake8: Style check failed"
