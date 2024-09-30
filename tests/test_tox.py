@@ -24,7 +24,6 @@ def test_release():
 
     success, _ = run_command("fosslight_source -p tests/test_files -o test_scan/scan_result.csv")
     assert success is True, "Test Release: Failed to generate scan result CSV file"
-   
     assert os.path.exists("test_scan/scan_result.csv"), "Test Release: scan_result.csv file not generated"
     with open("test_scan/scan_result.csv", 'r') as file:
         content = file.read()
@@ -35,7 +34,6 @@ def test_release():
         "fosslight_source -p tests -e test_files/test cli_test.py -j -m -o test_scan2/scan_exclude_result.csv"
     )
     assert success is True, "Test release: Exclude scan failded"
-    
     assert os.path.exists("test_scan2/scan_exclude_result.csv"), "Test Release: scan_exclude_result.csv file not generated"
     with open("test_scan2/scan_exclude_result.csv", 'r') as file:
         content = file.read()
@@ -44,7 +42,6 @@ def test_release():
 
     success, _ = run_command("fosslight_source -p tests/test_files -m -j -o test_scan3/")
     assert success is True, "Test release: Failed to generate JSON files"
-
 
     files_in_test_scan3 = os.listdir("test_scan3")
     assert len(files_in_test_scan3) > 0, "Test Release: test_scan3 is empty"
