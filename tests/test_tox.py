@@ -18,36 +18,50 @@ def test_run():
     assert scan_exclude_success is True, "Test Run: Exclude command failed"
 
 
-def test_release():
+def test_help_command():
     success, _ = run_command("fosslight_source -h")
     assert success is True, "Test Release: Help command failed "
 
+
+def test_scan_command():
     success, _ = run_command("fosslight_source -p tests/test_files -o test_scan/scan_result.csv")
     assert success is True, "Test Release: Failed to generate scan result CSV file"
+
     assert os.path.exists("test_scan/scan_result.csv"), "Test Release: scan_result.csv file not generated"
+
     with open("test_scan/scan_result.csv", 'r') as file:
         content = file.read()
+
     assert len(content) > 0, "Test Release: scan_result.csv is empty"
     print(f"Content of scan_result.csv:\n{content}")
 
+
+def test_exclude_command():
     success, _ = run_command(
         "fosslight_source -p tests -e test_files/test cli_test.py -j -m -o test_scan2/scan_exclude_result.csv"
     )
     assert success is True, "Test release: Exclude scan failded"
+
     assert os.path.exists("test_scan2/scan_exclude_result.csv"), "Test Release: scan_exclude_result.csv file not generated"
+
     with open("test_scan2/scan_exclude_result.csv", 'r') as file:
         content = file.read()
+
     assert len(content) > 0, "Test Release: scan_exclude_result.csv is empty"
     print(f"Content of scan_exclude_result.csv:\n{content}")
 
+
+def test_json_command():
     success, _ = run_command("fosslight_source -p tests/test_files -m -j -o test_scan3/")
     assert success is True, "Test release: Failed to generate JSON files"
 
+
+def test_ls_test_scan3_command():
     files_in_test_scan3 = os.listdir("test_scan3")
     assert len(files_in_test_scan3) > 0, "Test Release: test_scan3 is empty"
     print(f"Files in test_scan3: {files_in_test_scan3}")
 
 
 def test_flake8():
-    success, _ = run_command("flake8")
+    success, _ = run_command("flake8 -j 4")
     assert success is True, "Flake8: Style check failed"
