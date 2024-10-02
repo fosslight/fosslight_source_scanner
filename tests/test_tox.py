@@ -1,5 +1,32 @@
+ #!/usr/bin/env python
+ # -*- coding: utf-8 -*-
+ # Copyright (c) 2020 LG Electronics Inc.
+ # SPDX-License-Identifier: Apache-2.0
 import os
 import subprocess
+import pytest
+import shutil
+
+set_up_directories = [
+    "test_scan",
+    "test_scan2",
+    "test_scan3"
+]
+remove_directories = ["test_scan", "test_scan2", "test_scan3"]
+
+
+@pytest.fixture(scope = "module", autouse = True)
+def setup_test_result_dir_and_teardown():
+    print("==============setup==============")
+    for dir in set_up_directories:
+        os.makedirs(dir, exist_ok = True)
+
+    yield
+
+    print("==============tearDown==============")
+    for dir in remove_directories:
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
 
 
 def run_command(command):
@@ -9,13 +36,15 @@ def run_command(command):
 
 
 def test_run():
-    run_command("rm -rf test_scan test_scan2 test_scan3")
-    os.makedirs("test_scan", exist_ok=True)
     scan_success, _ = run_command("fosslight_source -p tests/test_files -j -m -o test_scan")
     scan_exclude_success, _ = run_command("fosslight_source -p tests -e test_files/test cli_test.py -j -m -o test_scan2")
+    scan_files = os.listdir("test_scan")
+    scan2_files = os.listdir('test_scan2')
 
     assert scan_success is True, "Test Run: Scan command failed"
     assert scan_exclude_success is True, "Test Run: Exclude command failed"
+    assert len(scan_files) > 0, "Test Run: No scan files created in test_scan directory"
+    assert len(scan2_files) > 0, "Test Run: No scan files created in test_scan2 directory"
 
 
 def test_help_command():
