@@ -1,7 +1,7 @@
- #!/usr/bin/env python
- # -*- coding: utf-8 -*-
- # Copyright (c) 2020 LG Electronics Inc.
- # SPDX-License-Identifier: Apache-2.0
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Copyright (c) 2020 LG Electronics Inc.
+# SPDX-License-Identifier: Apache-2.0
 import os
 import subprocess
 import pytest
@@ -14,8 +14,7 @@ set_up_directories = [
 ]
 remove_directories = ["test_scan", "test_scan2", "test_scan3"]
 
-
-@pytest.fixture(scope = "module", autouse = True)
+@pytest.fixture(scope="module", autouse=True)
 def setup_test_result_dir_and_teardown():
     print("==============setup==============")
     for dir in set_up_directories:
