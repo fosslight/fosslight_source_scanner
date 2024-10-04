@@ -1,8 +1,8 @@
 pyparsing
-scancode-toolkit>=32.0.2,==32.0.*
+scancode-toolkit>=32.2.0
 scanoss
 XlsxWriter
-fosslight_util>=2.0.0
+fosslight_util>=2.1.0
 PyYAML
 wheel>=0.38.1
 intbitset

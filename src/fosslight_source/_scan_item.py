@@ -7,7 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
-from fosslight_util.oss_item import FileItem, OssItem
+from fosslight_util.oss_item import FileItem, OssItem, get_checksum_sha1
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "licenseref-"]
@@ -41,6 +41,8 @@ class SourceItem(FileItem):
         self._licenses = []
         self.oss_name = ""
         self.oss_version = ""
+
+        self.checksum = get_checksum_sha1(value)
 
     def __del__(self) -> None:
         pass
