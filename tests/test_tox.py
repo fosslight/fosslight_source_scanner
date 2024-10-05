@@ -11,18 +11,13 @@ remove_directories = ["test_scan", "test_scan2", "test_scan3"]
 
 
 @pytest.fixture(scope="module", autouse=True)
-def setup_test_result_dir_and_teardown():
+def setup_test_result_dir():
     print("==============setup==============")
     for dir in remove_directories:
         if os.path.exists(dir):
             shutil.rmtree(dir)
 
     yield
-
-    print("==============tearDown==============")
-    for dir in remove_directories:
-        if os.path.exists(dir):
-            shutil.rmtree(dir)
 
 
 def run_command(command):
