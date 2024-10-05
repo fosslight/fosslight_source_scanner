@@ -7,19 +7,15 @@ import subprocess
 import pytest
 import shutil
 
-set_up_directories = [
-    "test_scan",
-    "test_scan2",
-    "test_scan3"
-]
 remove_directories = ["test_scan", "test_scan2", "test_scan3"]
 
 
 @pytest.fixture(scope="module", autouse=True)
 def setup_test_result_dir_and_teardown():
     print("==============setup==============")
-    for dir in set_up_directories:
-        os.makedirs(dir, exist_ok=True)
+    for dir in remove_directories:
+        if os.path exists(dir):
+            shutil.rmtree(dir)
 
     yield
 
