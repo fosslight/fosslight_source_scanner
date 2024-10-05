@@ -14,7 +14,7 @@ remove_directories = ["test_scan", "test_scan2", "test_scan3"]
 def setup_test_result_dir_and_teardown():
     print("==============setup==============")
     for dir in remove_directories:
-        if os.path exists(dir):
+        if os.path.exists(dir):
             shutil.rmtree(dir)
 
     yield
