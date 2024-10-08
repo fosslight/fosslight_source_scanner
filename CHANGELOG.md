@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.1.0 (08/10/2024)
+## Changes
+## 🚀 Features
+
+- Support spdx @dd-jy (#190)
+
+## 🔧 Maintenance
+
+- Tox to pytest @hkkim2021 (#188)
+- Add type hint @hkkim2021 (#184)
+
+---
+
 ## v2.0.0 (06/09/2024)
 ## Changes
 ## 🔧 Maintenance
@@ -316,11 +329,3 @@
 ## 🐛 Hotfixes
 
 - Clear ScanCode cache after installation @soimkim (#101)
-
----
-
-## v1.6.21 (08/12/2022)
-## Changes
-## 🔧 Maintenance
-
-- Add parameter for Scancode cores @soimkim (#100)
