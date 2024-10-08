@@ -5,6 +5,7 @@
 
 import sys
 import os
+import platform
 import warnings
 import logging
 from datetime import datetime
@@ -13,7 +14,7 @@ from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
-from fosslight_util.output_format import check_output_formats, write_output_file
+from fosslight_util.output_format import check_output_formats_v2, write_output_file
 from fosslight_util.correct import correct_with_yaml
 from .run_scancode import run_scan
 from .run_scanoss import run_scanoss_py
@@ -49,7 +50,7 @@ def main() -> None:
     write_json_file = False
     output_file_name = ""
     print_matched_text = False
-    formats = ""
+    formats = []
     selected_scanner = ""
     correct_mode = True
 
@@ -145,7 +146,8 @@ def create_report_file(
     selected_scanner: str, need_license: bool = False,
     output_path: str = "", output_files: list = [],
     output_extensions: list = [], correct_mode: bool = True,
-    correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = []
+    correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
+    formats: list = []
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -168,12 +170,33 @@ def create_report_file(
         # If -o does not contains file name, set default name
         while len(output_files) < len(output_extensions):
             output_files.append(None)
+        to_remove = []  # elements of spdx format on windows that should be removed
         for i, output_extension in enumerate(output_extensions):
             if output_files[i] is None or output_files[i] == "":
-                if output_extension == _json_ext:
-                    output_files[i] = f"fosslight_opossum_src_{_start_time}"
+                if formats:
+                    if formats[i].startswith('spdx'):
+                        if platform.system() != 'Windows':
+                            output_files[i] = f"fosslight_spdx_src_{_start_time}"
+                        else:
+                            logger.warning('spdx format is not supported on Windows. Please remove spdx from format.')
+                            to_remove.append(i)
+                    else:
+                        if output_extension == _json_ext:
+                            output_files[i] = f"fosslight_opossum_src_{_start_time}"
+                        else:
+                            output_files[i] = f"fosslight_report_src_{_start_time}"
                 else:
-                    output_files[i] = f"fosslight_report_src_{_start_time}"
+                    if output_extension == _json_ext:
+                        output_files[i] = f"fosslight_opossum_src_{_start_time}"
+                    else:
+                        output_files[i] = f"fosslight_report_src_{_start_time}"
+        for index in sorted(to_remove, reverse=True):
+            # remove elements of spdx format on windows
+            del output_files[index]
+            del output_extensions[index]
+            del formats[index]
+        if len(output_extensions) < 1:
+            sys.exit(0)
 
     if not correct_filepath:
         correct_filepath = path_to_scan
@@ -219,10 +242,10 @@ def create_report_file(
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
-    for combined_path_and_file, output_extension in zip(combined_paths_and_files, output_extensions):
+    for combined_path_and_file, output_extension, output_format in zip(combined_paths_and_files, output_extensions, formats):
         # if need_license and output_extension == _json_ext and "scanoss_reference" in sheet_list:
         #     del sheet_list["scanoss_reference"]
-        results.append(write_output_file(combined_path_and_file, output_extension, scan_item, extended_header, ""))
+        results.append(write_output_file(combined_path_and_file, output_extension, scan_item, extended_header, "", output_format))
     for success, msg, result_file in results:
         if success:
             logger.info(f"Output file: {result_file}")
@@ -295,8 +318,9 @@ def run_scanners(
     license_list = []
     spdx_downloads = {}
     result_log = {}
+    scan_item = []
 
-    success, msg, output_path, output_files, output_extensions = check_output_formats(output_file_name, formats)
+    success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, formats)
 
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
@@ -319,7 +343,7 @@ def run_scanners(
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                                           correct_filepath, path_to_scan, path_to_exclude)
+                                           correct_filepath, path_to_scan, path_to_exclude, formats)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"

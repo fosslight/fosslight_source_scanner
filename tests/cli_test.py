@@ -25,8 +25,8 @@ def main():
 
     logger, result_item = init_log(os.path.join(output_dir, "fosslight_log_"+_start_time+".txt"))
 
-    ret = run_scan(path_to_find_bin, fosslight_report_name, True, -1, True, True, "", False)
-    ret_scanoss = run_scanoss_py(path_to_find_bin, fosslight_report_name, "", False, True, -1)
+    ret = run_scan(path_to_find_bin, fosslight_report_name, True, -1, True, True, [], False)
+    ret_scanoss = run_scanoss_py(path_to_find_bin, fosslight_report_name, [], False, True, -1)
 
     logger.warning("[Scan] Result: %s" % (ret[0]))
     logger.warning("[Scan] Result_msg: %s" % (ret[1]))

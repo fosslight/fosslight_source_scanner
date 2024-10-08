@@ -11,7 +11,7 @@ import json
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-from fosslight_util.output_format import check_output_formats  # , write_output_file
+from fosslight_util.output_format import check_output_formats_v2  # , write_output_file
 from ._parsing_scanoss_file import parsing_scanResult  # scanoss
 from ._parsing_scanoss_file import parsing_extraInfo  # scanoss
 import shutil
@@ -29,7 +29,7 @@ def get_scanoss_extra_info(scanned_result: dict) -> list:
     return parsing_extraInfo(scanned_result)
 
 
-def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: str = "", called_by_cli: bool = False,
+def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list = [], called_by_cli: bool = False,
                    write_json_file: bool = False, num_threads: int = -1, path_to_exclude: list = []) -> list:
     """
     Run scanoss.py for the given path.
@@ -41,7 +41,7 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: str = 
     :param write_json_file: if requested, keep the raw files.
     :return scanoss_file_list: list of ScanItem (scanned result by files).
     """
-    success, msg, output_path, output_files, output_extensions = check_output_formats(output_file_name, format)
+    success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, format)
 
     if not called_by_cli:
         global logger

@@ -45,6 +45,7 @@ def parsing_scanResult(scanoss_report: dict, path_to_scan: str = "", path_to_exc
         if any(os.path.commonpath([abs_file_path, exclude_path]) == exclude_path for exclude_path in abs_path_to_exclude):
             continue
         result_item = SourceItem(file_path)
+
         if 'id' in findings[0]:
             if "none" == findings[0]['id']:
                 continue

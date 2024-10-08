@@ -14,7 +14,7 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
-from fosslight_util.output_format import check_output_formats
+from fosslight_util.output_format import check_output_formats_v2
 from fosslight_binary.binary_analysis import check_binary
 from typing import Tuple
 
@@ -46,7 +46,7 @@ def run_scan(
     if not correct_filepath:
         correct_filepath = path_to_scan
 
-    success, msg, output_path, output_files, output_extensions = check_output_formats(output_file_name, formats)
+    success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, formats)
     if success:
         if output_path == "":  # if json output with _write_json_file not used, output_path won't be needed.
             output_path = os.getcwd()
