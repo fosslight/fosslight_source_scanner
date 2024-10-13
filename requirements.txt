@@ -1,5 +1,5 @@
 pyparsing
-scancode-toolkit>=32.2.0
+scancode-toolkit==32.2.0
 scanoss
 XlsxWriter
 fosslight_util>=2.1.0
