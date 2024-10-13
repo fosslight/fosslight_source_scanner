@@ -7,4 +7,3 @@ PyYAML
 wheel>=0.38.1
 intbitset
 fosslight_binary>=5.0.0
-typecode-libmagic;sys_platform!="darwin"
