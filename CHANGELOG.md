@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.1 (13/10/2024)
+## Changes
+## 🔧 Maintenance
+
+- Remove typecode-libmagic from requirements.txt @soonhong99 (#192)
+
+---
+
 ## v2.1.0 (08/10/2024)
 ## Changes
 ## 🚀 Features
@@ -321,11 +329,3 @@
 ## 🔧 Maintenance
 
 - Revert "Clear ScanCode cache after installation" @soimkim (#102)
-
----
-
-## v1.6.22 (23/12/2022)
-## Changes
-## 🐛 Hotfixes
-
-- Clear ScanCode cache after installation @soimkim (#101)
