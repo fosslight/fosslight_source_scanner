@@ -39,8 +39,8 @@ def test_run():
 
 
 def test_help_command():
-    success, _ = run_command("fosslight_source -h")
-    assert success is True, "Test Release: Help command failed "
+    success, msg = run_command("fosslight_source -h")
+    assert success is True, f"Test Release: Help command failed :{msg}"
 
 
 def test_scan_command():
