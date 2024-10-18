@@ -135,7 +135,7 @@ def run_scan(
                 logger.error(f"Analyze {path_to_scan}: {msg}")
         else:
             success = False
-            msg = "Check the path to scan. :" + path_to_scan
+            msg = f"(-p option) Check the path to scan: {path_to_scan}"
 
         if not return_results:
             result_list = []
