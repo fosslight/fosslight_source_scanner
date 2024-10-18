@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.1.2 (18/10/2024)
+## Changes
+## 🔧 Maintenance
+
+- Print option name with error msg @bjk7119 (#195)
+- Fix the scancode ver for macos @dd-jy (#194)
+
+---
+
 ## v2.1.1 (13/10/2024)
 ## Changes
 ## 🔧 Maintenance
@@ -321,11 +330,3 @@
 
 - Remove warranty-disclaimer from license detected by ScanCode @JustinWonjaePark (#105)
 - Revert "Fix ScanCode's import LegacyVersion bug" @soimkim (#103)
-
----
-
-## v1.6.23 (23/12/2022)
-## Changes
-## 🔧 Maintenance
-
-- Revert "Clear ScanCode cache after installation" @soimkim (#102)
