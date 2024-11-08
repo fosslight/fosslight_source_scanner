@@ -261,7 +261,7 @@ def create_report_file(
     return scan_item
 
 
-def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}) -> list:
+def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}, path_to_exclude =[]) -> list:
     """
     Merge scanner results and spdx parsing result.
     :param scancode_result: list of scancode results in SourceItem.
@@ -286,6 +286,13 @@ def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_do
                 scancode_result.append(new_result_item)
 
     for item in scancode_result:
+        item_path = item.source_name_or_path
+        if any(
+            excluded in item_path and 
+            (item_path == excluded or item_path.startswith(f"{excluded}{os.sep}"))
+            for excluded in path_to_exclude
+        ):
+            continue
         item.set_oss_item()
 
     return scancode_result
@@ -345,7 +352,7 @@ def run_scanners(
                                             path_to_exclude)
         if selected_scanner in SCANNER_TYPE:
             spdx_downloads = get_spdx_downloads(path_to_scan, path_to_exclude)
-            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
+            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_exclude)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, path_to_exclude, formats)
