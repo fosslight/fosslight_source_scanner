@@ -280,15 +280,17 @@ def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_do
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
 
-    for item in scancode_result:
+    for i in range(len(scancode_result) - 1, -1, -1):
+        item = scancode_result[i]
         item_path = item.source_name_or_path
-        if any(
-            excluded in item_path and 
-            (item_path == excluded or item_path.startswith(f"{excluded}{os.sep}"))
+
+        if not any(
+            item_path == excluded or item_path.startswith(f"{excluded}{os.sep}")
             for excluded in path_to_exclude
         ):
-            continue
-        item.set_oss_item()
+            item.set_oss_item()
+        else:
+            del scancode_result[i]
 
     return scancode_result
 
