@@ -8,6 +8,7 @@ import os
 import platform
 import warnings
 import logging
+import glob
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
@@ -261,7 +262,7 @@ def create_report_file(
     return scan_item
 
 
-def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}, path_to_exclude =[]) -> list:
+def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}, path_to_exclude=[]) -> list:
     """
     Merge scanner results and spdx parsing result.
     :param scancode_result: list of scancode results in SourceItem.
@@ -285,14 +286,24 @@ def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_do
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
 
+    # normalize for windows
+    normalized_patterns = [os.path.normpath(pattern).replace("\\", "/") for pattern in path_to_exclude]
+
+    # cnt = 0
+    if path_to_exclude:
+        for i in range(len(scancode_result) - 1, -1, -1):  # Iterate from last to first
+            item_path = scancode_result[i].source_name_or_path  # Assuming SourceItem has 'file_path' attribute
+            if any(
+                glob.fnmatch.fnmatch(item_path, f"{pattern}") or  # file name
+                glob.fnmatch.fnmatch(item_path, f"*/{pattern}") or  # file name in sub directory
+                glob.fnmatch.fnmatch(item_path, f"*{pattern}/*")  # directory name
+                for pattern in normalized_patterns
+            ):
+                # cnt += 1
+                # print(cnt, "EXCLUDED:", item_path)
+                del scancode_result[i]  # Delete matching item
+
     for item in scancode_result:
-        item_path = item.source_name_or_path
-        if any(
-            excluded in item_path and 
-            (item_path == excluded or item_path.startswith(f"{excluded}{os.sep}"))
-            for excluded in path_to_exclude
-        ):
-            continue
         item.set_oss_item()
 
     return scancode_result
@@ -346,7 +357,8 @@ def run_scanners(
             success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                       write_json_file, num_cores, True,
                                                                                       print_matched_text, formats, called_by_cli,
-                                                                                      time_out, correct_mode, correct_filepath)
+                                                                                      time_out, correct_mode, correct_filepath,
+                                                                                      path_to_exclude)
         if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
             scanoss_result = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file, num_cores,
                                             path_to_exclude)

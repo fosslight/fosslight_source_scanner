@@ -110,6 +110,9 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
 
     try:
         if write_json_file:
+            destination_file = os.path.join(output_path, SCANOSS_RESULT_FILE)
+            if os.path.exists(destination_file):
+                os.remove(destination_file)
             shutil.move(SCANOSS_RESULT_FILE, output_path)
         else:
             os.remove(output_json_file)
