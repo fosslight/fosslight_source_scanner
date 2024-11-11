@@ -208,6 +208,8 @@ def create_report_file(
     scan_item.set_cover_comment(f"Total number of files : {files_count}")
     scan_item.set_cover_comment(f"Removed files : {removed_files_count}")
 
+    
+    
     if not merged_result:
         if files_count < 1:
             scan_item.set_cover_comment("(No file detected.)")
