@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1.3 (13/11/2024)
+## Changes
+- Fix errors related to SCANOSS @JustinWonjaePark (#198)
+
+## 🔧 Maintenance
+
+- Fix the cover_comment @ethanleelge (#197)
+
+---
+
 ## v2.1.2 (18/10/2024)
 ## Changes
 ## 🔧 Maintenance
@@ -21,7 +31,7 @@
 ## Changes
 ## 🚀 Features
 
-- Support spdx @dd-jy (#190)
+- Support spdx (only Linux) @dd-jy (#190)
 
 ## 🔧 Maintenance
 
@@ -316,17 +326,3 @@
 - Unify version output format @bjk7119 (#109)
 - Change package to get release package @bjk7119 (#108)
 - Update version of packages for actions @bjk7119 (#107)
-
----
-
-## v1.6.24 (02/01/2023)
-## Changes
-## 🐛 Hotfixes
-
-- Fix omitted Scanoss result at -m option @JustinWonjaePark (#106)
-- Remove warning for -m option with default output @JustinWonjaePark (#104)
-
-## 🔧 Maintenance
-
-- Remove warranty-disclaimer from license detected by ScanCode @JustinWonjaePark (#105)
-- Revert "Fix ScanCode's import LegacyVersion bug" @soimkim (#103)
