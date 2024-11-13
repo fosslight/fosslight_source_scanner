@@ -204,7 +204,9 @@ def create_report_file(
     scan_item = ScannerItem(PKG_NAME, _start_time)
     scan_item.set_cover_pathinfo(path_to_scan, path_to_exclude)
     files_count, removed_files_count = count_files(path_to_scan, path_to_exclude)
-    scan_item.set_cover_comment(f"Total number of files / removed files: {files_count} / {removed_files_count}")
+
+    scan_item.set_cover_comment(f"Total number of files : {files_count}")
+    scan_item.set_cover_comment(f"Removed files : {removed_files_count}")
 
     if not merged_result:
         if files_count < 1:
