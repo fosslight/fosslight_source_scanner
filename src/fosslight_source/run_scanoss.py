@@ -64,6 +64,8 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
         if not os.path.isdir(output_path):
             Path(output_path).mkdir(parents=True, exist_ok=True)
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
+    if os.path.exists(output_json_file):  # remove scanner_output.wfp file if exist
+        os.remove(output_json_file)
 
     try:
         scanner = Scanner(
