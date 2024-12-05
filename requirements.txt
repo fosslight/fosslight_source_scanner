@@ -1,7 +1,7 @@
 pyparsing
 scanoss<=1.14.0
 XlsxWriter
-fosslight_util>=2.1.1
+fosslight_util>=2.1.6
 PyYAML
 wheel>=0.38.1
 intbitset
