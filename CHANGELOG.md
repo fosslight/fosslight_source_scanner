@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.4 (05/12/2024)
+## Changes
+## 🚀 Features
+
+- Support cycloneDX format @dd-jy (#199)
+
+---
+
 ## v2.1.3 (13/11/2024)
 ## Changes
 - Fix errors related to SCANOSS @JustinWonjaePark (#198)
@@ -312,17 +320,3 @@
 ## 🔧 Maintenance
 
 - Fix Scancode error in Python 3.7 @soimkim (#116)
-
----
-
-## v1.6.25 (27/02/2023)
-## Changes
-## 🔧 Maintenance
-
-- Update git user in release action @bjk7119 (#114, #113)
-- Add the package name to result in the missing file @dd-jy (#112)
-- Add the package name to log and result file @dd-jy (#111)
-- Add the core option in help message @dd-jy (#110)
-- Unify version output format @bjk7119 (#109)
-- Change package to get release package @bjk7119 (#108)
-- Update version of packages for actions @bjk7119 (#107)
