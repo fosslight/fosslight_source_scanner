@@ -179,7 +179,7 @@ def create_report_file(
                             logger.warning(f'{formats[i]} is not supported on Windows.Please remove {formats[i]} from format.')
                             to_remove.append(i)
                         else:
-                            if formats[i].stasrtswith('spdx'):
+                            if formats[i].startswith('spdx'):
                                 output_files[i] = f"fosslight_spdx_src_{_start_time}"
                             elif formats[i].startswith('cyclonedx'):
                                 output_files[i] = f'fosslight_cyclonedx_src_{_start_time}'
