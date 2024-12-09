@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.5 (09/12/2024)
+## Changes
+## 🐛 Hotfixes
+
+- Fix the bug @dd-jy (#200)
+
+---
+
 ## v2.1.4 (05/12/2024)
 ## Changes
 ## 🚀 Features
@@ -307,16 +315,3 @@
 ## 🔧 Maintenance
 
 - Fixed scancode-toolkit version @dd-jy (#118)
-
----
-
-## v1.6.26 (17/04/2023)
-## Changes
-## 🐛 Hotfixes
-
-- Update the ubuntu version for deploy action @dd-jy (#117)
-- Remove SPDX, URL from copyright @soimkim (#115)
-
-## 🔧 Maintenance
-
-- Fix Scancode error in Python 3.7 @soimkim (#116)
