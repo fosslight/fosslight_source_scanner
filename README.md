@@ -35,7 +35,7 @@ Please see the [**User Guide**](https://fosslight.org/fosslight-guide-en/scanner
 ## 👏 Contributing Guide
 
 We always welcome your contributions.  
-Please see the [CONTRIBUTING guide](https://fosslight.org/fosslight-guide-en/learn/1_contribution.html) for how to contribute.
+Please see the [CONTRIBUTING guide](https://fosslight.org/hub-guide-en/contribution/1_contribution.html) for how to contribute.
 
 
 ## 📄 License
