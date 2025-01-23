@@ -148,7 +148,7 @@ def create_report_file(
     output_path: str = "", output_files: list = [],
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
-    formats: list = [], excluded_file_list = [] 
+    formats: list = [], excluded_file_list: list = []
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -357,7 +357,7 @@ def run_scanners(
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                                        correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list)
+                                           correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"
