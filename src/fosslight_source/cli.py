@@ -148,7 +148,7 @@ def create_report_file(
     output_path: str = "", output_files: list = [],
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
-    formats: list = []
+    formats: list = [], excluded_file_list = [] 
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -220,6 +220,12 @@ def create_report_file(
 
     if merged_result:
         sheet_list = {}
+        # Remove results that are in excluding file list
+        for i in range(len(merged_result) - 1, -1, -1):  # Iterate from last to first
+            item_path = merged_result[i].source_name_or_path  # Assuming SourceItem has 'file_path' attribute
+            if item_path in excluded_file_list:
+                del merged_result[i]  # Delete matching item
+
         scan_item.append_file_items(merged_result, PKG_NAME)
 
         if selected_scanner == 'scanoss':
@@ -262,7 +268,7 @@ def create_report_file(
     return scan_item
 
 
-def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}, excluded_file_list=[]) -> list:
+def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}) -> list:
 
     """
     Merge scanner results and spdx parsing result.
@@ -286,11 +292,6 @@ def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_do
                 new_result_item = SourceItem(file_name)
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
-
-    for i in range(len(scancode_result) - 1, -1, -1):  # Iterate from last to first
-        item_path = scancode_result[i].source_name_or_path  # Assuming SourceItem has 'file_path' attribute
-        if item_path in excluded_file_list:
-            del scancode_result[i]  # Delete matching item
 
     for item in scancode_result:
         item.set_oss_item()
@@ -353,10 +354,10 @@ def run_scanners(
                                             path_to_exclude)
         if selected_scanner in SCANNER_TYPE:
             spdx_downloads = get_spdx_downloads(path_to_scan, path_to_exclude)
-            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, excluded_file_list)
+            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                                           correct_filepath, path_to_scan, path_to_exclude, formats)
+                                        correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"
