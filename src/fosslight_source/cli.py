@@ -12,6 +12,7 @@ from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
+from fosslight_util.exclude import excluding_files
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats_v2, write_output_file
@@ -147,7 +148,7 @@ def create_report_file(
     output_path: str = "", output_files: list = [],
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
-    formats: list = []
+    formats: list = [], excluded_file_list: list = []
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -219,6 +220,12 @@ def create_report_file(
 
     if merged_result:
         sheet_list = {}
+        # Remove results that are in excluding file list
+        for i in range(len(merged_result) - 1, -1, -1):  # Iterate from last to first
+            item_path = merged_result[i].source_name_or_path  # Assuming SourceItem has 'file_path' attribute
+            if item_path in excluded_file_list:
+                del merged_result[i]  # Delete matching item
+
         scan_item.append_file_items(merged_result, PKG_NAME)
 
         if selected_scanner == 'scanoss':
@@ -262,6 +269,7 @@ def create_report_file(
 
 
 def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}) -> list:
+
     """
     Merge scanner results and spdx parsing result.
     :param scancode_result: list of scancode results in SourceItem.
@@ -329,6 +337,7 @@ def run_scanners(
 
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
+    excluded_file_list = excluding_files(path_to_exclude, path_to_scan)
 
     if '.xlsx' not in output_extensions and print_matched_text:
         logger.warning("-m option is only available for excel.")
@@ -348,7 +357,7 @@ def run_scanners(
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                                           correct_filepath, path_to_scan, path_to_exclude, formats)
+                                           correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"
