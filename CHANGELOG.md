@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.1.6 (06/02/2025)
+## Changes
+## 🐛 Hotfixes
+
+- Fix scancode copyright scanning err @dd-jy (#203)
+- Fix exclude error @JustinWonjaePark (#201)
+
+---
+
 ## v2.1.5 (09/12/2024)
 ## Changes
 ## 🐛 Hotfixes
@@ -299,19 +308,3 @@
 
 - Update the minimum version of util @dd-jy (#123)
 - Change the default path to find sbom-info.yaml @dd-jy (#122)
-
----
-
-## v1.6.27 (19/05/2023)
-## Changes
-## 🚀 Features
-
-- Add to correct with sbom-info.yaml @dd-jy (#120)
-
-## 🐛 Hotfixes
-
-- Remove empty scanoss reference @JustinWonjaePark (#119)
-
-## 🔧 Maintenance
-
-- Fixed scancode-toolkit version @dd-jy (#118)
