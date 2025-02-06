@@ -9,3 +9,4 @@ fosslight_binary>=5.0.0
 scancode-toolkit==32.0.*;sys_platform=="darwin"
 scancode-toolkit==32.2.*;sys_platform!="darwin"
 psycopg2-binary==2.9.9
+beautifulsoup4==4.12.*
