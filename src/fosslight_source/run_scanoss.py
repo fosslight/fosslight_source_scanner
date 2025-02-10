@@ -82,9 +82,8 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
         with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
             scanner.scan_folder_with_options(scan_dir=path_to_scan)
         captured_output = output_buffer.getvalue()
-        logger.info(f"|---Scanning With SCANOSS Start---|")
-        logger.info(f"{captured_output}")
-        logger.info(f"|---Scanning With SCANOSS Finished---|")
+        api_limit_exceed = "due to service limits being exceeded" in captured_output
+        logger.debug(f"{captured_output}")
 
         if os.path.isfile(output_json_file):
             total_files_to_excluded = []
@@ -126,4 +125,4 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
     except Exception as error:
         logger.debug(f"Moving scanoss raw files failed.: {error}")
 
-    return scanoss_file_list
+    return scanoss_file_list, api_limit_exceed
