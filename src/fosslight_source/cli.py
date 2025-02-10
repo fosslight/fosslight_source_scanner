@@ -353,14 +353,15 @@ def run_scanners(
                                                                                       print_matched_text, formats, called_by_cli,
                                                                                       time_out, correct_mode, correct_filepath)
         if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
-            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file, num_cores,
-                                            path_to_exclude)
+            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
+                                                              num_cores, path_to_exclude)
         if selected_scanner in SCANNER_TYPE:
             spdx_downloads = get_spdx_downloads(path_to_scan, path_to_exclude)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                                           correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list, api_limit_exceed)
+                                           correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list,
+                                           api_limit_exceed)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"
