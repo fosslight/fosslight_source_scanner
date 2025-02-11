@@ -17,6 +17,8 @@ from ._parsing_scanoss_file import parsing_extraInfo  # scanoss
 import shutil
 from pathlib import Path
 from scanoss.scanner import Scanner, ScanType
+import io
+import contextlib
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -75,7 +77,13 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
             scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10
         )
-        scanner.scan_folder_with_options(scan_dir=path_to_scan)
+
+        output_buffer = io.StringIO()
+        with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
+            scanner.scan_folder_with_options(scan_dir=path_to_scan)
+        captured_output = output_buffer.getvalue()
+        api_limit_exceed = "due to service limits being exceeded" in captured_output
+        logger.debug(f"{captured_output}")
 
         if os.path.isfile(output_json_file):
             total_files_to_excluded = []
@@ -117,4 +125,4 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
     except Exception as error:
         logger.debug(f"Moving scanoss raw files failed.: {error}")
 
-    return scanoss_file_list
+    return scanoss_file_list, api_limit_exceed
