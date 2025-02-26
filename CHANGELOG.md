@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.7 (26/02/2025)
+## Changes
+## 🔧 Maintenance
+
+- Update SCANOSS version and redirect log @JustinWonjaePark (#204)
+
+---
+
 ## v2.1.6 (06/02/2025)
 ## Changes
 ## 🐛 Hotfixes
@@ -297,14 +305,5 @@
 ## 🔧 Maintenance
 
 - Sort the result by file and exclude attributes @JustinWonjaePark (#125)
-- Update the minimum version of util @dd-jy (#123)
-- Change the default path to find sbom-info.yaml @dd-jy (#122)
-
----
-
-## v1.6.28 (02/06/2023)
-## Changes
-## 🔧 Maintenance
-
 - Update the minimum version of util @dd-jy (#123)
 - Change the default path to find sbom-info.yaml @dd-jy (#122)
