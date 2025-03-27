@@ -335,6 +335,7 @@ def run_scanners(
     spdx_downloads = {}
     result_log = {}
     scan_item = []
+    api_limit_exceed = False
 
     success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, formats)
 
