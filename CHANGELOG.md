@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.8 (09/04/2025)
+## Changes
+## 🔧 Maintenance
+
+- Fix api_limit_exceed_parameter @JustinWonjaePark (#206)
+
+---
+
 ## v2.1.7 (26/02/2025)
 ## Changes
 ## 🔧 Maintenance
@@ -289,21 +297,3 @@
 ## 🔧 Maintenance
 
 - Update scancode-toolkit version @dd-jy (#127)
-
----
-
-## v1.6.29 (25/07/2023)
-## Changes
-## 🚀 Features
-
-- Read download location @JustinWonjaePark (#124)
-
-## 🐛 Hotfixes
-
-- Update FOSSLight Util version @soimkim (#126)
-
-## 🔧 Maintenance
-
-- Sort the result by file and exclude attributes @JustinWonjaePark (#125)
-- Update the minimum version of util @dd-jy (#123)
-- Change the default path to find sbom-info.yaml @dd-jy (#122)
