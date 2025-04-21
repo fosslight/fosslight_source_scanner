@@ -21,11 +21,12 @@ _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
 _exclude_directory.append("/.")
 REMOVE_LICENSE = ["warranty-disclaimer"]
-regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
+regex = re.compile(r'(?:licenseref-|SPDX-license-identifier-)([^",\s]+)', re.IGNORECASE)
 find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
 KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
+KEYWORD_SCANCODE_PROPRIETARY_LICENSE = "proprietary-license"
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
@@ -132,12 +133,12 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                             license_value = spdx.lower()
 
                         if license_value != "":
-                            if key == KEYWORD_SCANCODE_UNKNOWN:
+                            if key == KEYWORD_SCANCODE_UNKNOWN or key == KEYWORD_SCANCODE_PROPRIETARY_LICENSE:
                                 try:
                                     matched_txt = lic_item.get("matched_text", "").lower()
                                     matched = regex.search(matched_txt)
                                     if matched:
-                                        license_value = str(matched.group())
+                                        license_value = str(matched.group(1))
                                 except Exception:
                                     pass
 
@@ -229,11 +230,14 @@ def parsing_scancode_32_later(
                 licenses = file.get("license_detections", [])
                 if not licenses:
                     continue
+                print("file path:", file.get('path', ''))
                 for lic in licenses:
                     matched_lic_list = lic.get("matches", [])
                     for matched_lic in matched_lic_list:
                         found_lic_list = matched_lic.get("license_expression", "")
+                        print("found_lic_list:", found_lic_list)
                         matched_txt = matched_lic.get("matched_text", "")
+                        print("matched_txt:", matched_txt)
                         if found_lic_list:
                             found_lic_list = found_lic_list.lower()
                             for found_lic in split_spdx_expression(found_lic_list):
@@ -241,11 +245,11 @@ def parsing_scancode_32_later(
                                     found_lic = found_lic.strip()
                                     if found_lic in REMOVE_LICENSE:
                                         continue
-                                    elif found_lic == KEYWORD_SCANCODE_UNKNOWN:
+                                    elif found_lic == KEYWORD_SCANCODE_UNKNOWN or found_lic == KEYWORD_SCANCODE_PROPRIETARY_LICENSE:
                                         try:
                                             matched = regex.search(matched_txt.lower())
                                             if matched:
-                                                found_lic = str(matched.group())
+                                                found_lic = str(matched.group(1))
                                         except Exception:
                                             pass
                                     for word in replace_word:
