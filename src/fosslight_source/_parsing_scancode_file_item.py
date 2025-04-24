@@ -27,9 +27,12 @@ KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
 KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
 KEYWORD_SCANCODE_PROPRIETARY_LICENSE = "proprietary-license"
+KEYWORD_UNKNOWN_LICENSE_REFERENCE = "unknown-license-reference"
+KEYWORD_LGE_PROPRIETARY = "lge-proprietary"
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
+
 
 
 def get_error_from_header(header_item: list) -> Tuple[bool, str]:
@@ -163,6 +166,9 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                         result_item.is_license_text = matched_rule.get("is_license_text", False)
 
                     if len(license_detected) > 0:
+                        # unknown-license-reference를 제거하고 lge-proprietary만 남김
+                        if KEYWORD_UNKNOWN_LICENSE_REFERENCE.lower() in [x.lower() for x in license_detected] and KEYWORD_LGE_PROPRIETARY.lower() in [x.lower() for x in license_detected]:
+                            license_detected.remove(KEYWORD_UNKNOWN_LICENSE_REFERENCE)
                         result_item.licenses = license_detected
 
                         if len(license_expression_list) > 0:
@@ -262,6 +268,11 @@ def parsing_scancode_32_later(
                                             lic_info = MatchedLicense(found_lic, "", matched_txt, file_path)
                                             license_list[lic_matched_key] = lic_info
                                     license_detected.append(found_lic)
+                
+                # unknown-license-reference를 제거하고 lge-proprietary만 남김
+                if KEYWORD_UNKNOWN_LICENSE_REFERENCE.lower() in [x.lower() for x in license_detected] and KEYWORD_LGE_PROPRIETARY.lower() in [x.lower() for x in license_detected]:
+                    license_detected.remove(KEYWORD_UNKNOWN_LICENSE_REFERENCE)
+                
                 result_item.licenses = license_detected
                 if len(license_detected) > 1:
                     license_expression_spdx = file.get("detected_license_expression_spdx", "")
