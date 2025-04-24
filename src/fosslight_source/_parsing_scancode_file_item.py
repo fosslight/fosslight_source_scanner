@@ -34,7 +34,6 @@ KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
 
 
-
 def get_error_from_header(header_item: list) -> Tuple[bool, str]:
     has_error = False
     str_error = ""
@@ -166,8 +165,12 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                         result_item.is_license_text = matched_rule.get("is_license_text", False)
 
                     if len(license_detected) > 0:
-                        # unknown-license-reference를 제거하고 lge-proprietary만 남김
-                        if KEYWORD_UNKNOWN_LICENSE_REFERENCE.lower() in [x.lower() for x in license_detected] and KEYWORD_LGE_PROPRIETARY.lower() in [x.lower() for x in license_detected]:
+                        # Remove unknown-license-reference and leave only lge-proprietary
+                        license_lower = [x.lower() for x in license_detected]
+                        if (
+                            KEYWORD_UNKNOWN_LICENSE_REFERENCE.lower() in license_lower
+                            and KEYWORD_LGE_PROPRIETARY.lower() in license_lower
+                        ):
                             license_detected.remove(KEYWORD_UNKNOWN_LICENSE_REFERENCE)
                         result_item.licenses = license_detected
 
@@ -236,14 +239,11 @@ def parsing_scancode_32_later(
                 licenses = file.get("license_detections", [])
                 if not licenses:
                     continue
-                print("file path:", file.get('path', ''))
                 for lic in licenses:
                     matched_lic_list = lic.get("matches", [])
                     for matched_lic in matched_lic_list:
                         found_lic_list = matched_lic.get("license_expression", "")
-                        print("found_lic_list:", found_lic_list)
                         matched_txt = matched_lic.get("matched_text", "")
-                        print("matched_txt:", matched_txt)
                         if found_lic_list:
                             found_lic_list = found_lic_list.lower()
                             for found_lic in split_spdx_expression(found_lic_list):
@@ -251,7 +251,10 @@ def parsing_scancode_32_later(
                                     found_lic = found_lic.strip()
                                     if found_lic in REMOVE_LICENSE:
                                         continue
-                                    elif found_lic == KEYWORD_SCANCODE_UNKNOWN or found_lic == KEYWORD_SCANCODE_PROPRIETARY_LICENSE:
+                                    elif (
+                                        found_lic == KEYWORD_SCANCODE_UNKNOWN
+                                        or found_lic == KEYWORD_SCANCODE_PROPRIETARY_LICENSE
+                                    ):
                                         try:
                                             matched = regex.search(matched_txt.lower())
                                             if matched:
@@ -268,11 +271,15 @@ def parsing_scancode_32_later(
                                             lic_info = MatchedLicense(found_lic, "", matched_txt, file_path)
                                             license_list[lic_matched_key] = lic_info
                                     license_detected.append(found_lic)
-                
-                # unknown-license-reference를 제거하고 lge-proprietary만 남김
-                if KEYWORD_UNKNOWN_LICENSE_REFERENCE.lower() in [x.lower() for x in license_detected] and KEYWORD_LGE_PROPRIETARY.lower() in [x.lower() for x in license_detected]:
+
+                # Remove unknown-license-reference and leave only lge-proprietary
+                license_lower = [x.lower() for x in license_detected]
+                if (
+                    KEYWORD_UNKNOWN_LICENSE_REFERENCE.lower() in license_lower
+                    and KEYWORD_LGE_PROPRIETARY.lower() in license_lower
+                ):
                     license_detected.remove(KEYWORD_UNKNOWN_LICENSE_REFERENCE)
-                
+
                 result_item.licenses = license_detected
                 if len(license_detected) > 1:
                     license_expression_spdx = file.get("detected_license_expression_spdx", "")
