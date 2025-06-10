@@ -45,7 +45,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        brew install openssl
+        if ! brew list openssl@3 &>/dev/null; then
+            brew install openssl@3
+        fi
         brew install libmagic
         brew install postgresql
         python -m pip install --upgrade pip
