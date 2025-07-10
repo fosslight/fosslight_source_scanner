@@ -60,7 +60,6 @@ def parsing_scanResult(scanoss_report: dict, path_to_scan: str = "", path_to_exc
         license_detected = []
         license_w_source = {"component_declared": [], "file_spdx_tag": [],
                             "file_header": [], "license_file": [], "scancode": []}
-        copyright_detected = []
         if 'licenses' in findings[0]:
             for license in findings[0]['licenses']:
 
@@ -78,11 +77,6 @@ def parsing_scanResult(scanoss_report: dict, path_to_scan: str = "", path_to_exc
             if len(license_detected) > 0:
                 result_item.licenses = license_detected
                 result_item.scanoss_reference = license_w_source
-        if 'copyrights' in findings[0]:
-            for copyright in findings[0]['copyrights']:
-                copyright_detected.append(copyright['name'])
-            if len(copyright_detected) > 0:
-                result_item.copyright = copyright_detected
 
         if is_exclude_file(file_path):
             result_item.exclude = True
