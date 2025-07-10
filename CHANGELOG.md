@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1.9 (10/07/2025)
+## Changes
+- Remove copyright from SCANOSS result @JustinWonjaePark (#209)
+
+## 🔧 Maintenance
+
+- Fix github action warning message @bjk7119 (#208)
+
+---
+
 ## v2.1.8 (09/04/2025)
 ## Changes
 ## 🔧 Maintenance
@@ -289,11 +299,3 @@
 ## 🔧 Maintenance
 
 - Remove sorting @JustinWonjaePark (#128)
-
----
-
-## v1.6.30 (25/07/2023)
-## Changes
-## 🔧 Maintenance
-
-- Update scancode-toolkit version @dd-jy (#127)
