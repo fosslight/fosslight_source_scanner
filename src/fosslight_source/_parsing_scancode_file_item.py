@@ -170,7 +170,6 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                                 set(license_expression_list))
                             result_item.comment = ','.join(license_expression_list)
 
-                        # Check if this is a manifest file with license information
                         if is_manifest_file(file_path):
                             result_item.is_license_text = True
 
@@ -275,7 +274,6 @@ def parsing_scancode_32_later(
                 result_item.exclude = is_exclude_file(file_path)
                 result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90 or is_notice_file(file_path)
 
-                # Check if this is a manifest file with license information
                 if is_manifest_file(file_path) and len(license_detected) > 0:
                     result_item.is_license_text = True
 

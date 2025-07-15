@@ -140,14 +140,11 @@ def is_exclude_file(file_path: str, prev_dir: str = None, prev_dir_exclude_value
 
 def is_notice_file(file_path: str) -> bool:
     pattern = r"({})(?<!w)".format("|".join(_notice_filename))
-    file_path = file_path.lower()
     filename = os.path.basename(file_path)
-    return bool(re.match(pattern, filename))
+    return bool(re.match(pattern, filename, re.IGNORECASE))
 
 
 def is_manifest_file(file_path: str) -> bool:
-    """Check if the file is a package manager manifest file."""
     pattern = r"({})$".format("|".join(_manifest_filename))
-    file_path = file_path.lower()
     filename = os.path.basename(file_path)
-    return bool(re.match(pattern, filename))
+    return bool(re.match(pattern, filename, re.IGNORECASE))
