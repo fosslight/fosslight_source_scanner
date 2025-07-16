@@ -14,9 +14,7 @@ replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "lic
 _notice_filename = ['licen[cs]e[s]?', 'notice[s]?', 'legal', 'copyright[s]?', 'copying*', 'patent[s]?', 'unlicen[cs]e', 'eula',
                     '[a,l]?gpl[-]?[1-3]?[.,-,_]?[0-1]?', 'mit', 'bsd[-]?[0-4]?', 'bsd[-]?[0-4][-]?clause[s]?',
                     'apache[-,_]?[1-2]?[.,-,_]?[0-2]?']
-_manifest_filename = ['requirements\\.txt', 'setup\\.py', 'pyproject\\.toml', 'pnpm-lock\\.yaml', 'package\\.json',
-                      'pom\\.xml', 'build\\.gradle', 'pubspec\\.yaml', 'Podfile\\.lock', 'Package\\.resolved',
-                      'Cartfile\\.resolved', 'go\\.mod', 'packages\\.config', 'Chart\\.yaml', 'Cargo\\.toml']
+_manifest_filename = [r'.*\.pom$', r'package\.json$', r'setup\.py$', r'pubspec\.yaml$', r'.*\.podspec$', r'Cargo\.toml$']
 _exclude_filename = ["changelog", "config.guess", "config.sub", "changes", "ltmain.sh",
                      "configure", "configure.ac", "depcomp", "compile", "missing", "makefile"]
 _exclude_extension = [".m4", ".in", ".po"]
