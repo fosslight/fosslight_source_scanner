@@ -14,6 +14,7 @@ replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "lic
 _notice_filename = ['licen[cs]e[s]?', 'notice[s]?', 'legal', 'copyright[s]?', 'copying*', 'patent[s]?', 'unlicen[cs]e', 'eula',
                     '[a,l]?gpl[-]?[1-3]?[.,-,_]?[0-1]?', 'mit', 'bsd[-]?[0-4]?', 'bsd[-]?[0-4][-]?clause[s]?',
                     'apache[-,_]?[1-2]?[.,-,_]?[0-2]?']
+_manifest_filename = [r'.*\.pom$', r'package\.json$', r'setup\.py$', r'pubspec\.yaml$', r'.*\.podspec$', r'Cargo\.toml$']
 _exclude_filename = ["changelog", "config.guess", "config.sub", "changes", "ltmain.sh",
                      "configure", "configure.ac", "depcomp", "compile", "missing", "makefile"]
 _exclude_extension = [".m4", ".in", ".po"]
@@ -137,6 +138,11 @@ def is_exclude_file(file_path: str, prev_dir: str = None, prev_dir_exclude_value
 
 def is_notice_file(file_path: str) -> bool:
     pattern = r"({})(?<!w)".format("|".join(_notice_filename))
-    file_path = file_path.lower()
     filename = os.path.basename(file_path)
-    return bool(re.match(pattern, filename))
+    return bool(re.match(pattern, filename, re.IGNORECASE))
+
+
+def is_manifest_file(file_path: str) -> bool:
+    pattern = r"({})$".format("|".join(_manifest_filename))
+    filename = os.path.basename(file_path)
+    return bool(re.match(pattern, filename, re.IGNORECASE))

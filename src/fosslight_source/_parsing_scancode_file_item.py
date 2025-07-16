@@ -13,6 +13,7 @@ from ._scan_item import is_exclude_dir
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
 from ._scan_item import is_notice_file
+from ._scan_item import is_manifest_file
 from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -169,6 +170,9 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                                 set(license_expression_list))
                             result_item.comment = ','.join(license_expression_list)
 
+                        if is_manifest_file(file_path):
+                            result_item.is_license_text = True
+
                         if is_exclude_file(file_path, prev_dir, prev_dir_value):
                             result_item.exclude = True
                         scancode_file_item.append(result_item)
@@ -269,6 +273,10 @@ def parsing_scancode_32_later(
 
                 result_item.exclude = is_exclude_file(file_path)
                 result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90 or is_notice_file(file_path)
+
+                if is_manifest_file(file_path) and len(license_detected) > 0:
+                    result_item.is_license_text = True
+
                 scancode_file_item.append(result_item)
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")
