@@ -1,12 +1,9 @@
 pyparsing
-scanoss>=1.18.0,<=1.26.3
+scanoss>=1.18.0
 XlsxWriter
 fosslight_util>=2.1.10
 PyYAML
 wheel>=0.38.1
 intbitset
 fosslight_binary>=5.0.0
-scancode-toolkit==32.0.*;sys_platform=="darwin"
-scancode-toolkit==32.2.*;sys_platform!="darwin"
-psycopg2-binary==2.9.9
-beautifulsoup4==4.12.*
+scancode-toolkit

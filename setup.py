@@ -26,11 +26,10 @@ if __name__ == "__main__":
         download_url='https://github.com/fosslight/fosslight_source_scanner',
         classifiers=['License :: OSI Approved :: Apache Software License',
                      "Programming Language :: Python :: 3",
-                     "Programming Language :: Python :: 3.8",
-                     "Programming Language :: Python :: 3.9",
                      "Programming Language :: Python :: 3.10",
-                     "Programming Language :: Python :: 3.11", ],
-        python_requires=">=3.8",
+                     "Programming Language :: Python :: 3.11",
+                     "Programming Language :: Python :: 3.12", ],
+        python_requires=">=3.10, <3.13",
         install_requires=required,
         entry_points={
             "console_scripts": [
