@@ -97,7 +97,7 @@ class SourceItem(FileItem):
         return print_rows
 
     def __eq__(self, other: object) -> bool:
-        if type(other) == str:
+        if isinstance(other, str):
             return self.source_name_or_path == other
         else:
             return self.source_name_or_path == other.source_name_or_path

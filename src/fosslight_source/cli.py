@@ -43,7 +43,6 @@ RESULT_KEY = "Scan Result"
 
 
 def main() -> None:
-    global logger
     _result_log = {}
 
     path_to_scan = os.getcwd()
