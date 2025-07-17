@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.1.10 (17/07/2025)
+## Changes
+- Recognize manifest file as License File @JustinWonjaePark (#210)
+
+## 🔧 Maintenance
+
+- Update Python support to 3.10+ and remove scanners' version limits @JustinWonjaePark (#211)
+
+---
+
 ## v2.1.9 (10/07/2025)
 ## Changes
 - Remove copyright from SCANOSS result @JustinWonjaePark (#209)
@@ -287,15 +297,3 @@
 ## 🐛 Hotfixes
 
 - Fix the util version @dd-jy (#130)
-
----
-
-## v1.6.31 (03/08/2023)
-## Changes
-## 🐛 Hotfixes
-
-- Revert the scancode-toolkit version @dd-jy (#129)
-
-## 🔧 Maintenance
-
-- Remove sorting @JustinWonjaePark (#128)
