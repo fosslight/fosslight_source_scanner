@@ -1,9 +1,9 @@
 tox
 pytest
 pytest-cov
-pytest-flake8>=1.1.0
-flake8>=5.0.0
+pytest-flake8
+flake8
 dataclasses
 scanoss
-importlib-metadata>=6.0.0
+importlib-metadata
 pytest-xdist
