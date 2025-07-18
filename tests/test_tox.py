@@ -6,6 +6,16 @@ import os
 import subprocess
 import pytest
 import shutil
+import sys
+
+# Add project root to sys.path for importing FL Source modules
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+# Import after sys.path modification to access our custom GPL license functions
+# flake8: noqa E402
+from fosslight_source._parsing_scancode_file_item import (
+    is_gpl_family_license, should_remove_copyright_for_gpl_license_text
+)
 
 remove_directories = ["test_scan", "test_scan2", "test_scan3"]
 
@@ -24,6 +34,69 @@ def run_command(command):
     process = subprocess.run(command, shell=True, capture_output=True, text=True)
     success = (process.returncode == 0)
     return success, process.stdout if success else process.stderr
+
+
+def test_is_gpl_family_license():
+    gpl_licenses = [
+        ["gpl-2.0"],
+        ["gpl-3.0"],
+        ["lgpl-2.1"],
+        ["lgpl-3.0"],
+        ["agpl-3.0"],
+        ["GPL-2.0"],
+        ["LGPL-2.1"],
+        ["AGPL-3.0"],
+        ["gnu-general-public-license"],
+        ["gnu-lesser-general-public-license"],
+        ["gnu-affero-general-public-license"],
+        ["gpl-2.0", "mit"],
+        ["mit", "lgpl-3.0"]
+    ]
+
+    non_gpl_licenses = [
+        ["mit"],
+        ["apache-2.0"],
+        ["bsd-3-clause"],
+        ["mozilla-2.0"],
+        ["isc"],
+        [],
+        ["mit", "apache-2.0"]
+    ]
+
+    for licenses in gpl_licenses:
+        assert is_gpl_family_license(licenses), \
+            f"Should detect GPL family license: {licenses}"
+
+    for licenses in non_gpl_licenses:
+        assert not is_gpl_family_license(licenses), \
+            f"Should not detect GPL family license: {licenses}"
+
+
+def test_should_remove_copyright_for_gpl_license_text():
+    assert should_remove_copyright_for_gpl_license_text(["gpl-2.0"], True), \
+        "Should remove copyright for GPL license text file"
+    assert should_remove_copyright_for_gpl_license_text(["lgpl-3.0"], True), \
+        "Should remove copyright for LGPL license text file"
+    assert should_remove_copyright_for_gpl_license_text(["agpl-3.0"], True), \
+        "Should remove copyright for AGPL license text file"
+
+    assert not should_remove_copyright_for_gpl_license_text(["gpl-2.0"], False), \
+        "Should NOT remove copyright for GPL source file"
+    assert not should_remove_copyright_for_gpl_license_text(["lgpl-3.0"], False), \
+        "Should NOT remove copyright for LGPL source file"
+
+    assert not should_remove_copyright_for_gpl_license_text(["mit"], True), \
+        "Should NOT remove copyright for MIT license text file"
+    assert not should_remove_copyright_for_gpl_license_text(["apache-2.0"], True), \
+        "Should NOT remove copyright for Apache license text file"
+
+    assert not should_remove_copyright_for_gpl_license_text(["mit"], False), \
+        "Should NOT remove copyright for MIT source file"
+
+    assert not should_remove_copyright_for_gpl_license_text([], True), \
+        "Should NOT remove copyright for empty license list"
+    assert not should_remove_copyright_for_gpl_license_text([], False), \
+        "Should NOT remove copyright for empty license list"
 
 
 def test_run():
