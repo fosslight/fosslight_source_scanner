@@ -46,9 +46,10 @@ def test_is_gpl_family_license():
         ["GPL-2.0"],
         ["LGPL-2.1"],
         ["AGPL-3.0"],
-        ["gnu-general-public-license"],
-        ["gnu-lesser-general-public-license"],
-        ["gnu-affero-general-public-license"],
+        ["gpl-2.0-only"],
+        ["lgpl-2.1-only"],
+        ["agpl-3.0-only"],
+        ["gfdl-1.3"],
         ["gpl-2.0", "mit"],
         ["mit", "lgpl-3.0"]
     ]

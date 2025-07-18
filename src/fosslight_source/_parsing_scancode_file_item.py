@@ -30,14 +30,7 @@ KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
-GPL_LICENSE_PATTERNS = [
-    r'gpl',           # gpl, gpl-2.0, gpl-3.0
-    r'lgpl',          # lgpl, lgpl-2.1, lgpl-3.0
-    r'agpl',          # agpl, agpl-3.0
-    r'gnu.*general.*public.*license',    # GNU General Public License
-    r'gnu.*lesser.*general.*public.*license',  # GNU Lesser General Public License
-    r'gnu.*affero.*general.*public.*license'   # GNU Affero General Public License
-]
+GPL_LICENSE_PATTERN = r'((a|l)?gpl|gfdl)'  # GPL, LGPL, AGPL, GFDL
 
 
 def is_gpl_family_license(licenses: list) -> bool:
@@ -49,10 +42,9 @@ def is_gpl_family_license(licenses: list) -> bool:
             continue
 
         license_lower = license_name.lower()
-        for pattern in GPL_LICENSE_PATTERNS:
-            if re.search(pattern, license_lower):
-                logger.debug(f"GPL family license detected: {license_name}")
-                return True
+        if re.search(GPL_LICENSE_PATTERN, license_lower):
+            logger.debug(f"GPL family license detected: {license_name}")
+            return True
 
     return False
 
