@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.11 (21/07/2025)
+## Changes
+## 🔧 Maintenance
+
+- Remove copyright info for license text file of GPL family @JustinWonjaePark (#212)
+
+---
+
 ## v2.1.10 (17/07/2025)
 ## Changes
 - Recognize manifest file as License File @JustinWonjaePark (#210)
@@ -289,11 +297,3 @@
 ## 🔧 Maintenance
 
 - Fix the scancdoe and util version @dd-jy (#132)
-
----
-
-## v1.6.32 (03/08/2023)
-## Changes
-## 🐛 Hotfixes
-
-- Fix the util version @dd-jy (#130)
