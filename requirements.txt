@@ -6,4 +6,4 @@ PyYAML
 wheel>=0.38.1
 intbitset
 fosslight_binary>=5.0.0
-scancode-toolkit
+scancode-toolkit>=32.0.2
