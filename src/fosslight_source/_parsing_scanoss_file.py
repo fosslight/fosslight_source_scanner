@@ -8,6 +8,7 @@ import logging
 import fosslight_util.constant as constant
 from ._scan_item import SourceItem
 from ._scan_item import is_exclude_file
+from ._scan_item import is_package_dir
 from ._scan_item import replace_word
 from typing import Tuple
 
@@ -45,6 +46,13 @@ def parsing_scanResult(scanoss_report: dict, path_to_scan: str = "", path_to_exc
         if any(os.path.commonpath([abs_file_path, exclude_path]) == exclude_path for exclude_path in abs_path_to_exclude):
             continue
         result_item = SourceItem(file_path)
+        is_pkg, pkg_path = is_package_dir(os.path.dirname(file_path))
+        if is_pkg:
+            result_item.source_name_or_path = pkg_path
+            if not any(x.source_name_or_path == result_item.source_name_or_path for x in scanoss_file_item):
+                result_item.exclude = True
+                scanoss_file_item.append(result_item)
+            continue
 
         if 'id' in findings[0]:
             if "none" == findings[0]['id']:
