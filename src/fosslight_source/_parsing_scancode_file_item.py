@@ -14,6 +14,7 @@ from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
 from ._scan_item import is_notice_file
 from ._scan_item import is_manifest_file
+from ._scan_item import is_package_dir
 from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -99,6 +100,13 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                     copyright_list = file.get("copyrights", [])
 
                     result_item = SourceItem(file_path)
+                    is_pkg, pkg_path = is_package_dir(os.path.dirname(file_path))
+                    if is_pkg:
+                        result_item.source_name_or_path = pkg_path
+                        if not any(x.source_name_or_path == result_item.source_name_or_path for x in scancode_file_item):
+                            result_item.exclude = True
+                            scancode_file_item.append(result_item)
+                        continue
 
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
@@ -235,6 +243,13 @@ def parsing_scancode_32_later(
                     continue
 
                 result_item = SourceItem(file_path)
+                is_pkg, pkg_path = is_package_dir(os.path.dirname(file_path))
+                if is_pkg:
+                    result_item.source_name_or_path = pkg_path
+                    if not any(x.source_name_or_path == result_item.source_name_or_path for x in scancode_file_item):
+                        result_item.exclude = True
+                        scancode_file_item.append(result_item)
+                    continue
 
                 if has_error:
                     error_msg = file.get("scan_errors", [])

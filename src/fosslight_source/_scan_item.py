@@ -22,6 +22,7 @@ _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
 _exclude_directory.append("/.")
+_package_directory = ["node_modules", "venv", "Pods", "Carthage"]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
@@ -146,3 +147,13 @@ def is_manifest_file(file_path: str) -> bool:
     pattern = r"({})$".format("|".join(_manifest_filename))
     filename = os.path.basename(file_path)
     return bool(re.match(pattern, filename, re.IGNORECASE))
+
+
+def is_package_dir(dir_path: str) -> bool:
+    path_parts = dir_path.split(os.path.sep)
+    for pkg_dir in _package_directory:
+        if pkg_dir in path_parts:
+            pkg_index = path_parts.index(pkg_dir)
+            pkg_path = os.path.sep.join(path_parts[:pkg_index + 1])
+            return True, pkg_path
+    return False, ""
