@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.1.12 (21/08/2025)
+## Changes
+## 🚀 Features
+
+- Exclude package dirs with directory name @dd-jy (#214)
+
+## 🔧 Maintenance
+
+- Fix scancode version for Mac @JustinWonjaePark (#213)
+
+---
+
 ## v2.1.11 (21/07/2025)
 ## Changes
 ## 🔧 Maintenance
@@ -283,17 +295,3 @@
 ## 🔧 Maintenance
 
 - Priority change between Download Location extraction and scanner operation @JustinWonjaePark (#133)
-
----
-
-## v1.7.0 (14/08/2023)
-## Changes
-- Fix the bug when nothing is detected @soimkim (#134)
-
-## 🚀 Features
-
-- Load v32 and later of ScanCode @soimkim (#131)
-
-## 🔧 Maintenance
-
-- Fix the scancdoe and util version @dd-jy (#132)
