@@ -34,6 +34,7 @@ class SourceItem(FileItem):
         super().__init__("")
         self.source_name_or_path = value
         self.is_license_text = False
+        self.is_manifest_file = False
         self.license_reference = ""
         self.scanoss_reference = {}
         self.matched_lines = ""  # Only for SCANOSS results

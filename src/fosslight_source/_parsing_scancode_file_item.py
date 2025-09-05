@@ -193,7 +193,7 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                         result_item.licenses = license_detected
 
                         if is_manifest_file(file_path):
-                            result_item.is_license_text = True
+                            result_item.is_manifest_file = True
 
                         # Remove copyright info for license text file of GPL family
                         if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
@@ -308,7 +308,7 @@ def parsing_scancode_32_later(
                 result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90 or is_notice_file(file_path)
 
                 if is_manifest_file(file_path) and len(license_detected) > 0:
-                    result_item.is_license_text = True
+                    result_item.is_manifest_file = True
 
                 # Remove copyright info for license text file of GPL family
                 if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
