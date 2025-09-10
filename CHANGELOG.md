@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.13 (10/09/2025)
+## Changes
+## 🔧 Maintenance
+
+- Add is_manifest_file field @dd-jy (#215)
+
+---
+
 ## v2.1.12 (21/08/2025)
 ## Changes
 ## 🚀 Features
@@ -287,11 +295,3 @@
 ## 🐛 Hotfixes
 
 - Fix vulnerability from requirements.txt @JustinWonjaePark (#138)
-
----
-
-## v1.7.1 (31/08/2023)
-## Changes
-## 🔧 Maintenance
-
-- Priority change between Download Location extraction and scanner operation @JustinWonjaePark (#133)
