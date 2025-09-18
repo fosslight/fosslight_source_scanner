@@ -200,7 +200,7 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                             logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
                             result_item.copyright = []
                         else:
-                            result_item.copyright = copyright_value_list
+                            result_item.copyright = list(set(copyright_value_list))
 
                         if len(license_expression_list) > 0:
                             license_expression_list = list(
@@ -315,7 +315,7 @@ def parsing_scancode_32_later(
                     logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
                     result_item.copyright = []
                 else:
-                    result_item.copyright = copyright_value_list
+                    result_item.copyright = list(set(copyright_value_list))
 
                 if len(license_detected) > 1:
                     license_expression_spdx = file.get("detected_license_expression_spdx", "")
