@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.14 (24/09/2025)
+## Changes
+## 🐛 Hotfixes
+
+- Fix a click version to fix non-boolean flag error @soimkim (#217)
+
+---
+
 ## v2.1.13 (10/09/2025)
 ## Changes
 ## 🔧 Maintenance
@@ -287,11 +295,3 @@
 
 - Create run_scanners for api and exclude unwanted outputs @JustinWonjaePark (#140)
 - Add test for fl scanner and fl android @JustinWonjaePark (#139)
-
----
-
-## v1.7.2 (31/08/2023)
-## Changes
-## 🐛 Hotfixes
-
-- Fix vulnerability from requirements.txt @JustinWonjaePark (#138)
