@@ -8,6 +8,7 @@ import logging
 import fosslight_util.constant as constant
 from ._scan_item import SourceItem
 from ._scan_item import is_exclude_file
+from ._scan_item import is_package_dir
 from ._scan_item import replace_word
 from typing import Tuple
 
@@ -45,6 +46,13 @@ def parsing_scanResult(scanoss_report: dict, path_to_scan: str = "", path_to_exc
         if any(os.path.commonpath([abs_file_path, exclude_path]) == exclude_path for exclude_path in abs_path_to_exclude):
             continue
         result_item = SourceItem(file_path)
+        is_pkg, pkg_path = is_package_dir(os.path.dirname(file_path))
+        if is_pkg:
+            result_item.source_name_or_path = pkg_path
+            if not any(x.source_name_or_path == result_item.source_name_or_path for x in scanoss_file_item):
+                result_item.exclude = True
+                scanoss_file_item.append(result_item)
+            continue
 
         if 'id' in findings[0]:
             if "none" == findings[0]['id']:
@@ -60,7 +68,6 @@ def parsing_scanResult(scanoss_report: dict, path_to_scan: str = "", path_to_exc
         license_detected = []
         license_w_source = {"component_declared": [], "file_spdx_tag": [],
                             "file_header": [], "license_file": [], "scancode": []}
-        copyright_detected = []
         if 'licenses' in findings[0]:
             for license in findings[0]['licenses']:
 
@@ -78,11 +85,6 @@ def parsing_scanResult(scanoss_report: dict, path_to_scan: str = "", path_to_exc
             if len(license_detected) > 0:
                 result_item.licenses = license_detected
                 result_item.scanoss_reference = license_w_source
-        if 'copyrights' in findings[0]:
-            for copyright in findings[0]['copyrights']:
-                copyright_detected.append(copyright['name'])
-            if len(copyright_detected) > 0:
-                result_item.copyright = copyright_detected
 
         if is_exclude_file(file_path):
             result_item.exclude = True

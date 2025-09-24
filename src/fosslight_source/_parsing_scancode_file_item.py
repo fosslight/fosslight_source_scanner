@@ -13,6 +13,8 @@ from ._scan_item import is_exclude_dir
 from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
 from ._scan_item import is_notice_file
+from ._scan_item import is_manifest_file
+from ._scan_item import is_package_dir
 from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -29,6 +31,27 @@ KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
+GPL_LICENSE_PATTERN = r'((a|l)?gpl|gfdl)'  # GPL, LGPL, AGPL, GFDL
+
+
+def is_gpl_family_license(licenses: list) -> bool:
+    if not licenses:
+        return False
+
+    for license_name in licenses:
+        if not license_name:
+            continue
+
+        license_lower = license_name.lower()
+        if re.search(GPL_LICENSE_PATTERN, license_lower):
+            logger.debug(f"GPL family license detected: {license_name}")
+            return True
+
+    return False
+
+
+def should_remove_copyright_for_gpl_license_text(licenses: list, is_license_text: bool) -> bool:
+    return is_license_text and is_gpl_family_license(licenses)
 
 
 def get_error_from_header(header_item: list) -> Tuple[bool, str]:
@@ -77,6 +100,13 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                     copyright_list = file.get("copyrights", [])
 
                     result_item = SourceItem(file_path)
+                    is_pkg, pkg_path = is_package_dir(os.path.dirname(file_path))
+                    if is_pkg:
+                        result_item.source_name_or_path = pkg_path
+                        if not any(x.source_name_or_path == result_item.source_name_or_path for x in scancode_file_item):
+                            result_item.exclude = True
+                            scancode_file_item.append(result_item)
+                        continue
 
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
@@ -98,8 +128,6 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                             except Exception:
                                 pass
                             copyright_value_list.append(copyright_data)
-
-                    result_item.copyright = copyright_value_list
 
                     # Set the license value
                     license_detected = []
@@ -164,6 +192,16 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                     if len(license_detected) > 0:
                         result_item.licenses = license_detected
 
+                        if is_manifest_file(file_path):
+                            result_item.is_manifest_file = True
+
+                        # Remove copyright info for license text file of GPL family
+                        if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
+                            logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
+                            result_item.copyright = []
+                        else:
+                            result_item.copyright = copyright_value_list
+
                         if len(license_expression_list) > 0:
                             license_expression_list = list(
                                 set(license_expression_list))
@@ -205,6 +243,13 @@ def parsing_scancode_32_later(
                     continue
 
                 result_item = SourceItem(file_path)
+                is_pkg, pkg_path = is_package_dir(os.path.dirname(file_path))
+                if is_pkg:
+                    result_item.source_name_or_path = pkg_path
+                    if not any(x.source_name_or_path == result_item.source_name_or_path for x in scancode_file_item):
+                        result_item.exclude = True
+                        scancode_file_item.append(result_item)
+                    continue
 
                 if has_error:
                     error_msg = file.get("scan_errors", [])
@@ -223,7 +268,6 @@ def parsing_scancode_32_later(
                         except Exception:
                             pass
                         copyright_value_list.append(copyright_data)
-                result_item.copyright = copyright_value_list
 
                 license_detected = []
                 licenses = file.get("license_detections", [])
@@ -259,6 +303,20 @@ def parsing_scancode_32_later(
                                             license_list[lic_matched_key] = lic_info
                                     license_detected.append(found_lic)
                 result_item.licenses = license_detected
+
+                result_item.exclude = is_exclude_file(file_path)
+                result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90 or is_notice_file(file_path)
+
+                if is_manifest_file(file_path) and len(license_detected) > 0:
+                    result_item.is_manifest_file = True
+
+                # Remove copyright info for license text file of GPL family
+                if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
+                    logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
+                    result_item.copyright = []
+                else:
+                    result_item.copyright = copyright_value_list
+
                 if len(license_detected) > 1:
                     license_expression_spdx = file.get("detected_license_expression_spdx", "")
                     license_expression = file.get("detected_license_expression", "")
@@ -267,8 +325,6 @@ def parsing_scancode_32_later(
                     if license_expression:
                         result_item.comment = license_expression
 
-                result_item.exclude = is_exclude_file(file_path)
-                result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90 or is_notice_file(file_path)
                 scancode_file_item.append(result_item)
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")

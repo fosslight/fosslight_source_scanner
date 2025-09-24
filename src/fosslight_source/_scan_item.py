@@ -14,6 +14,7 @@ replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "lic
 _notice_filename = ['licen[cs]e[s]?', 'notice[s]?', 'legal', 'copyright[s]?', 'copying*', 'patent[s]?', 'unlicen[cs]e', 'eula',
                     '[a,l]?gpl[-]?[1-3]?[.,-,_]?[0-1]?', 'mit', 'bsd[-]?[0-4]?', 'bsd[-]?[0-4][-]?clause[s]?',
                     'apache[-,_]?[1-2]?[.,-,_]?[0-2]?']
+_manifest_filename = [r'.*\.pom$', r'package\.json$', r'setup\.py$', r'pubspec\.yaml$', r'.*\.podspec$', r'Cargo\.toml$']
 _exclude_filename = ["changelog", "config.guess", "config.sub", "changes", "ltmain.sh",
                      "configure", "configure.ac", "depcomp", "compile", "missing", "makefile"]
 _exclude_extension = [".m4", ".in", ".po"]
@@ -21,6 +22,7 @@ _exclude_directory = ["test", "tests", "doc", "docs"]
 _exclude_directory = [os.path.sep + dir_name +
                       os.path.sep for dir_name in _exclude_directory]
 _exclude_directory.append("/.")
+_package_directory = ["node_modules", "venv", "Pods", "Carthage"]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
@@ -32,6 +34,7 @@ class SourceItem(FileItem):
         super().__init__("")
         self.source_name_or_path = value
         self.is_license_text = False
+        self.is_manifest_file = False
         self.license_reference = ""
         self.scanoss_reference = {}
         self.matched_lines = ""  # Only for SCANOSS results
@@ -96,7 +99,7 @@ class SourceItem(FileItem):
         return print_rows
 
     def __eq__(self, other: object) -> bool:
-        if type(other) == str:
+        if isinstance(other, str):
             return self.source_name_or_path == other
         else:
             return self.source_name_or_path == other.source_name_or_path
@@ -137,6 +140,21 @@ def is_exclude_file(file_path: str, prev_dir: str = None, prev_dir_exclude_value
 
 def is_notice_file(file_path: str) -> bool:
     pattern = r"({})(?<!w)".format("|".join(_notice_filename))
-    file_path = file_path.lower()
     filename = os.path.basename(file_path)
-    return bool(re.match(pattern, filename))
+    return bool(re.match(pattern, filename, re.IGNORECASE))
+
+
+def is_manifest_file(file_path: str) -> bool:
+    pattern = r"({})$".format("|".join(_manifest_filename))
+    filename = os.path.basename(file_path)
+    return bool(re.match(pattern, filename, re.IGNORECASE))
+
+
+def is_package_dir(dir_path: str) -> bool:
+    path_parts = dir_path.split(os.path.sep)
+    for pkg_dir in _package_directory:
+        if pkg_dir in path_parts:
+            pkg_index = path_parts.index(pkg_dir)
+            pkg_path = os.path.sep.join(path_parts[:pkg_index + 1])
+            return True, pkg_path
+    return False, ""

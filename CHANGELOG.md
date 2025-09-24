@@ -1,5 +1,61 @@
 # Changelog
 
+## v2.1.13 (10/09/2025)
+## Changes
+## 🔧 Maintenance
+
+- Add is_manifest_file field @dd-jy (#215)
+
+---
+
+## v2.1.12 (21/08/2025)
+## Changes
+## 🚀 Features
+
+- Exclude package dirs with directory name @dd-jy (#214)
+
+## 🔧 Maintenance
+
+- Fix scancode version for Mac @JustinWonjaePark (#213)
+
+---
+
+## v2.1.11 (21/07/2025)
+## Changes
+## 🔧 Maintenance
+
+- Remove copyright info for license text file of GPL family @JustinWonjaePark (#212)
+
+---
+
+## v2.1.10 (17/07/2025)
+## Changes
+- Recognize manifest file as License File @JustinWonjaePark (#210)
+
+## 🔧 Maintenance
+
+- Update Python support to 3.10+ and remove scanners' version limits @JustinWonjaePark (#211)
+
+---
+
+## v2.1.9 (10/07/2025)
+## Changes
+- Remove copyright from SCANOSS result @JustinWonjaePark (#209)
+
+## 🔧 Maintenance
+
+- Fix github action warning message @bjk7119 (#208)
+
+---
+
+## v2.1.8 (09/04/2025)
+## Changes
+## 🔧 Maintenance
+
+- Fix api_limit_exceed_parameter @JustinWonjaePark (#206)
+
+---
+
 ## v2.1.7 (26/02/2025)
 ## Changes
 ## 🔧 Maintenance
@@ -239,71 +295,3 @@
 ## 🐛 Hotfixes
 
 - Fix vulnerability from requirements.txt @JustinWonjaePark (#138)
-
----
-
-## v1.7.1 (31/08/2023)
-## Changes
-## 🔧 Maintenance
-
-- Priority change between Download Location extraction and scanner operation @JustinWonjaePark (#133)
-
----
-
-## v1.7.0 (14/08/2023)
-## Changes
-- Fix the bug when nothing is detected @soimkim (#134)
-
-## 🚀 Features
-
-- Load v32 and later of ScanCode @soimkim (#131)
-
-## 🔧 Maintenance
-
-- Fix the scancdoe and util version @dd-jy (#132)
-
----
-
-## v1.6.32 (03/08/2023)
-## Changes
-## 🐛 Hotfixes
-
-- Fix the util version @dd-jy (#130)
-
----
-
-## v1.6.31 (03/08/2023)
-## Changes
-## 🐛 Hotfixes
-
-- Revert the scancode-toolkit version @dd-jy (#129)
-
-## 🔧 Maintenance
-
-- Remove sorting @JustinWonjaePark (#128)
-
----
-
-## v1.6.30 (25/07/2023)
-## Changes
-## 🔧 Maintenance
-
-- Update scancode-toolkit version @dd-jy (#127)
-
----
-
-## v1.6.29 (25/07/2023)
-## Changes
-## 🚀 Features
-
-- Read download location @JustinWonjaePark (#124)
-
-## 🐛 Hotfixes
-
-- Update FOSSLight Util version @soimkim (#126)
-
-## 🔧 Maintenance
-
-- Sort the result by file and exclude attributes @JustinWonjaePark (#125)
-- Update the minimum version of util @dd-jy (#123)
-- Change the default path to find sbom-info.yaml @dd-jy (#122)

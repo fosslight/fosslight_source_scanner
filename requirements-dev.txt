@@ -2,8 +2,8 @@ tox
 pytest
 pytest-cov
 pytest-flake8
-flake8==3.9.2
+flake8
 dataclasses
 scanoss
-importlib-metadata==4.12.0
+importlib-metadata
 pytest-xdist

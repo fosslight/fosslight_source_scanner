@@ -127,6 +127,8 @@ def run_scan(
                                 result_list, key=lambda row: (''.join(row.licenses)))
 
                             for scan_item in result_list:
+                                if os.path.isdir(scan_item.source_name_or_path):
+                                    continue
                                 if check_binary(os.path.join(path_to_scan, scan_item.source_name_or_path)):
                                     scan_item.exclude = True
             except Exception as ex:
