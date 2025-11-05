@@ -6,6 +6,10 @@
 import os
 import logging
 import re
+import json
+import hashlib
+import urllib.request
+import urllib.error
 import fosslight_util.constant as constant
 from fosslight_util.oss_item import FileItem, OssItem, get_checksum_sha1
 
@@ -26,6 +30,7 @@ _package_directory = ["node_modules", "venv", "Pods", "Carthage"]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
+OSS_KB_URL = "http://10.182.104.57/query"
 
 
 class SourceItem(FileItem):
@@ -77,7 +82,53 @@ class SourceItem(FileItem):
         else:
             self._licenses = value
 
-    def set_oss_item(self) -> None:
+    def _get_md5_hash(self, path_to_scan: str = "") -> str:
+        """Extract MD5 hash value from file."""
+        try:
+            file_path = self.source_name_or_path
+            if path_to_scan and not os.path.isabs(file_path):
+                file_path = os.path.join(path_to_scan, file_path)
+            file_path = os.path.normpath(file_path)
+
+            if os.path.isfile(file_path):
+                md5_hash = hashlib.md5()
+                with open(file_path, "rb") as f:
+                    # Read file in chunks for efficient processing of large files
+                    for chunk in iter(lambda: f.read(4096), b""):
+                        md5_hash.update(chunk)
+                return md5_hash.hexdigest()
+        except FileNotFoundError:
+            logger.warning(f"File not found: {self.source_name_or_path}")
+        except PermissionError:
+            logger.warning(f"Permission denied: {self.source_name_or_path}")
+        except Exception as e:
+            logger.warning(f"Failed to compute MD5 for {self.source_name_or_path}: {e}")
+        return ""
+
+    def _get_origin_url_from_md5_hash(self, md5_hash: str) -> str:
+        try:
+            request = urllib.request.Request(OSS_KB_URL, data=json.dumps({"file_hash": md5_hash}).encode('utf-8'), method='POST')
+            request.add_header('Accept', 'application/json')
+            request.add_header('Content-Type', 'application/json')
+            
+            with urllib.request.urlopen(request, timeout=10) as response:
+                data = json.loads(response.read().decode())
+                if isinstance(data, dict):
+                    # Only extract output if return_code is 0 (success)
+                    return_code = data.get('return_code', -1)
+                    if return_code == 0:
+                        output = data.get('output', '')
+                        if output:
+                            return output
+        except urllib.error.URLError as e:
+            logger.warning(f"Failed to fetch origin_url from API for MD5 hash {md5_hash}: {e}")
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse API response for MD5 hash {md5_hash}: {e}")
+        except Exception as e:
+            logger.warning(f"Error getting origin_url for MD5 hash {md5_hash}: {e}")
+        return ""
+
+    def set_oss_item(self, path_to_scan: str = "") -> None:
         self.oss_items = []
         if self.download_location:
             for url in self.download_location:
@@ -86,9 +137,18 @@ class SourceItem(FileItem):
                 item.comment = self.comment
                 self.oss_items.append(item)
         else:
-            item = OssItem(self.oss_name, self.oss_version, self.licenses)
+            md5_hash = self._get_md5_hash(path_to_scan)
+            if md5_hash:
+                origin_url = self._get_origin_url_from_md5_hash(md5_hash)
+                if origin_url:
+                    self.download_location = [origin_url]
+                    item = OssItem(self.oss_name, self.oss_version, self.licenses, origin_url)
+                else:
+                    item = OssItem(self.oss_name, self.oss_version, self.licenses)
+            else:
+                item = OssItem(self.oss_name, self.oss_version, self.licenses)
             item.copyright = "\n".join(self.copyright)
-            item.comment = self.comment
+            item.comment = self.comment + " (md5_hash: " + md5_hash + ")" if md5_hash else self.comment
             self.oss_items.append(item)
 
     def get_print_array(self) -> list:
