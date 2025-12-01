@@ -151,10 +151,13 @@ def is_manifest_file(file_path: str) -> bool:
 
 
 def is_package_dir(dir_path: str) -> bool:
-    path_parts = dir_path.split(os.path.sep)
+    # scancode and scanoss use '/' as path separator regardless of OS
+    dir_path = dir_path.replace('\\', '/')
+    path_parts = dir_path.split('/')
+
     for pkg_dir in _package_directory:
         if pkg_dir in path_parts:
             pkg_index = path_parts.index(pkg_dir)
-            pkg_path = os.path.sep.join(path_parts[:pkg_index + 1])
+            pkg_path = '/'.join(path_parts[:pkg_index + 1])
             return True, pkg_path
     return False, ""
