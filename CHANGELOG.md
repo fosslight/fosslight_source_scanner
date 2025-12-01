@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.15 (01/12/2025)
+## Changes
+## 🐛 Hotfixes
+
+- Fix pkg dir exclude bug for windows @dd-jy (#218)
+
+---
+
 ## v2.1.14 (24/09/2025)
 ## Changes
 ## 🐛 Hotfixes
@@ -286,12 +294,3 @@
 - Upgrade minimum version of python to 3.8 @JustinWonjaePark (#144)
 - Modify run_scanners to return @soimkim (#143)
 - Fetch base-check-commit-message.yml from .github @jaehee329 (#142)
-
----
-
-## v1.7.3 (14/09/2023)
-## Changes
-## 🔧 Maintenance
-
-- Create run_scanners for api and exclude unwanted outputs @JustinWonjaePark (#140)
-- Add test for fl scanner and fl android @JustinWonjaePark (#139)
