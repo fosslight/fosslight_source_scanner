@@ -7,6 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
+from fosslight_util.get_pom_license import get_license_from_pom
 from ._license_matched import MatchedLicense
 from ._scan_item import SourceItem
 from ._scan_item import is_exclude_dir
@@ -192,8 +193,34 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                     if len(license_detected) > 0:
                         result_item.licenses = license_detected
 
-                        if is_manifest_file(file_path):
+                        detected_without_pom = []
+                        if is_manifest_file(file_path) and len(license_detected) > 0:
                             result_item.is_manifest_file = True
+                            if file_path.endswith('.pom'):
+                                try:
+                                    pom_licenses = get_license_from_pom(pom_path=file_path, check_parent=False)
+                                    normalize_pom_licenses = []
+                                    if pom_licenses:
+                                        pom_license_list = pom_licenses.split(', ')
+                                        for pom_license in pom_license_list:
+                                            if pom_license not in license_detected:
+                                                for lic_matched_key, lic_info in license_list.items():
+                                                    if hasattr(lic_info, 'matched_text') and lic_info.matched_text:
+                                                        matched_txt = str(lic_info.matched_text).replace(',', '')
+                                                        if pom_license in matched_txt:
+                                                            normalize_pom_licenses.append(lic_info.license)
+                                                            break
+                                            else:
+                                                normalize_pom_licenses.append(pom_license)
+                                    detected_without_pom = list(set(license_detected) - set(normalize_pom_licenses))
+                                    if detected_without_pom:
+                                        result_item.comment = f"Detected: {', '.join(detected_without_pom)}"
+                                        result_item.licenses = []
+                                        result_item.licenses = normalize_pom_licenses
+                                        if not normalize_pom_licenses:
+                                            result_item.exclude = True
+                                except Exception as ex:
+                                    logger.info(f"Failed to extract license from POM {file_path}: {ex}")
 
                         # Remove copyright info for license text file of GPL family
                         if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
@@ -202,7 +229,7 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                         else:
                             result_item.copyright = copyright_value_list
 
-                        if len(license_expression_list) > 0:
+                        if len(license_expression_list) > 0 and not detected_without_pom:
                             license_expression_list = list(
                                 set(license_expression_list))
                             result_item.comment = ','.join(license_expression_list)
@@ -307,8 +334,34 @@ def parsing_scancode_32_later(
                 result_item.exclude = is_exclude_file(file_path)
                 result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90 or is_notice_file(file_path)
 
+                detected_without_pom = []
                 if is_manifest_file(file_path) and len(license_detected) > 0:
                     result_item.is_manifest_file = True
+                    if file_path.endswith('.pom'):
+                        try:
+                            pom_licenses = get_license_from_pom(pom_path=file_path, check_parent=False)
+                            normalize_pom_licenses = []
+                            if pom_licenses:
+                                pom_license_list = pom_licenses.split(', ')
+                                for pom_license in pom_license_list:
+                                    if pom_license not in license_detected:
+                                        for lic_matched_key, lic_info in license_list.items():
+                                            if hasattr(lic_info, 'matched_text') and lic_info.matched_text:
+                                                matched_txt = str(lic_info.matched_text).replace(',', '')
+                                                if pom_license in matched_txt:
+                                                    normalize_pom_licenses.append(lic_info.license)
+                                                    break
+                                    else:
+                                        normalize_pom_licenses.append(pom_license)
+                            detected_without_pom = list(set(license_detected) - set(normalize_pom_licenses))
+                            if detected_without_pom:
+                                result_item.comment = f"Detected: {', '.join(detected_without_pom)}"
+                                result_item.licenses = []
+                                result_item.licenses = normalize_pom_licenses
+                                if not normalize_pom_licenses:
+                                    result_item.exclude = True
+                        except Exception as ex:
+                            logger.info(f"Failed to extract license from POM {file_path}: {ex}")
 
                 # Remove copyright info for license text file of GPL family
                 if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
@@ -317,7 +370,7 @@ def parsing_scancode_32_later(
                 else:
                     result_item.copyright = copyright_value_list
 
-                if len(license_detected) > 1:
+                if len(license_detected) > 1 and not detected_without_pom:
                     license_expression_spdx = file.get("detected_license_expression_spdx", "")
                     license_expression = file.get("detected_license_expression", "")
                     if license_expression_spdx:
