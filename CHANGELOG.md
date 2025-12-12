@@ -1,5 +1,11 @@
 # Changelog
 
+## v2.1.16 (12/12/2025)
+## Changes
+- Double-Check pom file license with license tag @dd-jy (#219)
+
+---
+
 ## v2.1.15 (01/12/2025)
 ## Changes
 ## 🐛 Hotfixes
@@ -278,19 +284,3 @@
 
 - Merge copyrights with new line @JustinWonjaePark (#147)
 - Add .in and .po to the excluded extensions @JustinWonjaePark (#146)
-
----
-
-## v1.7.4 (13/10/2023)
-## Changes
-- Optimize Dockerfile to reduce image size @jaehee329 (#136)
-
-## 🐛 Hotfixes
-
-- Modify it to work on mac ARM chip @soimkim (#145)
-
-## 🔧 Maintenance
-
-- Upgrade minimum version of python to 3.8 @JustinWonjaePark (#144)
-- Modify run_scanners to return @soimkim (#143)
-- Fetch base-check-commit-message.yml from .github @jaehee329 (#142)
