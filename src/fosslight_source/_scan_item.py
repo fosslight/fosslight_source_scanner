@@ -74,6 +74,8 @@ class SourceItem(FileItem):
                             break
             if max_length_exceed and (SUBSTRING_LICENSE_COMMENT not in self.comment):
                 self.comment = f"{self.comment}/ {SUBSTRING_LICENSE_COMMENT}" if self.comment else SUBSTRING_LICENSE_COMMENT
+        else:
+            self._licenses = value
 
     def set_oss_item(self) -> None:
         self.oss_items = []
