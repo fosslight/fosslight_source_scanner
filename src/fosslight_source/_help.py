@@ -3,8 +3,9 @@
 # Copyright (c) 2021 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 from fosslight_util.help import PrintHelpMsg, print_package_version
+from fosslight_util.output_format import SUPPORT_FORMAT
 
-_HELP_MESSAGE_SOURCE_SCANNER = """
+_HELP_MESSAGE_SOURCE_SCANNER = f"""
     FOSSLight Source Scanner Usage: fosslight_source [option1] <arg1> [option2] <arg2>...
 
     FOSSLight Source Scanner uses ScanCode and SCANOSS, the source code scanners, to detect
@@ -20,7 +21,9 @@ _HELP_MESSAGE_SOURCE_SCANNER = """
             -m\t\t\t   Print additional information for scan result on separate sheets
             -e <path>\t\t   Path to exclude from analysis (file and directory)
             -o <output_path>\t   Output path (Path or file name)
-            -f <format>\t\t   Output file formats (excel, csv, opossum, yaml). Multi formats are supported.
+            -f <format>\t\t   Output file formats
+            \t\t\t   ({', '.join(SUPPORT_FORMAT)})
+            \t\t\t   Multiple formats can be specified separated by space.
         Options only for FOSSLight Source Scanner
             -s <scanner>\t   Select which scanner to be run (scancode, scanoss, all)
             -j\t\t\t   Generate raw result of scanners in json format
