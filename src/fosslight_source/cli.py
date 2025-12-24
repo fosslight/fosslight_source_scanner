@@ -8,6 +8,8 @@ import os
 import platform
 import warnings
 import logging
+import urllib.request
+import urllib.error
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
@@ -23,7 +25,7 @@ from .run_scanoss import get_scanoss_extra_info
 import yaml
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
-from ._scan_item import SourceItem
+from ._scan_item import SourceItem, OSS_KB_URL
 from fosslight_util.oss_item import ScannerItem
 from typing import Tuple
 
@@ -34,7 +36,7 @@ SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
 MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
                                   'OSS Version', 'License', 'Download Location',
                                   'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
-SCANNER_TYPE = ['scancode', 'scanoss', 'all', '']
+SCANNER_TYPE = ['osskb', 'scancode', 'scanoss', 'all']
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -270,7 +272,23 @@ def create_report_file(
     return scan_item
 
 
-def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}, path_to_scan: str = "") -> list:
+def check_oss_kb_server_reachable() -> bool:
+    try:
+        request = urllib.request.Request(OSS_KB_URL, method='HEAD')
+        with urllib.request.urlopen(request, timeout=5) as response:
+            return response.status != 404
+    except urllib.error.HTTPError as e:
+        return e.code != 404
+    except urllib.error.URLError:
+        return False
+    except Exception:
+        return False
+
+
+def merge_results(
+    scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
+    path_to_scan: str = "", run_osskb: bool = False
+) -> list:
 
     """
     Merge scanner results and spdx parsing result.
@@ -278,6 +296,7 @@ def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_do
     :param scanoss_result: list of scanoss results in SourceItem.
     :param spdx_downloads: dictionary of spdx parsed results.
     :param path_to_scan: path to the scanned directory for constructing absolute file paths.
+    :param run_osskb: if True, load osskb result.
     :return merged_result: list of merged result in SourceItem.
     """
 
@@ -295,9 +314,15 @@ def merge_results(scancode_result: list = [], scanoss_result: list = [], spdx_do
                 new_result_item = SourceItem(file_name)
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
+    if run_osskb:
+        if check_oss_kb_server_reachable():
+            logger.info("Load data from OSS KB")
+        else:
+            logger.info(f"OSS KB server is not reachable at {OSS_KB_URL}. Skipping OSS KB lookup.")
+            run_osskb = False
 
     for item in scancode_result:
-        item.set_oss_item(path_to_scan)
+        item.set_oss_item(path_to_scan, run_osskb)
 
     return scancode_result
 
@@ -348,17 +373,20 @@ def run_scanners(
         print_matched_text = False
 
     if success:
-        if selected_scanner == 'scancode' or selected_scanner == 'all' or selected_scanner == '':
+        if not selected_scanner:
+            selected_scanner = 'all'
+        if selected_scanner in ['scancode', 'all', 'osskb']:
             success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                       write_json_file, num_cores, True,
                                                                                       print_matched_text, formats, called_by_cli,
                                                                                       time_out, correct_mode, correct_filepath)
-        if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
+        if selected_scanner in ['scanoss', 'all']:
             scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
                                                               num_cores, path_to_exclude)
         if selected_scanner in SCANNER_TYPE:
+            run_osskb = True if selected_scanner in ['osskb', 'all'] else False
             spdx_downloads = get_spdx_downloads(path_to_scan, path_to_exclude)
-            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan)
+            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan, run_osskb)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list,

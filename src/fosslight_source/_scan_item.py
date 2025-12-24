@@ -30,7 +30,7 @@ _package_directory = ["node_modules", "venv", "Pods", "Carthage"]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
-OSS_KB_URL = "http://10.182.104.57/query"
+OSS_KB_URL = "http://oss-kb.lge.com/query"
 
 
 class SourceItem(FileItem):
@@ -83,7 +83,6 @@ class SourceItem(FileItem):
             self._licenses = value
 
     def _get_md5_hash(self, path_to_scan: str = "") -> str:
-        """Extract MD5 hash value from file."""
         try:
             file_path = self.source_name_or_path
             if path_to_scan and not os.path.isabs(file_path):
@@ -93,7 +92,6 @@ class SourceItem(FileItem):
             if os.path.isfile(file_path):
                 md5_hash = hashlib.md5()
                 with open(file_path, "rb") as f:
-                    # Read file in chunks for efficient processing of large files
                     for chunk in iter(lambda: f.read(4096), b""):
                         md5_hash.update(chunk)
                 return md5_hash.hexdigest()
@@ -110,7 +108,7 @@ class SourceItem(FileItem):
             request = urllib.request.Request(OSS_KB_URL, data=json.dumps({"file_hash": md5_hash}).encode('utf-8'), method='POST')
             request.add_header('Accept', 'application/json')
             request.add_header('Content-Type', 'application/json')
-            
+
             with urllib.request.urlopen(request, timeout=10) as response:
                 data = json.loads(response.read().decode())
                 if isinstance(data, dict):
@@ -128,7 +126,42 @@ class SourceItem(FileItem):
             logger.warning(f"Error getting origin_url for MD5 hash {md5_hash}: {e}")
         return ""
 
-    def set_oss_item(self, path_to_scan: str = "") -> None:
+    def _extract_oss_info_from_url(self, url: str) -> tuple:
+        try:
+            # Pattern 1: https://github.com/{owner}/{repo}/archive/{version}.zip
+            # Pattern 2: https://github.com/{owner}/{repo}/archive/{tag}/{version}.zip
+            # Pattern 3: https://github.com/{owner}/{repo}/releases/download/{version}/{filename}
+
+            # Extract owner and repository: github.com/{owner}/{repo}/
+            repo_match = re.search(r'github\.com/([^/]+)/([^/]+)/', url)
+            if not repo_match:
+                return "", "", ""
+
+            owner = repo_match.group(1)
+            repo_name = repo_match.group(2)
+            repo_url = f"https://github.com/{owner}/{repo_name}"
+
+            # Extract version from releases pattern first: /releases/download/{version}/
+            releases_match = re.search(r'/releases/download/([^/]+)/', url)
+            if releases_match:
+                version = releases_match.group(1)
+                return repo_name, version, repo_url
+
+            # Extract version from archive pattern: /archive/{version}.zip or /archive/{tag}/{version}.zip
+            # For pattern with tag, take the last segment before .zip
+            archive_match = re.search(r'/archive/(.+?)(?:\.zip|\.tar\.gz)?(?:[?#]|$)', url)
+            if archive_match:
+                version_path = archive_match.group(1)
+                # If there's a slash, take the last part (version), otherwise take the whole thing
+                version = version_path.split('/')[-1] if '/' in version_path else version_path
+                return repo_name, version, repo_url
+
+            return repo_name, "", repo_url
+        except Exception as e:
+            logger.warning(f"Failed to extract OSS info from URL {url}: {e}")
+            return "", "", ""
+
+    def set_oss_item(self, path_to_scan: str = "", run_osskb: bool = False) -> None:
         self.oss_items = []
         if self.download_location:
             for url in self.download_location:
@@ -137,18 +170,23 @@ class SourceItem(FileItem):
                 item.comment = self.comment
                 self.oss_items.append(item)
         else:
-            md5_hash = self._get_md5_hash(path_to_scan)
-            if md5_hash:
-                origin_url = self._get_origin_url_from_md5_hash(md5_hash)
-                if origin_url:
-                    self.download_location = [origin_url]
-                    item = OssItem(self.oss_name, self.oss_version, self.licenses, origin_url)
-                else:
-                    item = OssItem(self.oss_name, self.oss_version, self.licenses)
-            else:
-                item = OssItem(self.oss_name, self.oss_version, self.licenses)
+            item = OssItem(self.oss_name, self.oss_version, self.licenses)
+            if run_osskb:
+                md5_hash = self._get_md5_hash(path_to_scan)
+                if md5_hash:
+                    origin_url = self._get_origin_url_from_md5_hash(md5_hash)
+                    if origin_url:
+                        extracted_name, extracted_version, repo_url = self._extract_oss_info_from_url(origin_url)
+                        if extracted_name:
+                            self.oss_name = extracted_name
+                        if extracted_version:
+                            self.oss_version = extracted_version
+                        download_url = repo_url if repo_url else origin_url
+                        self.download_location = [download_url]
+                        item = OssItem(self.oss_name, self.oss_version, self.licenses, download_url)
+
             item.copyright = "\n".join(self.copyright)
-            item.comment = self.comment + " (md5_hash: " + md5_hash + ")" if md5_hash else self.comment
+            item.comment = self.comment
             self.oss_items.append(item)
 
     def get_print_array(self) -> list:
