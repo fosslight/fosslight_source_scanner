@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.17 (24/12/2025)
+## Changes
+## 🔧 Maintenance
+
+- Update supported format @dd-jy (#220)
+
+---
+
 ## v2.1.16 (12/12/2025)
 ## Changes
 - Double-Check pom file license with license tag @dd-jy (#219)
@@ -275,12 +283,3 @@
 
 - Change SCANOSS thread using -c option @JustinWonjaePark (#151)
 - Remove fosslight_convert @JustinWonjaePark (#150)
-
----
-
-## v1.7.5 (19/10/2023)
-## Changes
-## 🔧 Maintenance
-
-- Merge copyrights with new line @JustinWonjaePark (#147)
-- Add .in and .po to the excluded extensions @JustinWonjaePark (#146)
