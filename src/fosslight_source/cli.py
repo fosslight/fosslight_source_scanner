@@ -351,7 +351,8 @@ def run_scanners(
             success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                       write_json_file, num_cores, True,
                                                                                       print_matched_text, formats, called_by_cli,
-                                                                                      time_out, correct_mode, correct_filepath)
+                                                                                      time_out, correct_mode, correct_filepath,
+                                                                                      path_to_exclude)
         if selected_scanner == 'scanoss' or selected_scanner == 'all' or selected_scanner == '':
             scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
                                                               num_cores, path_to_exclude)
