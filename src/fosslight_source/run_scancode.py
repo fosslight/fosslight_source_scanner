@@ -86,68 +86,44 @@ def run_scan(
                             exclude_path = os.path.relpath(path, abs_path_to_scan)
                         else:
                             exclude_path = path
-                        
+
                         exclude_path_normalized = os.path.normpath(exclude_path).replace("\\", "/")
-                        
-                        # Remove ** patterns as fnmatch doesn't support **
-                        # fnmatch only supports * (single level) and ? (single char)
+
                         if exclude_path_normalized.endswith("/**"):
-                            exclude_path_normalized = exclude_path_normalized[:-3]  # Remove "/**"
+                            exclude_path_normalized = exclude_path_normalized[:-3]
                         elif exclude_path_normalized.endswith("**"):
                             exclude_path_normalized = exclude_path_normalized.rstrip("*")
-                        
-                        # Remove leading **/ if present
+
                         if exclude_path_normalized.startswith("**/"):
                             exclude_path_normalized = exclude_path_normalized[3:]
-                        
-                        # For scancode ignore, use fnmatch patterns
-                        # For directories, use the directory name as a plain pattern
-                        # This will match the directory name at any level (is_plain=True in get_matches)
+
                         full_exclude_path = os.path.join(abs_path_to_scan, exclude_path)
                         is_dir = os.path.isdir(full_exclude_path)
                         is_file = os.path.isfile(full_exclude_path)
-                        
-                        logger.debug(f"Processing exclude path: path={path}, exclude_path={exclude_path}, full_exclude_path={full_exclude_path}, is_dir={is_dir}, is_file={is_file}, normalized={exclude_path_normalized}")
-                        
                         if is_dir:
-                            # For directories, scancode uses fnmatch which doesn't support **
-                            # We need to add patterns for multiple depth levels based on actual directory depth
-                            # Also use directory name as plain pattern for segment matching
                             dir_name = os.path.basename(exclude_path_normalized.rstrip("/"))
                             base_path = exclude_path_normalized.rstrip("/")
-                            
+
                             if dir_name:
-                                # Add the directory name as plain pattern (matches at any level)
                                 total_files_to_excluded.append(dir_name)
-                                
-                                # Calculate actual maximum depth of the directory
                                 max_depth = 0
                                 for root, dirs, files in os.walk(full_exclude_path):
-                                    # Calculate depth relative to the exclude directory
                                     depth = root[len(full_exclude_path):].count(os.sep)
                                     max_depth = max(max_depth, depth)
-                                
-                                # Add patterns for files at different depths up to the actual max depth
-                                # Note: fnmatch * only matches one level, so we need multiple patterns
-                                for depth in range(1, max_depth + 2):  # +2 to include files at max_depth and one level deeper
+                                for depth in range(1, max_depth + 2):
                                     pattern = base_path + "/*" * depth
                                     total_files_to_excluded.append(pattern)
-                                
-                                logger.debug(f"Directory {exclude_path_normalized} has max depth {max_depth}, added patterns up to depth {max_depth + 1}")
                             else:
                                 total_files_to_excluded.append(exclude_path_normalized)
                         elif is_file:
-                            # For files, use the exact path
                             total_files_to_excluded.append(exclude_path_normalized)
                         else:
-                            # Path doesn't exist, use as pattern
-                            # Try to extract directory name if it looks like a path
                             if "/" in exclude_path_normalized:
                                 dir_name = os.path.basename(exclude_path_normalized.rstrip("/"))
                                 if dir_name:
                                     total_files_to_excluded.append(dir_name)
                             total_files_to_excluded.append(exclude_path_normalized)
-                
+
                 total_files_to_excluded = sorted(list(set(total_files_to_excluded)))
                 ignore_tuple = tuple(total_files_to_excluded)
                 rc, results = cli.run_scan(path_to_scan, max_depth=100,
