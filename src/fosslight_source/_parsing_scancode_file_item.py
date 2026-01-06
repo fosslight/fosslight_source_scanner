@@ -19,10 +19,6 @@ from ._scan_item import is_package_dir
 from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
-_exclude_directory = ["test", "tests", "doc", "docs"]
-_exclude_directory = [os.path.sep + dir_name +
-                      os.path.sep for dir_name in _exclude_directory]
-_exclude_directory.append("/.")
 REMOVE_LICENSE = ["warranty-disclaimer"]
 regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
 find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
