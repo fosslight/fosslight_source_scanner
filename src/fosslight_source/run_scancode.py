@@ -45,7 +45,6 @@ def run_scan(
 
     if not correct_filepath:
         correct_filepath = path_to_scan
-
     success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, formats)
     if success:
         if output_path == "":  # if json output with _write_json_file not used, output_path won't be needed.
@@ -80,31 +79,60 @@ def run_scan(
                 pretty_params["path_to_exclude"] = path_to_exclude
                 pretty_params["output_file"] = output_file_name
                 total_files_to_excluded = []
-
                 if path_to_exclude:
-                    target_path = os.path.basename(path_to_scan) if os.path.isabs(path_to_scan) else path_to_scan
-
+                    abs_path_to_scan = os.path.abspath(path_to_scan)
                     for path in path_to_exclude:
-                        exclude_path = path
-                        isabs_exclude = os.path.isabs(path)
-                        if isabs_exclude:
-                            exclude_path = os.path.relpath(path, os.path.abspath(path_to_scan))
+                        if os.path.isabs(path):
+                            exclude_path = os.path.relpath(path, abs_path_to_scan)
+                        else:
+                            exclude_path = path
 
-                        exclude_path = os.path.join(target_path, exclude_path)
-                        if os.path.isdir(exclude_path):
-                            for root, _, files in os.walk(exclude_path):
-                                total_files_to_excluded.extend([os.path.normpath(os.path.join(root, file)).replace("\\", "/")
-                                                                for file in files])
-                        elif os.path.isfile(exclude_path):
-                            total_files_to_excluded.append(os.path.normpath(exclude_path).replace("\\", "/"))
+                        exclude_path_normalized = os.path.normpath(exclude_path).replace("\\", "/")
 
+                        if exclude_path_normalized.endswith("/**"):
+                            exclude_path_normalized = exclude_path_normalized[:-3]
+                        elif exclude_path_normalized.endswith("**"):
+                            exclude_path_normalized = exclude_path_normalized.rstrip("*")
+
+                        if exclude_path_normalized.startswith("**/"):
+                            exclude_path_normalized = exclude_path_normalized[3:]
+
+                        full_exclude_path = os.path.join(abs_path_to_scan, exclude_path)
+                        is_dir = os.path.isdir(full_exclude_path)
+                        is_file = os.path.isfile(full_exclude_path)
+                        if is_dir:
+                            dir_name = os.path.basename(exclude_path_normalized.rstrip("/"))
+                            base_path = exclude_path_normalized.rstrip("/")
+
+                            if dir_name:
+                                total_files_to_excluded.append(dir_name)
+                                max_depth = 0
+                                for root, dirs, files in os.walk(full_exclude_path):
+                                    depth = root[len(full_exclude_path):].count(os.sep)
+                                    max_depth = max(max_depth, depth)
+                                for depth in range(1, max_depth + 2):
+                                    pattern = base_path + "/*" * depth
+                                    total_files_to_excluded.append(pattern)
+                            else:
+                                total_files_to_excluded.append(exclude_path_normalized)
+                        elif is_file:
+                            total_files_to_excluded.append(exclude_path_normalized)
+                        else:
+                            if "/" in exclude_path_normalized:
+                                dir_name = os.path.basename(exclude_path_normalized.rstrip("/"))
+                                if dir_name:
+                                    total_files_to_excluded.append(dir_name)
+                            total_files_to_excluded.append(exclude_path_normalized)
+
+                total_files_to_excluded = sorted(list(set(total_files_to_excluded)))
+                ignore_tuple = tuple(total_files_to_excluded)
                 rc, results = cli.run_scan(path_to_scan, max_depth=100,
                                            strip_root=True, license=True,
                                            copyright=True, return_results=True,
                                            processes=num_cores, pretty_params=pretty_params,
                                            output_json_pp=output_json_file, only_findings=True,
                                            license_text=True, url=True, timeout=time_out,
-                                           include=(), ignore=tuple(total_files_to_excluded))
+                                           include=(), ignore=ignore_tuple)
                 if not rc:
                     msg = "Source code analysis failed."
                     success = False
