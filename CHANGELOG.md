@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.1.19 (07/01/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Update fosslight_util minimun version @dd-jy (#225)
+
+---
+
 ## v2.1.18 (07/01/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -271,15 +279,3 @@
 
 - Modify column name @bjk7119 (#156)
 - Change column name for SCANOSS reference @JustinWonjaePark (#155)
-
----
-
-## v1.7.7 (26/04/2024)
-## Changes
-## 🚀 Features
-
-- Add detection summary message (cover sheet) @dd-jy (#153)
-
-## 🔧 Maintenance
-
-- Check notice file name for scancode @JustinWonjaePark (#152)
