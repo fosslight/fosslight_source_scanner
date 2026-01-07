@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.1.18 (07/01/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Improve path exclusion handling in scancode @soimkim (#222)
+
+## 🔧 Maintenance
+
+- Add how to use -e option @bjk7119 (#223)
+- Exclude default paths from ScanCode @soimkim (#224)
+
+---
+
 ## v2.1.17 (24/12/2025)
 ## Changes
 ## 🔧 Maintenance
@@ -270,16 +283,3 @@
 ## 🔧 Maintenance
 
 - Check notice file name for scancode @JustinWonjaePark (#152)
-
----
-
-## v1.7.6 (29/02/2024)
-## Changes
-## 🐛 Hotfixes
-
-- Fix cli_test log path @JustinWonjaePark (#148)
-
-## 🔧 Maintenance
-
-- Change SCANOSS thread using -c option @JustinWonjaePark (#151)
-- Remove fosslight_convert @JustinWonjaePark (#150)
