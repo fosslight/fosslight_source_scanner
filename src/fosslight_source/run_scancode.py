@@ -14,8 +14,6 @@ import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
-from ._scan_item import _package_directory
-from ._scan_item import is_exclude_dir
 from fosslight_util.output_format import check_output_formats_v2
 from fosslight_binary.binary_analysis import check_binary
 from typing import Tuple
@@ -23,26 +21,6 @@ from typing import Tuple
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
-
-
-def get_excluded_paths(path_to_scan: str) -> list:
-    path_to_exclude = []
-    abs_path_to_scan = os.path.abspath(path_to_scan)
-
-    for root, dirs, files in os.walk(path_to_scan):
-        for dir_name in dirs:
-            dir_path = os.path.join(root, dir_name)
-            if is_exclude_dir(dir_path):
-                rel_path = os.path.relpath(dir_path, abs_path_to_scan)
-                if rel_path not in path_to_exclude:
-                    path_to_exclude.append(rel_path)
-            else:
-                if dir_name in _package_directory:
-                    rel_path = os.path.relpath(dir_path, abs_path_to_scan)
-                    if rel_path not in path_to_exclude:
-                        path_to_exclude.append(rel_path)
-
-    return path_to_exclude
 
 
 def run_scan(
@@ -96,7 +74,6 @@ def run_scan(
         if os.path.isdir(path_to_scan):
             try:
                 time_out = float(time_out)
-                path_to_exclude = path_to_exclude + get_excluded_paths(path_to_scan)
                 logger.debug(f"Skipped by Scancode: {path_to_exclude}")
                 pretty_params = {}
                 pretty_params["path_to_scan"] = path_to_scan
