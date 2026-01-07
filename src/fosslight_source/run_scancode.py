@@ -74,6 +74,7 @@ def run_scan(
         if os.path.isdir(path_to_scan):
             try:
                 time_out = float(time_out)
+                logger.debug(f"Skipped by Scancode: {path_to_exclude}")
                 pretty_params = {}
                 pretty_params["path_to_scan"] = path_to_scan
                 pretty_params["path_to_exclude"] = path_to_exclude

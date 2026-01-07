@@ -108,7 +108,7 @@ class SourceItem(FileItem):
 
 
 def is_exclude_dir(dir_path: str) -> bool:
-    if dir_path != "":
+    if dir_path:
         dir_path = dir_path.lower()
         dir_path = dir_path if dir_path.endswith(
             os.path.sep) else dir_path + os.path.sep
@@ -163,3 +163,21 @@ def is_package_dir(dir_path: str) -> bool:
             pkg_path = '/'.join(path_parts[:pkg_index + 1])
             return True, pkg_path
     return False, ""
+
+
+def get_excluded_paths(path_to_scan: str, custom_excluded_paths: list = []) -> list:
+    path_to_exclude = custom_excluded_paths.copy()
+    abs_path_to_scan = os.path.abspath(path_to_scan)
+
+    for root, dirs, files in os.walk(path_to_scan):
+        for dir_name in dirs:
+            dir_path = os.path.join(root, dir_name)
+            rel_path = os.path.relpath(dir_path, abs_path_to_scan)
+            if dir_name in _package_directory:
+                if rel_path not in path_to_exclude:
+                    path_to_exclude.append(rel_path)
+            elif is_exclude_dir(rel_path):
+                if rel_path not in path_to_exclude:
+                    path_to_exclude.append(rel_path)
+
+    return path_to_exclude
