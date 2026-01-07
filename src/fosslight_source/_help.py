@@ -19,7 +19,9 @@ _HELP_MESSAGE_SOURCE_SCANNER = f"""
             -h\t\t\t   Print help message
             -v\t\t\t   Print FOSSLight Source Scanner version
             -m\t\t\t   Print additional information for scan result on separate sheets
-            -e <path>\t\t   Path to exclude from analysis (file and directory)
+            -e <path>\t\t   Path to exclude from analysis (files and directories)
+            \t\t\t   * IMPORTANT: Always wrap patterns in double quotes ("") to avoid shell expansion.
+            \t\t\t     Example) fosslight_source -e "dev/" "tests/"
             -o <output_path>\t   Output path (Path or file name)
             -f <format>\t\t   Output file formats
             \t\t\t   ({', '.join(SUPPORT_FORMAT)})
