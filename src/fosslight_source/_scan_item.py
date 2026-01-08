@@ -6,6 +6,10 @@
 import os
 import logging
 import re
+import json
+import hashlib
+import urllib.request
+import urllib.error
 import fosslight_util.constant as constant
 from fosslight_util.oss_item import FileItem, OssItem, get_checksum_sha1
 
@@ -26,6 +30,7 @@ _package_directory = ["node_modules", "venv", "Pods", "Carthage"]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
+OSS_KB_URL = "http://oss-kb.lge.com/query"
 
 
 class SourceItem(FileItem):
@@ -77,7 +82,90 @@ class SourceItem(FileItem):
         else:
             self._licenses = value
 
-    def set_oss_item(self) -> None:
+    def _get_md5_hash(self, path_to_scan: str = "") -> str:
+        try:
+            file_path = self.source_name_or_path
+            if path_to_scan and not os.path.isabs(file_path):
+                file_path = os.path.join(path_to_scan, file_path)
+            file_path = os.path.normpath(file_path)
+
+            if os.path.isfile(file_path):
+                md5_hash = hashlib.md5()
+                with open(file_path, "rb") as f:
+                    for chunk in iter(lambda: f.read(4096), b""):
+                        md5_hash.update(chunk)
+                return md5_hash.hexdigest()
+        except FileNotFoundError:
+            logger.warning(f"File not found: {self.source_name_or_path}")
+        except PermissionError:
+            logger.warning(f"Permission denied: {self.source_name_or_path}")
+        except Exception as e:
+            logger.warning(f"Failed to compute MD5 for {self.source_name_or_path}: {e}")
+        return ""
+
+    def _get_origin_url_from_md5_hash(self, md5_hash: str) -> str:
+        try:
+            request = urllib.request.Request(OSS_KB_URL, data=json.dumps({"file_hash": md5_hash}).encode('utf-8'), method='POST')
+            request.add_header('Accept', 'application/json')
+            request.add_header('Content-Type', 'application/json')
+
+            with urllib.request.urlopen(request, timeout=10) as response:
+                data = json.loads(response.read().decode())
+                if isinstance(data, dict):
+                    # Only extract output if return_code is 0 (success)
+                    return_code = data.get('return_code', -1)
+                    if return_code == 0:
+                        output = data.get('output', '')
+                        if output:
+                            return output
+        except urllib.error.URLError as e:
+            logger.warning(f"Failed to fetch origin_url from API for MD5 hash {md5_hash}: {e}")
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse API response for MD5 hash {md5_hash}: {e}")
+        except Exception as e:
+            logger.warning(f"Error getting origin_url for MD5 hash {md5_hash}: {e}")
+        return ""
+
+    def _extract_oss_info_from_url(self, url: str) -> tuple:
+        """
+        Extract OSS name, version, and repository URL from GitHub URL.
+
+        Supported patterns:
+        - https://github.com/{owner}/{repo}/archive/{version}.zip
+        - https://github.com/{owner}/{repo}/archive/{tag}/{version}.zip
+        - https://github.com/{owner}/{repo}/releases/download/{version}/{filename}
+
+        :param url: GitHub URL to extract information from
+        :return: tuple of (repo_name, version, repo_url)
+        """
+        try:
+            repo_match = re.search(r'github\.com/([^/]+)/([^/]+)/', url)
+            if not repo_match:
+                return "", "", ""
+
+            owner = repo_match.group(1)
+            repo_name = repo_match.group(2)
+            repo_url = f"https://github.com/{owner}/{repo_name}"
+            version = ""
+            # Extract version from releases pattern first: /releases/download/{version}/
+            releases_match = re.search(r'/releases/download/([^/]+)/', url)
+            if releases_match:
+                version = releases_match.group(1)
+            else:
+                # Extract version from archive pattern: /archive/{version}.zip or /archive/{tag}/{version}.zip
+                # For pattern with tag, take the last segment before .zip
+                archive_match = re.search(r'/archive/(.+?)(?:\.zip|\.tar\.gz)?(?:[?#]|$)', url)
+                if archive_match:
+                    version_path = archive_match.group(1)
+                    version = version_path.split('/')[-1] if '/' in version_path else version_path
+            if re.match(r'^[0-9a-f]{7,40}$', version, re.IGNORECASE):
+                version = ""
+            return repo_name, version, repo_url
+        except Exception as e:
+            logger.debug(f"Failed to extract OSS info from URL {url}: {e}")
+            return "", "", ""
+
+    def set_oss_item(self, path_to_scan: str = "", run_osskb: bool = False) -> None:
         self.oss_items = []
         if self.download_location:
             for url in self.download_location:
@@ -87,6 +175,20 @@ class SourceItem(FileItem):
                 self.oss_items.append(item)
         else:
             item = OssItem(self.oss_name, self.oss_version, self.licenses)
+            if run_osskb and not self.is_license_text:
+                md5_hash = self._get_md5_hash(path_to_scan)
+                if md5_hash:
+                    origin_url = self._get_origin_url_from_md5_hash(md5_hash)
+                    if origin_url:
+                        extracted_name, extracted_version, repo_url = self._extract_oss_info_from_url(origin_url)
+                        if extracted_name:
+                            self.oss_name = extracted_name
+                        if extracted_version:
+                            self.oss_version = extracted_version
+                        download_url = repo_url if repo_url else origin_url
+                        self.download_location = [download_url]
+                        item = OssItem(self.oss_name, self.oss_version, self.licenses, download_url)
+
             item.copyright = "\n".join(self.copyright)
             item.comment = self.comment
             self.oss_items.append(item)
