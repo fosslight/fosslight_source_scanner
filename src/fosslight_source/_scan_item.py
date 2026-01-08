@@ -127,12 +127,18 @@ class SourceItem(FileItem):
         return ""
 
     def _extract_oss_info_from_url(self, url: str) -> tuple:
-        try:
-            # Pattern 1: https://github.com/{owner}/{repo}/archive/{version}.zip
-            # Pattern 2: https://github.com/{owner}/{repo}/archive/{tag}/{version}.zip
-            # Pattern 3: https://github.com/{owner}/{repo}/releases/download/{version}/{filename}
+        """
+        Extract OSS name, version, and repository URL from GitHub URL.
 
-            # Extract owner and repository: github.com/{owner}/{repo}/
+        Supported patterns:
+        - https://github.com/{owner}/{repo}/archive/{version}.zip
+        - https://github.com/{owner}/{repo}/archive/{tag}/{version}.zip
+        - https://github.com/{owner}/{repo}/releases/download/{version}/{filename}
+
+        :param url: GitHub URL to extract information from
+        :return: tuple of (repo_name, version, repo_url)
+        """
+        try:
             repo_match = re.search(r'github\.com/([^/]+)/([^/]+)/', url)
             if not repo_match:
                 return "", "", ""
@@ -140,25 +146,23 @@ class SourceItem(FileItem):
             owner = repo_match.group(1)
             repo_name = repo_match.group(2)
             repo_url = f"https://github.com/{owner}/{repo_name}"
-
+            version = ""
             # Extract version from releases pattern first: /releases/download/{version}/
             releases_match = re.search(r'/releases/download/([^/]+)/', url)
             if releases_match:
                 version = releases_match.group(1)
-                return repo_name, version, repo_url
-
-            # Extract version from archive pattern: /archive/{version}.zip or /archive/{tag}/{version}.zip
-            # For pattern with tag, take the last segment before .zip
-            archive_match = re.search(r'/archive/(.+?)(?:\.zip|\.tar\.gz)?(?:[?#]|$)', url)
-            if archive_match:
-                version_path = archive_match.group(1)
-                # If there's a slash, take the last part (version), otherwise take the whole thing
-                version = version_path.split('/')[-1] if '/' in version_path else version_path
-                return repo_name, version, repo_url
-
-            return repo_name, "", repo_url
+            else:
+                # Extract version from archive pattern: /archive/{version}.zip or /archive/{tag}/{version}.zip
+                # For pattern with tag, take the last segment before .zip
+                archive_match = re.search(r'/archive/(.+?)(?:\.zip|\.tar\.gz)?(?:[?#]|$)', url)
+                if archive_match:
+                    version_path = archive_match.group(1)
+                    version = version_path.split('/')[-1] if '/' in version_path else version_path
+            if re.match(r'^[0-9a-f]{7,40}$', version, re.IGNORECASE):
+                version = ""
+            return repo_name, version, repo_url
         except Exception as e:
-            logger.warning(f"Failed to extract OSS info from URL {url}: {e}")
+            logger.debug(f"Failed to extract OSS info from URL {url}: {e}")
             return "", "", ""
 
     def set_oss_item(self, path_to_scan: str = "", run_osskb: bool = False) -> None:

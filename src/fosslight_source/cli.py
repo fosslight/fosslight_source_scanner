@@ -275,6 +275,7 @@ def check_oss_kb_server_reachable() -> bool:
     try:
         request = urllib.request.Request(OSS_KB_URL, method='HEAD')
         with urllib.request.urlopen(request, timeout=5) as response:
+            logger.debug(f"OSS KB server is reachable. Response status: {response.status}")
             return response.status != 404
     except urllib.error.HTTPError as e:
         return e.code != 404
@@ -299,7 +300,6 @@ def merge_results(
     :return merged_result: list of merged result in SourceItem.
     """
 
-    # If anything that is found at SCANOSS only exist, add it to result.
     scancode_result.extend([item for item in scanoss_result if item not in scancode_result])
 
     # If download loc. in SPDX form found, overwrite the scanner result.
@@ -313,12 +313,12 @@ def merge_results(
                 new_result_item = SourceItem(file_name)
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
+    if run_osskb and not check_oss_kb_server_reachable():
+        run_osskb = False
     if run_osskb:
-        if check_oss_kb_server_reachable():
-            logger.info("Load data from OSS KB")
-        else:
-            logger.info(f"OSS KB server is not reachable at {OSS_KB_URL}. Skipping OSS KB lookup.")
-            run_osskb = False
+        logger.info("OSS KB server is reachable. Loading data from OSS KB.")
+    else:
+        logger.info(f"Skipping OSS KB lookup.")
 
     for item in scancode_result:
         item.set_oss_item(path_to_scan, run_osskb)
@@ -372,6 +372,7 @@ def run_scanners(
         print_matched_text = False
 
     if success:
+        excluded_path_with_default_exclusion = get_excluded_paths(path_to_scan, path_to_exclude)
         if not selected_scanner:
             selected_scanner = 'all'
         if selected_scanner in ['scancode', 'all', 'osskb']:
