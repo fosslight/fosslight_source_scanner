@@ -26,7 +26,7 @@ from .run_scanoss import get_scanoss_extra_info
 import yaml
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
-from ._scan_item import SourceItem, OSS_KB_URL
+from ._scan_item import SourceItem, KB_URL
 from fosslight_util.oss_item import ScannerItem
 from typing import Tuple
 
@@ -37,7 +37,7 @@ SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
 MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
                                   'OSS Version', 'License', 'Download Location',
                                   'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
-SCANNER_TYPE = ['osskb', 'scancode', 'scanoss', 'all']
+SCANNER_TYPE = ['kb', 'scancode', 'scanoss', 'all']
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -271,11 +271,11 @@ def create_report_file(
     return scan_item
 
 
-def check_oss_kb_server_reachable() -> bool:
+def check_kb_server_reachable() -> bool:
     try:
-        request = urllib.request.Request(OSS_KB_URL, method='HEAD')
+        request = urllib.request.Request(KB_URL, method='HEAD')
         with urllib.request.urlopen(request, timeout=5) as response:
-            logger.debug(f"OSS KB server is reachable. Response status: {response.status}")
+            logger.debug(f"KB server is reachable. Response status: {response.status}")
             return response.status != 404
     except urllib.error.HTTPError as e:
         return e.code != 404
@@ -287,7 +287,7 @@ def check_oss_kb_server_reachable() -> bool:
 
 def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
-    path_to_scan: str = "", run_osskb: bool = False
+    path_to_scan: str = "", run_kb: bool = False
 ) -> list:
 
     """
@@ -296,7 +296,7 @@ def merge_results(
     :param scanoss_result: list of scanoss results in SourceItem.
     :param spdx_downloads: dictionary of spdx parsed results.
     :param path_to_scan: path to the scanned directory for constructing absolute file paths.
-    :param run_osskb: if True, load osskb result.
+    :param run_kb: if True, load kb result.
     :return merged_result: list of merged result in SourceItem.
     """
 
@@ -313,15 +313,15 @@ def merge_results(
                 new_result_item = SourceItem(file_name)
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
-    if run_osskb and not check_oss_kb_server_reachable():
-        run_osskb = False
-    if run_osskb:
-        logger.info("OSS KB server is reachable. Loading data from OSS KB.")
+    if run_kb and not check_kb_server_reachable():
+        run_kb = False
+    if run_kb:
+        logger.info("KB server is reachable. Loading data from OSS KB.")
     else:
-        logger.info("Skipping OSS KB lookup.")
+        logger.info("Skipping KB lookup.")
 
     for item in scancode_result:
-        item.set_oss_item(path_to_scan, run_osskb)
+        item.set_oss_item(path_to_scan, run_kb)
 
     return scancode_result
 
@@ -373,9 +373,10 @@ def run_scanners(
 
     if success:
         excluded_path_with_default_exclusion = get_excluded_paths(path_to_scan, path_to_exclude)
+        logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
         if not selected_scanner:
             selected_scanner = 'all'
-        if selected_scanner in ['scancode', 'all', 'osskb']:
+        if selected_scanner in ['scancode', 'all', 'kb']:
             success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                       write_json_file, num_cores, True,
                                                                                       print_matched_text, formats, called_by_cli,
@@ -385,9 +386,9 @@ def run_scanners(
             scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
                                                               num_cores, excluded_path_with_default_exclusion)
         if selected_scanner in SCANNER_TYPE:
-            run_osskb = True if selected_scanner in ['osskb', 'all'] else False
+            run_kb = True if selected_scanner in ['kb', 'all'] else False
             spdx_downloads = get_spdx_downloads(path_to_scan, excluded_path_with_default_exclusion)
-            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan, run_osskb)
+            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan, run_kb)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list,

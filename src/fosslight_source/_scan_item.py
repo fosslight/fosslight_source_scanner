@@ -30,7 +30,7 @@ _package_directory = ["node_modules", "venv", "Pods", "Carthage"]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
-OSS_KB_URL = "http://oss-kb.lge.com/query"
+KB_URL = "http://fosslight-kb.lge.com/query"
 
 
 class SourceItem(FileItem):
@@ -105,7 +105,7 @@ class SourceItem(FileItem):
 
     def _get_origin_url_from_md5_hash(self, md5_hash: str) -> str:
         try:
-            request = urllib.request.Request(OSS_KB_URL, data=json.dumps({"file_hash": md5_hash}).encode('utf-8'), method='POST')
+            request = urllib.request.Request(KB_URL, data=json.dumps({"file_hash": md5_hash}).encode('utf-8'), method='POST')
             request.add_header('Accept', 'application/json')
             request.add_header('Content-Type', 'application/json')
 
@@ -165,7 +165,7 @@ class SourceItem(FileItem):
             logger.debug(f"Failed to extract OSS info from URL {url}: {e}")
             return "", "", ""
 
-    def set_oss_item(self, path_to_scan: str = "", run_osskb: bool = False) -> None:
+    def set_oss_item(self, path_to_scan: str = "", run_kb: bool = False) -> None:
         self.oss_items = []
         if self.download_location:
             for url in self.download_location:
@@ -175,7 +175,7 @@ class SourceItem(FileItem):
                 self.oss_items.append(item)
         else:
             item = OssItem(self.oss_name, self.oss_version, self.licenses)
-            if run_osskb and not self.is_license_text:
+            if run_kb and not self.is_license_text:
                 md5_hash = self._get_md5_hash(path_to_scan)
                 if md5_hash:
                     origin_url = self._get_origin_url_from_md5_hash(md5_hash)
@@ -267,6 +267,15 @@ def is_package_dir(dir_path: str) -> bool:
     return False, ""
 
 
+def _has_parent_in_exclude_list(rel_path: str, path_to_exclude: list) -> bool:
+    path_parts = rel_path.replace('\\', '/').split('/')
+    for i in range(1, len(path_parts)):
+        parent_path = '/'.join(path_parts[:i])
+        if parent_path in path_to_exclude:
+            return True
+    return False
+
+
 def get_excluded_paths(path_to_scan: str, custom_excluded_paths: list = []) -> list:
     path_to_exclude = custom_excluded_paths.copy()
     abs_path_to_scan = os.path.abspath(path_to_scan)
@@ -275,11 +284,10 @@ def get_excluded_paths(path_to_scan: str, custom_excluded_paths: list = []) -> l
         for dir_name in dirs:
             dir_path = os.path.join(root, dir_name)
             rel_path = os.path.relpath(dir_path, abs_path_to_scan)
-            if dir_name in _package_directory:
-                if rel_path not in path_to_exclude:
+            if not _has_parent_in_exclude_list(rel_path, path_to_exclude):
+                if dir_name in _package_directory:
                     path_to_exclude.append(rel_path)
-            elif is_exclude_dir(rel_path):
-                if rel_path not in path_to_exclude:
+                elif is_exclude_dir(rel_path):
                     path_to_exclude.append(rel_path)
 
     return path_to_exclude
