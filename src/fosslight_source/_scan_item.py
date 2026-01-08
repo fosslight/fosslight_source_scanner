@@ -30,7 +30,7 @@ _package_directory = ["node_modules", "venv", "Pods", "Carthage"]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
-OSS_KB_URL = "http://oss-kb.lge.com/query"
+KB_URL = "http://fosslight-kb.lge.com/query"
 
 
 class SourceItem(FileItem):
@@ -105,7 +105,7 @@ class SourceItem(FileItem):
 
     def _get_origin_url_from_md5_hash(self, md5_hash: str) -> str:
         try:
-            request = urllib.request.Request(OSS_KB_URL, data=json.dumps({"file_hash": md5_hash}).encode('utf-8'), method='POST')
+            request = urllib.request.Request(KB_URL, data=json.dumps({"file_hash": md5_hash}).encode('utf-8'), method='POST')
             request.add_header('Accept', 'application/json')
             request.add_header('Content-Type', 'application/json')
 
@@ -165,7 +165,7 @@ class SourceItem(FileItem):
             logger.debug(f"Failed to extract OSS info from URL {url}: {e}")
             return "", "", ""
 
-    def set_oss_item(self, path_to_scan: str = "", run_osskb: bool = False) -> None:
+    def set_oss_item(self, path_to_scan: str = "", run_kb: bool = False) -> None:
         self.oss_items = []
         if self.download_location:
             for url in self.download_location:
@@ -175,7 +175,7 @@ class SourceItem(FileItem):
                 self.oss_items.append(item)
         else:
             item = OssItem(self.oss_name, self.oss_version, self.licenses)
-            if run_osskb and not self.is_license_text:
+            if run_kb and not self.is_license_text:
                 md5_hash = self._get_md5_hash(path_to_scan)
                 if md5_hash:
                     origin_url = self._get_origin_url_from_md5_hash(md5_hash)
