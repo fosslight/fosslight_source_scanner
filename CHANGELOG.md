@@ -1,5 +1,34 @@
 # Changelog
 
+## v2.1.19 (07/01/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Update fosslight_util minimun version @dd-jy (#225)
+
+---
+
+## v2.1.18 (07/01/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Improve path exclusion handling in scancode @soimkim (#222)
+
+## 🔧 Maintenance
+
+- Add how to use -e option @bjk7119 (#223)
+- Exclude default paths from ScanCode @soimkim (#224)
+
+---
+
+## v2.1.17 (24/12/2025)
+## Changes
+## 🔧 Maintenance
+
+- Update supported format @dd-jy (#220)
+
+---
+
 ## v2.1.16 (12/12/2025)
 ## Changes
 - Double-Check pom file license with license tag @dd-jy (#219)
@@ -250,37 +279,3 @@
 
 - Modify column name @bjk7119 (#156)
 - Change column name for SCANOSS reference @JustinWonjaePark (#155)
-
----
-
-## v1.7.7 (26/04/2024)
-## Changes
-## 🚀 Features
-
-- Add detection summary message (cover sheet) @dd-jy (#153)
-
-## 🔧 Maintenance
-
-- Check notice file name for scancode @JustinWonjaePark (#152)
-
----
-
-## v1.7.6 (29/02/2024)
-## Changes
-## 🐛 Hotfixes
-
-- Fix cli_test log path @JustinWonjaePark (#148)
-
-## 🔧 Maintenance
-
-- Change SCANOSS thread using -c option @JustinWonjaePark (#151)
-- Remove fosslight_convert @JustinWonjaePark (#150)
-
----
-
-## v1.7.5 (19/10/2023)
-## Changes
-## 🔧 Maintenance
-
-- Merge copyrights with new line @JustinWonjaePark (#147)
-- Add .in and .po to the excluded extensions @JustinWonjaePark (#146)

@@ -20,6 +20,7 @@ from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats_v2, write_output_file
 from fosslight_util.correct import correct_with_yaml
 from .run_scancode import run_scan
+from ._scan_item import get_excluded_paths
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
@@ -208,10 +209,8 @@ def create_report_file(
 
     scan_item = ScannerItem(PKG_NAME, _start_time)
     scan_item.set_cover_pathinfo(path_to_scan, path_to_exclude)
-    files_count, removed_files_count = count_files(path_to_scan, path_to_exclude)
-
-    scan_item.set_cover_comment(f"Total number of files : {files_count}")
-    scan_item.set_cover_comment(f"Removed files : {removed_files_count}")
+    files_count, _ = count_files(path_to_scan, path_to_exclude)
+    scan_item.set_cover_comment(f"Scanned files: {files_count}")
 
     if api_limit_exceed:
         scan_item.set_cover_comment("(Some of) SCANOSS scan was skipped. (API limits being exceeded)")
@@ -379,13 +378,14 @@ def run_scanners(
             success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                       write_json_file, num_cores, True,
                                                                                       print_matched_text, formats, called_by_cli,
-                                                                                      time_out, correct_mode, correct_filepath)
+                                                                                      time_out, correct_mode, correct_filepath,
+                                                                                      excluded_path_with_default_exclusion)
         if selected_scanner in ['scanoss', 'all']:
             scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
-                                                              num_cores, path_to_exclude)
+                                                              num_cores, excluded_path_with_default_exclusion)
         if selected_scanner in SCANNER_TYPE:
             run_osskb = True if selected_scanner in ['osskb', 'all'] else False
-            spdx_downloads = get_spdx_downloads(path_to_scan, path_to_exclude)
+            spdx_downloads = get_spdx_downloads(path_to_scan, excluded_path_with_default_exclusion)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan, run_osskb)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
