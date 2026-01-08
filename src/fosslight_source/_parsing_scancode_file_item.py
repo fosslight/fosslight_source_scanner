@@ -371,7 +371,7 @@ def parsing_scancode_32_later(
                     license_expression = file.get("detected_license_expression", "")
                     if license_expression_spdx:
                         license_expression = license_expression_spdx
-                    if license_expression:
+                    if license_expression and "OR" in license_expression:
                         result_item.comment = license_expression
 
                 scancode_file_item.append(result_item)
