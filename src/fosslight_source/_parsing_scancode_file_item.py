@@ -29,6 +29,14 @@ SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
 GPL_LICENSE_PATTERN = r'((a|l)?gpl|gfdl)'  # GPL, LGPL, AGPL, GFDL
+SOURCE_EXTENSIONS = [
+    '.java', '.cpp', '.c', '.cc', '.cxx', '.c++', '.h', '.hh', '.hpp', '.hxx', '.h++',
+    '.cs', '.py', '.pyw', '.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx',
+    '.go', '.rs', '.rb', '.php', '.swift', '.kt', '.kts', '.scala', '.sc',
+    '.m', '.mm', '.dart', '.lua', '.pl', '.pm', '.r', '.R',
+    '.hs', '.clj', '.cljs', '.ex', '.exs', '.groovy', '.gradle',
+    '.vue', '.svelte', '.asm', '.s', '.i', '.ii'
+]
 
 
 def is_gpl_family_license(licenses: list) -> bool:
@@ -328,7 +336,11 @@ def parsing_scancode_32_later(
                 result_item.licenses = license_detected
 
                 result_item.exclude = is_exclude_file(file_path)
-                result_item.is_license_text = file.get("percentage_of_license_text", 0) > 90 or is_notice_file(file_path)
+                file_ext = os.path.splitext(file_path)[1].lower()
+                is_source_file = file_ext and file_ext in SOURCE_EXTENSIONS
+                result_item.is_license_text = is_notice_file(file_path) or (
+                    file.get("percentage_of_license_text", 0) > 90 and not is_source_file
+                )
 
                 detected_without_pom = []
                 if is_manifest_file(file_path) and len(license_detected) > 0:
