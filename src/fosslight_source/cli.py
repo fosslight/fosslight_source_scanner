@@ -318,7 +318,7 @@ def merge_results(
     if run_osskb:
         logger.info("OSS KB server is reachable. Loading data from OSS KB.")
     else:
-        logger.info(f"Skipping OSS KB lookup.")
+        logger.info("Skipping OSS KB lookup.")
 
     for item in scancode_result:
         item.set_oss_item(path_to_scan, run_osskb)

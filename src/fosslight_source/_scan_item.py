@@ -175,7 +175,7 @@ class SourceItem(FileItem):
                 self.oss_items.append(item)
         else:
             item = OssItem(self.oss_name, self.oss_version, self.licenses)
-            if run_osskb:
+            if run_osskb and not self.is_license_text:
                 md5_hash = self._get_md5_hash(path_to_scan)
                 if md5_hash:
                     origin_url = self._get_origin_url_from_md5_hash(md5_hash)
