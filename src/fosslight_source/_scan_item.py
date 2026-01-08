@@ -267,6 +267,15 @@ def is_package_dir(dir_path: str) -> bool:
     return False, ""
 
 
+def _has_parent_in_exclude_list(rel_path: str, path_to_exclude: list) -> bool:
+    path_parts = rel_path.replace('\\', '/').split('/')
+    for i in range(1, len(path_parts)):
+        parent_path = '/'.join(path_parts[:i])
+        if parent_path in path_to_exclude:
+            return True
+    return False
+
+
 def get_excluded_paths(path_to_scan: str, custom_excluded_paths: list = []) -> list:
     path_to_exclude = custom_excluded_paths.copy()
     abs_path_to_scan = os.path.abspath(path_to_scan)
@@ -275,11 +284,10 @@ def get_excluded_paths(path_to_scan: str, custom_excluded_paths: list = []) -> l
         for dir_name in dirs:
             dir_path = os.path.join(root, dir_name)
             rel_path = os.path.relpath(dir_path, abs_path_to_scan)
-            if dir_name in _package_directory:
-                if rel_path not in path_to_exclude:
+            if not _has_parent_in_exclude_list(rel_path, path_to_exclude):
+                if dir_name in _package_directory:
                     path_to_exclude.append(rel_path)
-            elif is_exclude_dir(rel_path):
-                if rel_path not in path_to_exclude:
+                elif is_exclude_dir(rel_path):
                     path_to_exclude.append(rel_path)
 
     return path_to_exclude

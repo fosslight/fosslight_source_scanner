@@ -373,6 +373,7 @@ def run_scanners(
 
     if success:
         excluded_path_with_default_exclusion = get_excluded_paths(path_to_scan, path_to_exclude)
+        logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
         if not selected_scanner:
             selected_scanner = 'all'
         if selected_scanner in ['scancode', 'all', 'osskb']:
