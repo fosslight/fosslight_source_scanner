@@ -1,5 +1,23 @@
 # Changelog
 
+## v2.2.0 (09/01/2026)
+## Changes
+- Print comment only if OR is included @soimkim (#227)
+
+## 🚀 Features
+
+- Add KB to Scanner Type @soimkim (#221)
+
+## 🐛 Hotfixes
+
+- Remove source files from license text @soimkim (#228)
+
+## 🔧 Maintenance
+
+- Remove duplication in skipped path @soimkim (#226)
+
+---
+
 ## v2.1.19 (07/01/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -266,16 +284,3 @@
 ## 🔧 Maintenance
 
 - Limit the maximum number of characters in the license @soimkim (#157)
-
----
-
-## v1.7.8 (10/06/2024)
-## Changes
-## 🚀 Features
-
-- Supports for excluding paths @SeongjunJo (#154)
-
-## 🔧 Maintenance
-
-- Modify column name @bjk7119 (#156)
-- Change column name for SCANOSS reference @JustinWonjaePark (#155)
