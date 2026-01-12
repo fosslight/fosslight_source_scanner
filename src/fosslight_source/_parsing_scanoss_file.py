@@ -16,7 +16,7 @@ SCANOSS_INFO_HEADER = ['No', 'Source Path', 'Component Declared', 'SPDX Tag',
                        'Matched Rate (line number)', 'scanoss_fileURL']
 
 
-def parsing_extraInfo(scanned_result: dict) -> list:
+def parsing_extra_info(scanned_result: dict) -> list:
     scanoss_extra_info = []
     for scan_item in scanned_result:
         license_w_source = scan_item.scanoss_reference
@@ -41,7 +41,6 @@ def parsing_scan_result(scanoss_report: dict, excluded_files: list = []) -> Tupl
     for file_path, findings in scanoss_report.items():
         file_path_normalized = file_path.replace('\\', '/')
         if file_path_normalized in excluded_files:
-            logger.info(f"[SCANOSS]Skipping {file_path} because it is excluded")
             continue
         result_item = SourceItem(file_path)
 
@@ -76,8 +75,6 @@ def parsing_scan_result(scanoss_report: dict, excluded_files: list = []) -> Tupl
             if len(license_detected) > 0:
                 result_item.licenses = license_detected
                 result_item.scanoss_reference = license_w_source
-
-        
 
         if 'file_url' in findings[0]:
             result_item.fileURL = findings[0]['file_url']
