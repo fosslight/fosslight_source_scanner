@@ -116,7 +116,7 @@ def run_scan(
                             else:
                                 total_files_to_excluded.append(exclude_path_normalized)
                         elif is_file:
-                            total_files_to_excluded.append(exclude_path_normalized)
+                            total_files_to_excluded.append(os.path.join(path_to_scan, exclude_path_normalized))
                         else:
                             if "/" in exclude_path_normalized:
                                 dir_name = os.path.basename(exclude_path_normalized.rstrip("/"))

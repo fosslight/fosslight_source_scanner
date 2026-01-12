@@ -39,7 +39,7 @@ MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
                                   'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
 SCANNER_TYPE = ['kb', 'scancode', 'scanoss', 'all']
 EXCLUDE_FILENAME = ["changelog", "config.guess", "config.sub", "changes", "ltmain.sh",
-                    "configure", "configure.ac", "depcomp", "compile", "missing", "makefile"]
+                    "configure", "configure.ac", "depcomp", "compile", "missing", "Makefile"]
 EXCLUDE_FILE_EXTENSION = [".m4", ".in", ".po"]
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -226,12 +226,6 @@ def create_report_file(
 
     if merged_result:
         sheet_list = {}
-        # Remove results that are in excluding file list
-        for i in range(len(merged_result) - 1, -1, -1):  # Iterate from last to first
-            item_path = merged_result[i].source_name_or_path  # Assuming SourceItem has 'file_path' attribute
-            if item_path in excluded_file_list:
-                del merged_result[i]  # Delete matching item
-
         scan_item.append_file_items(merged_result, PKG_NAME)
 
         if selected_scanner == 'scanoss':
@@ -377,12 +371,10 @@ def run_scanners(
     if success:
         path_to_exclude_with_filename = path_to_exclude + EXCLUDE_FILENAME
         excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files = get_excluded_paths(
-            path_to_scan, path_to_exclude_with_filename, EXCLUDE_FILE_EXTENSION
-        )
+            path_to_scan, path_to_exclude_with_filename, EXCLUDE_FILE_EXTENSION)
         logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
         if not selected_scanner:
             selected_scanner = 'all'
-        logger.info(f"Selected Scanner: {selected_scanner}")
         if selected_scanner in ['scancode', 'all', 'kb']:
             success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
                                                                                       write_json_file, num_cores, True,
@@ -394,7 +386,7 @@ def run_scanners(
                                                               num_cores, excluded_path_with_default_exclusion, excluded_files)
         if selected_scanner in SCANNER_TYPE:
             run_kb = True if selected_scanner in ['kb', 'all'] else False
-            spdx_downloads = get_spdx_downloads(path_to_scan, excluded_path_with_default_exclusion)
+            spdx_downloads = get_spdx_downloads(path_to_scan, excluded_files)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan, run_kb)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
