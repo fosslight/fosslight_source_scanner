@@ -14,13 +14,12 @@ from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
-from fosslight_util.exclude import excluding_files
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats_v2, write_output_file
 from fosslight_util.correct import correct_with_yaml
 from .run_scancode import run_scan
-from ._scan_item import get_excluded_paths
+from fosslight_util.exclude import get_excluded_paths
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
@@ -38,6 +37,9 @@ MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
                                   'OSS Version', 'License', 'Download Location',
                                   'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
 SCANNER_TYPE = ['kb', 'scancode', 'scanoss', 'all']
+EXCLUDE_FILENAME = ["changelog", "config.guess", "config.sub", "changes", "ltmain.sh",
+                    "configure", "configure.ac", "depcomp", "compile", "missing", "Makefile"]
+EXCLUDE_FILE_EXTENSION = [".m4", ".in", ".po"]
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -126,23 +128,6 @@ def main() -> None:
         sys.exit(1)
 
 
-def count_files(path_to_scan: str, path_to_exclude: list) -> Tuple[int, int]:
-    total_files = 0
-    excluded_files = 0
-    abs_path_to_exclude = [os.path.abspath(os.path.join(path_to_scan, path)) for path in path_to_exclude]
-
-    for root, _, files in os.walk(path_to_scan):
-        for file in files:
-            file_path = os.path.join(root, file)
-            abs_file_path = os.path.abspath(file_path)
-            if any(os.path.commonpath([abs_file_path, exclude_path]) == exclude_path
-                   for exclude_path in abs_path_to_exclude):
-                excluded_files += 1
-            total_files += 1
-
-    return total_files, excluded_files
-
-
 def create_report_file(
     _start_time: str, merged_result: list,
     license_list: list, scanoss_result: list,
@@ -150,7 +135,7 @@ def create_report_file(
     output_path: str = "", output_files: list = [],
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
-    formats: list = [], excluded_file_list: list = [], api_limit_exceed: bool = False
+    formats: list = [], api_limit_exceed: bool = False, files_count: int = 0
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -209,7 +194,6 @@ def create_report_file(
 
     scan_item = ScannerItem(PKG_NAME, _start_time)
     scan_item.set_cover_pathinfo(path_to_scan, path_to_exclude)
-    files_count, _ = count_files(path_to_scan, path_to_exclude)
     scan_item.set_cover_comment(f"Scanned files: {files_count}")
 
     if api_limit_exceed:
@@ -223,12 +207,6 @@ def create_report_file(
 
     if merged_result:
         sheet_list = {}
-        # Remove results that are in excluding file list
-        for i in range(len(merged_result) - 1, -1, -1):  # Iterate from last to first
-            item_path = merged_result[i].source_name_or_path  # Assuming SourceItem has 'file_path' attribute
-            if item_path in excluded_file_list:
-                del merged_result[i]  # Delete matching item
-
         scan_item.append_file_items(merged_result, PKG_NAME)
 
         if selected_scanner == 'scanoss':
@@ -365,14 +343,15 @@ def run_scanners(
 
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
-    excluded_file_list = excluding_files(path_to_exclude, path_to_scan)
 
     if '.xlsx' not in output_extensions and print_matched_text:
         logger.warning("-m option is only available for excel.")
         print_matched_text = False
 
     if success:
-        excluded_path_with_default_exclusion = get_excluded_paths(path_to_scan, path_to_exclude)
+        path_to_exclude_with_filename = path_to_exclude + EXCLUDE_FILENAME
+        excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files, cnt_file_except_skipped = (
+            get_excluded_paths(path_to_scan, path_to_exclude_with_filename, EXCLUDE_FILE_EXTENSION))
         logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
         if not selected_scanner:
             selected_scanner = 'all'
@@ -384,15 +363,15 @@ def run_scanners(
                                                                                       excluded_path_with_default_exclusion)
         if selected_scanner in ['scanoss', 'all']:
             scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
-                                                              num_cores, excluded_path_with_default_exclusion)
+                                                              num_cores, excluded_path_with_default_exclusion, excluded_files)
         if selected_scanner in SCANNER_TYPE:
             run_kb = True if selected_scanner in ['kb', 'all'] else False
-            spdx_downloads = get_spdx_downloads(path_to_scan, excluded_path_with_default_exclusion)
+            spdx_downloads = get_spdx_downloads(path_to_scan, excluded_files)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan, run_kb)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                                           correct_filepath, path_to_scan, path_to_exclude, formats, excluded_file_list,
-                                           api_limit_exceed)
+                                           correct_filepath, path_to_scan, excluded_path_without_dot, formats,
+                                           api_limit_exceed, cnt_file_except_skipped)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"

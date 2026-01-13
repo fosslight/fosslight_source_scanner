@@ -10,12 +10,9 @@ import fosslight_util.constant as constant
 from fosslight_util.get_pom_license import get_license_from_pom
 from ._license_matched import MatchedLicense
 from ._scan_item import SourceItem
-from ._scan_item import is_exclude_dir
-from ._scan_item import is_exclude_file
 from ._scan_item import replace_word
 from ._scan_item import is_notice_file
 from ._scan_item import is_manifest_file
-from ._scan_item import is_package_dir
 from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -83,8 +80,6 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
     msg = []
     scancode_file_item = []
     license_list = {}  # Key :[license]+[matched_text], value: MatchedLicense()
-    prev_dir = ""
-    prev_dir_value = False
 
     if scancode_file_list:
         for file in scancode_file_list:
@@ -96,22 +91,11 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                 is_binary = file.get("is_binary", False)
                 if "type" in file:
                     is_dir = file["type"] == "directory"
-                    if is_dir:
-                        prev_dir_value = is_exclude_dir(file_path)
-                        prev_dir = file_path
-
                 if not is_binary and not is_dir:
                     licenses = file.get("licenses", [])
                     copyright_list = file.get("copyrights", [])
 
                     result_item = SourceItem(file_path)
-                    is_pkg, pkg_path = is_package_dir(os.path.dirname(file_path))
-                    if is_pkg:
-                        result_item.source_name_or_path = pkg_path
-                        if not any(x.source_name_or_path == result_item.source_name_or_path for x in scancode_file_item):
-                            result_item.exclude = True
-                            scancode_file_item.append(result_item)
-                        continue
 
                     if has_error and "scan_errors" in file:
                         error_msg = file.get("scan_errors", [])
@@ -238,8 +222,6 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                                 set(license_expression_list))
                             result_item.comment = ','.join(license_expression_list)
 
-                        if is_exclude_file(file_path, prev_dir, prev_dir_value):
-                            result_item.exclude = True
                         scancode_file_item.append(result_item)
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")
@@ -271,17 +253,9 @@ def parsing_scancode_32_later(
                 is_binary = file.get("is_binary", False)
                 is_dir = file.get("type", "") == "directory"
                 if (not file_path) or is_binary or is_dir:
+                    logger.info(f"Skipping {file_path} because it is binary or directory")
                     continue
-
                 result_item = SourceItem(file_path)
-                is_pkg, pkg_path = is_package_dir(os.path.dirname(file_path))
-                if is_pkg:
-                    result_item.source_name_or_path = pkg_path
-                    if not any(x.source_name_or_path == result_item.source_name_or_path for x in scancode_file_item):
-                        result_item.exclude = True
-                        scancode_file_item.append(result_item)
-                    continue
-
                 if has_error:
                     error_msg = file.get("scan_errors", [])
                     if error_msg:
@@ -334,8 +308,6 @@ def parsing_scancode_32_later(
                                             license_list[lic_matched_key] = lic_info
                                     license_detected.append(found_lic)
                 result_item.licenses = license_detected
-
-                result_item.exclude = is_exclude_file(file_path)
                 file_ext = os.path.splitext(file_path)[1].lower()
                 is_source_file = file_ext and file_ext in SOURCE_EXTENSIONS
                 result_item.is_license_text = is_notice_file(file_path) or (

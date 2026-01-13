@@ -12,8 +12,8 @@ from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.output_format import check_output_formats_v2  # , write_output_file
-from ._parsing_scanoss_file import parsing_scanResult  # scanoss
-from ._parsing_scanoss_file import parsing_extraInfo  # scanoss
+from ._parsing_scanoss_file import parsing_scan_result  # scanoss
+from ._parsing_scanoss_file import parsing_extra_info  # scanoss
 import shutil
 from pathlib import Path
 from scanoss.scanner import Scanner, ScanType
@@ -28,11 +28,12 @@ SCANOSS_OUTPUT_FILE = "scanoss_raw_result.json"
 
 
 def get_scanoss_extra_info(scanned_result: dict) -> list:
-    return parsing_extraInfo(scanned_result)
+    return parsing_extra_info(scanned_result)
 
 
-def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list = [], called_by_cli: bool = False,
-                   write_json_file: bool = False, num_threads: int = -1, path_to_exclude: list = []) -> list:
+def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list = [],
+                   called_by_cli: bool = False, write_json_file: bool = False, num_threads: int = -1,
+                   path_to_exclude: list = [], excluded_files: list = []) -> list:
     """
     Run scanoss.py for the given path.
 
@@ -109,7 +110,7 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
                 json.dump(st_python, st_json, indent=4)
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
-                scanoss_file_list = parsing_scanResult(st_python, path_to_scan, path_to_exclude)
+                scanoss_file_list = parsing_scan_result(st_python, excluded_files)
 
     except Exception as error:
         logger.debug(f"SCANOSS Parsing {path_to_scan}: {error}")

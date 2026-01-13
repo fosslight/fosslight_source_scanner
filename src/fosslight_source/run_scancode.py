@@ -90,39 +90,41 @@ def run_scan(
                         exclude_path_normalized = os.path.normpath(exclude_path).replace("\\", "/")
 
                         if exclude_path_normalized.endswith("/**"):
-                            exclude_path_normalized = exclude_path_normalized[:-3]
-                        elif exclude_path_normalized.endswith("**"):
-                            exclude_path_normalized = exclude_path_normalized.rstrip("*")
-
-                        if exclude_path_normalized.startswith("**/"):
-                            exclude_path_normalized = exclude_path_normalized[3:]
-
-                        full_exclude_path = os.path.join(abs_path_to_scan, exclude_path)
-                        is_dir = os.path.isdir(full_exclude_path)
-                        is_file = os.path.isfile(full_exclude_path)
-                        if is_dir:
-                            dir_name = os.path.basename(exclude_path_normalized.rstrip("/"))
-                            base_path = exclude_path_normalized.rstrip("/")
-
-                            if dir_name:
-                                total_files_to_excluded.append(dir_name)
-                                max_depth = 0
-                                for root, dirs, files in os.walk(full_exclude_path):
-                                    depth = root[len(full_exclude_path):].count(os.sep)
-                                    max_depth = max(max_depth, depth)
-                                for depth in range(1, max_depth + 2):
-                                    pattern = base_path + "/*" * depth
-                                    total_files_to_excluded.append(pattern)
+                            base_dir = exclude_path_normalized[:-3].rstrip("/")
+                            if base_dir:
+                                full_exclude_path = os.path.join(abs_path_to_scan, base_dir)
+                                if os.path.isdir(full_exclude_path):
+                                    total_files_to_excluded.append(base_dir)
+                                    total_files_to_excluded.append(exclude_path_normalized)
+                                else:
+                                    total_files_to_excluded.append(exclude_path_normalized)
                             else:
                                 total_files_to_excluded.append(exclude_path_normalized)
-                        elif is_file:
-                            total_files_to_excluded.append(exclude_path_normalized)
                         else:
-                            if "/" in exclude_path_normalized:
-                                dir_name = os.path.basename(exclude_path_normalized.rstrip("/"))
-                                if dir_name:
-                                    total_files_to_excluded.append(dir_name)
-                            total_files_to_excluded.append(exclude_path_normalized)
+                            has_glob_chars = any(char in exclude_path_normalized for char in ['*', '?', '['])
+                            if not has_glob_chars:
+                                full_exclude_path = os.path.join(abs_path_to_scan, exclude_path_normalized)
+                                is_dir = os.path.isdir(full_exclude_path)
+                                is_file = os.path.isfile(full_exclude_path)
+                            else:
+                                is_dir = False
+                                is_file = False
+
+                            if is_dir:
+                                base_path = exclude_path_normalized.rstrip("/")
+                                if base_path:
+                                    total_files_to_excluded.append(base_path)
+                                    total_files_to_excluded.append(f"{base_path}/**")
+                                else:
+                                    total_files_to_excluded.append(exclude_path_normalized)
+                            elif is_file:
+                                total_files_to_excluded.append(exclude_path_normalized)
+                                file_name = os.path.basename(exclude_path_normalized)
+                                if file_name and file_name != exclude_path_normalized:
+                                    glob_pattern = f"**/{file_name}"
+                                    total_files_to_excluded.append(glob_pattern)
+                            else:
+                                total_files_to_excluded.append(exclude_path_normalized)
 
                 total_files_to_excluded = sorted(list(set(total_files_to_excluded)))
                 ignore_tuple = tuple(total_files_to_excluded)
