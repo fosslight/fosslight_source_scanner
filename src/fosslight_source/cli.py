@@ -129,23 +129,6 @@ def main() -> None:
         sys.exit(1)
 
 
-def count_files(path_to_scan: str, path_to_exclude: list) -> Tuple[int, int]:
-    total_files = 0
-    excluded_files = 0
-    abs_path_to_exclude = [os.path.abspath(os.path.join(path_to_scan, path)) for path in path_to_exclude]
-
-    for root, _, files in os.walk(path_to_scan):
-        for file in files:
-            file_path = os.path.join(root, file)
-            abs_file_path = os.path.abspath(file_path)
-            if any(os.path.commonpath([abs_file_path, exclude_path]) == exclude_path
-                   for exclude_path in abs_path_to_exclude):
-                excluded_files += 1
-            total_files += 1
-
-    return total_files, excluded_files
-
-
 def create_report_file(
     _start_time: str, merged_result: list,
     license_list: list, scanoss_result: list,
@@ -153,7 +136,7 @@ def create_report_file(
     output_path: str = "", output_files: list = [],
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
-    formats: list = [], excluded_file_list: list = [], api_limit_exceed: bool = False
+    formats: list = [], api_limit_exceed: bool = False, files_count: int = 0
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -212,7 +195,6 @@ def create_report_file(
 
     scan_item = ScannerItem(PKG_NAME, _start_time)
     scan_item.set_cover_pathinfo(path_to_scan, path_to_exclude)
-    files_count, _ = count_files(path_to_scan, path_to_exclude)
     scan_item.set_cover_comment(f"Scanned files: {files_count}")
 
     if api_limit_exceed:
@@ -370,7 +352,7 @@ def run_scanners(
 
     if success:
         path_to_exclude_with_filename = path_to_exclude + EXCLUDE_FILENAME
-        excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files = get_excluded_paths(
+        excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files, cnt_file_except_skipped = get_excluded_paths(
             path_to_scan, path_to_exclude_with_filename, EXCLUDE_FILE_EXTENSION)
         logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
         if not selected_scanner:
@@ -390,8 +372,8 @@ def run_scanners(
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan, run_kb)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                                           correct_filepath, path_to_scan, excluded_path_without_dot, formats, excluded_path_with_default_exclusion,
-                                           api_limit_exceed)
+                                           correct_filepath, path_to_scan, excluded_path_without_dot, formats,
+                                           api_limit_exceed, cnt_file_except_skipped)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"
