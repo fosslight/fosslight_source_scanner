@@ -211,4 +211,3 @@ def is_manifest_file(file_path: str) -> bool:
     pattern = r"({})$".format("|".join(_manifest_filename))
     filename = os.path.basename(file_path)
     return bool(re.match(pattern, filename, re.IGNORECASE))
-

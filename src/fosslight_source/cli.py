@@ -14,7 +14,6 @@ from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from fosslight_util.timer_thread import TimerThread
-from fosslight_util.exclude import excluding_files
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats_v2, write_output_file
@@ -345,15 +344,14 @@ def run_scanners(
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
 
-
     if '.xlsx' not in output_extensions and print_matched_text:
         logger.warning("-m option is only available for excel.")
         print_matched_text = False
 
     if success:
         path_to_exclude_with_filename = path_to_exclude + EXCLUDE_FILENAME
-        excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files, cnt_file_except_skipped = get_excluded_paths(
-            path_to_scan, path_to_exclude_with_filename, EXCLUDE_FILE_EXTENSION)
+        excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files, cnt_file_except_skipped = (
+            get_excluded_paths(path_to_scan, path_to_exclude_with_filename, EXCLUDE_FILE_EXTENSION))
         logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
         if not selected_scanner:
             selected_scanner = 'all'

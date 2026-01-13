@@ -3,7 +3,6 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-import os
 import logging
 import fosslight_util.constant as constant
 from ._scan_item import SourceItem
