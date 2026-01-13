@@ -105,24 +105,46 @@ def run_scan(
                             base_path = exclude_path_normalized.rstrip("/")
 
                             if dir_name:
+                                # 디렉토리명만으로 매칭 (어디에 있든)
                                 total_files_to_excluded.append(dir_name)
-                                max_depth = 0
-                                for root, dirs, files in os.walk(full_exclude_path):
-                                    depth = root[len(full_exclude_path):].count(os.sep)
-                                    max_depth = max(max_depth, depth)
-                                for depth in range(1, max_depth + 2):
-                                    pattern = base_path + "/*" * depth
-                                    total_files_to_excluded.append(pattern)
+                                # 상대 경로로 매칭
+                                if base_path:
+                                    # 모든 하위 항목을 포함하는 glob 패턴
+                                    total_files_to_excluded.append(f"{base_path}/**")
+                                    # 기존 depth 기반 패턴도 유지 (호환성)
+                                    max_depth = 0
+                                    for root, dirs, files in os.walk(full_exclude_path):
+                                        depth = root[len(full_exclude_path):].count(os.sep)
+                                        max_depth = max(max_depth, depth)
+                                    for depth in range(1, max_depth + 2):
+                                        pattern = base_path + "/*" * depth
+                                        total_files_to_excluded.append(pattern)
                             else:
                                 total_files_to_excluded.append(exclude_path_normalized)
                         elif is_file:
-                            total_files_to_excluded.append(os.path.join(path_to_scan, exclude_path_normalized))
+                            # scancode는 strip_root=True일 때 상대 경로 glob 패턴을 기대함
+                            # 파일 경로를 glob 패턴으로 변환
+                            # 1. 정확한 상대 경로 패턴 추가
+                            total_files_to_excluded.append(exclude_path_normalized)
+                            # 2. 파일명만으로도 매칭되도록 **/filename 패턴 추가
+                            file_name = os.path.basename(exclude_path_normalized)
+                            if file_name:
+                                glob_pattern = f"**/{file_name}"
+                                total_files_to_excluded.append(glob_pattern)
                         else:
+                            # 파일도 디렉토리도 아닌 경우 (패턴만 있는 경우)
+                            # 이미 glob 패턴일 수 있으므로 그대로 추가
+                            total_files_to_excluded.append(exclude_path_normalized)
+                            # 경로가 있는 경우 디렉토리명도 추가
                             if "/" in exclude_path_normalized:
                                 dir_name = os.path.basename(exclude_path_normalized.rstrip("/"))
                                 if dir_name:
                                     total_files_to_excluded.append(dir_name)
-                            total_files_to_excluded.append(exclude_path_normalized)
+                            # 파일명만 있는 경우 **/filename 패턴도 추가
+                            elif "." in exclude_path_normalized or not exclude_path_normalized.endswith("/"):
+                                # 확장자가 있거나 디렉토리로 끝나지 않으면 파일명으로 간주
+                                glob_pattern = f"**/{exclude_path_normalized}"
+                                total_files_to_excluded.append(glob_pattern)
 
                 total_files_to_excluded = sorted(list(set(total_files_to_excluded)))
                 ignore_tuple = tuple(total_files_to_excluded)
