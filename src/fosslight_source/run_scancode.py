@@ -29,7 +29,8 @@ def run_scan(
     return_results: bool = False, need_license: bool = False,
     formats: list = [], called_by_cli: bool = False,
     time_out: int = 120, correct_mode: bool = True,
-    correct_filepath: str = "", path_to_exclude: list = []
+    correct_filepath: str = "", path_to_exclude: list = [],
+    excluded_files: list = []
 ) -> Tuple[bool, str, list, list]:
     if not called_by_cli:
         global logger
@@ -118,13 +119,12 @@ def run_scan(
                                 else:
                                     total_files_to_excluded.append(exclude_path_normalized)
                             elif is_file:
-                                total_files_to_excluded.append(exclude_path_normalized)
-                                file_name = os.path.basename(exclude_path_normalized)
-                                if file_name and file_name != exclude_path_normalized:
-                                    glob_pattern = f"**/{file_name}"
-                                    total_files_to_excluded.append(glob_pattern)
+                                total_files_to_excluded.append(f"**/{exclude_path_normalized}")
                             else:
                                 total_files_to_excluded.append(exclude_path_normalized)
+
+                if excluded_files:
+                    total_files_to_excluded.extend(f"**/{file_path}" for file_path in excluded_files)
 
                 total_files_to_excluded = sorted(list(set(total_files_to_excluded)))
                 ignore_tuple = tuple(total_files_to_excluded)
