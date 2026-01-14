@@ -87,23 +87,9 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
         logger.debug(f"{captured_output}")
 
         if os.path.isfile(output_json_file):
-            total_files_to_excluded = set()
-            if path_to_exclude:
-                for path in path_to_exclude:
-                    path = os.path.join(path_to_scan, os.path.relpath(path, os.path.abspath(path_to_scan))) \
-                           if not os.path.isabs(path_to_scan) and os.path.isabs(path) else os.path.join(path_to_scan, path)
-                    if os.path.isdir(path):
-                        for root, _, files in os.walk(path):
-                            root = root[len(path_to_scan) + 1:]
-                            total_files_to_excluded.update([os.path.normpath(os.path.join(root, file)).replace('\\', '/')
-                                                            for file in files])
-                    elif os.path.isfile(path):
-                        path = path[len(path_to_scan) + 1:]
-                        total_files_to_excluded.add(os.path.normpath(path).replace('\\', '/'))
-
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
-                for key_to_exclude in total_files_to_excluded:
+                for key_to_exclude in excluded_files:
                     if key_to_exclude in st_python:
                         del st_python[key_to_exclude]
             with open(output_json_file, 'w') as st_json:
