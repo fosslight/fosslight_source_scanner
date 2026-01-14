@@ -33,7 +33,7 @@ def get_scanoss_extra_info(scanned_result: dict) -> list:
 
 def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list = [],
                    called_by_cli: bool = False, write_json_file: bool = False, num_threads: int = -1,
-                   path_to_exclude: list = [], excluded_files: list = []) -> list:
+                   path_to_exclude: list = [], excluded_files: set = None) -> list:
     """
     Run scanoss.py for the given path.
 
@@ -73,7 +73,7 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
     try:
         scanner = Scanner(
             ignore_cert_errors=True,
-            skip_folders=path_to_exclude,
+            skip_folders=list(path_to_exclude) if path_to_exclude else [],
             scan_output=output_json_file,
             scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10
@@ -87,7 +87,7 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
         logger.debug(f"{captured_output}")
 
         if os.path.isfile(output_json_file):
-            total_files_to_excluded = []
+            total_files_to_excluded = set()
             if path_to_exclude:
                 for path in path_to_exclude:
                     path = os.path.join(path_to_scan, os.path.relpath(path, os.path.abspath(path_to_scan))) \
@@ -95,11 +95,11 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
                     if os.path.isdir(path):
                         for root, _, files in os.walk(path):
                             root = root[len(path_to_scan) + 1:]
-                            total_files_to_excluded.extend([os.path.normpath(os.path.join(root, file)).replace('\\', '/')
+                            total_files_to_excluded.update([os.path.normpath(os.path.join(root, file)).replace('\\', '/')
                                                             for file in files])
                     elif os.path.isfile(path):
                         path = path[len(path_to_scan) + 1:]
-                        total_files_to_excluded.append(os.path.normpath(path).replace('\\', '/'))
+                        total_files_to_excluded.add(os.path.normpath(path).replace('\\', '/'))
 
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)

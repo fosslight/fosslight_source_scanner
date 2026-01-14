@@ -34,7 +34,7 @@ def parsing_extra_info(scanned_result: dict) -> list:
     return scanoss_extra_info
 
 
-def parsing_scan_result(scanoss_report: dict, excluded_files: list = []) -> Tuple[bool, list]:
+def parsing_scan_result(scanoss_report: dict, excluded_files: set = None) -> Tuple[bool, list]:
     scanoss_file_item = []
 
     for file_path, findings in scanoss_report.items():
