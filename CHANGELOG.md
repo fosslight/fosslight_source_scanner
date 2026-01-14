@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.2.1 (14/01/2026)
+## Changes
+## 🔧 Maintenance
+
+- Remove files from Scancode @soimkim (#231)
+- Replace list to set @soimkim (#230)
+- Replace exclude function to fosslight_util @soimkim (#229)
+
+---
+
 ## v2.2.0 (09/01/2026)
 ## Changes
 - Print comment only if OR is included @soimkim (#227)
@@ -276,11 +286,3 @@
 ## 🐛 Hotfixes
 
 - Move method to limit license characters @soimkim (#158)
-
----
-
-## v1.7.9 (11/06/2024)
-## Changes
-## 🔧 Maintenance
-
-- Limit the maximum number of characters in the license @soimkim (#157)
