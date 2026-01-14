@@ -353,7 +353,7 @@ def run_scanners(
         excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files, cnt_file_except_skipped = (
             get_excluded_paths(path_to_scan, path_to_exclude_with_filename, EXCLUDE_FILE_EXTENSION))
         logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
-        
+
         if not selected_scanner:
             selected_scanner = 'all'
         if selected_scanner in ['scancode', 'all', 'kb']:
@@ -361,7 +361,8 @@ def run_scanners(
                                                                                       write_json_file, num_cores, True,
                                                                                       print_matched_text, formats, called_by_cli,
                                                                                       time_out, correct_mode, correct_filepath,
-                                                                                      excluded_path_with_default_exclusion, excluded_files)
+                                                                                      excluded_path_with_default_exclusion,
+                                                                                      excluded_files)
         excluded_files = set(excluded_files) if excluded_files else set()
         if selected_scanner in ['scanoss', 'all']:
             scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
