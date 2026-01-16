@@ -25,9 +25,12 @@ from .run_scanoss import get_scanoss_extra_info
 import yaml
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
+from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, KB_URL
 from fosslight_util.oss_item import ScannerItem
 from typing import Tuple
+from ._scan_item import is_manifest_file
+
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
 SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
@@ -265,7 +268,7 @@ def check_kb_server_reachable() -> bool:
 
 def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
-    path_to_scan: str = "", run_kb: bool = False
+    path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {}
 ) -> list:
 
     """
@@ -290,6 +293,19 @@ def merge_results(
             else:
                 new_result_item = SourceItem(file_name)
                 new_result_item.download_location = download_location
+                scancode_result.append(new_result_item)
+    if manifest_licenses:
+        for file_name, licenses in manifest_licenses.items():
+            if file_name in scancode_result:
+                merged_result_item = scancode_result[scancode_result.index(file_name)]
+                # overwrite existing detected licenses with manifest-provided licenses
+                merged_result_item.licenses = []  # clear existing licenses (setter clears when value falsy)
+                merged_result_item.licenses = licenses
+                merged_result_item.is_manifest_file = True
+            else:
+                new_result_item = SourceItem(file_name)
+                new_result_item.licenses = licenses
+                new_result_item.is_manifest_file = True
                 scancode_result.append(new_result_item)
     if run_kb and not check_kb_server_reachable():
         run_kb = False
@@ -369,8 +385,9 @@ def run_scanners(
                                                               num_cores, excluded_path_with_default_exclusion, excluded_files)
         if selected_scanner in SCANNER_TYPE:
             run_kb = True if selected_scanner in ['kb', 'all'] else False
-            spdx_downloads = get_spdx_downloads(path_to_scan, excluded_files)
-            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, path_to_scan, run_kb)
+            spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
+            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads,
+                                          path_to_scan, run_kb, manifest_licenses)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, excluded_path_without_dot, formats,
@@ -383,6 +400,39 @@ def run_scanners(
         result_log[RESULT_KEY] = f"Format error. {msg}"
         success = False
     return success, result_log.get(RESULT_KEY, ""), scan_item, license_list, scanoss_result
+
+
+def metadata_collector(path_to_scan: str, excluded_files: set) -> dict:
+    """
+    Collect metadata for merging.
+
+    - Traverse files with exclusions applied
+    - spdx_downloads: {rel_path: [download_urls]}
+    - manifest_licenses: {rel_path: [license_names]}
+
+    :return: (spdx_downloads, manifest_licenses)
+    """
+    abs_path_to_scan = os.path.abspath(path_to_scan)
+    spdx_downloads = {}
+    manifest_licenses = {}
+
+    for root, dirs, files in os.walk(path_to_scan):
+        for file in files:
+            file_path = os.path.join(root, file)
+            rel_path_file = os.path.relpath(file_path, abs_path_to_scan).replace('\\', '/')
+            if rel_path_file in excluded_files:
+                continue
+
+            downloads = get_spdx_downloads(file_path)
+            if downloads:
+                spdx_downloads[rel_path_file] = downloads
+
+            if is_manifest_file(file_path):
+                licenses = get_manifest_licenses(file_path)
+                if licenses:
+                    manifest_licenses[rel_path_file] = licenses
+
+    return spdx_downloads, manifest_licenses
 
 
 if __name__ == '__main__':
