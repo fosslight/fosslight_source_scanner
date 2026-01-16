@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# Copyright (c) 2025 LG Electronics Inc.
+# SPDX-License-Identifier: Apache-2.0
+
 import logging
 from fosslight_util.get_pom_license import get_license_from_pom
 import fosslight_util.constant as constant

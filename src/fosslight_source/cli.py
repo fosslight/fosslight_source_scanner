@@ -268,7 +268,7 @@ def check_kb_server_reachable() -> bool:
 
 def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
-    manifest_licenses: dict = {}, path_to_scan: str = "", run_kb: bool = False
+    path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {}
 ) -> list:
 
     """
@@ -385,10 +385,9 @@ def run_scanners(
                                                               num_cores, excluded_path_with_default_exclusion, excluded_files)
         if selected_scanner in SCANNER_TYPE:
             run_kb = True if selected_scanner in ['kb', 'all'] else False
-            # spdx_downloads = get_spdx_downloads(path_to_scan, excluded_files)
-            spdx_downloads, manifest_licenses = pre_scan(path_to_scan, excluded_files)
-            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads, manifest_licenses,
-                                          path_to_scan, run_kb)
+            spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
+            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads,
+                                          path_to_scan, run_kb, manifest_licenses)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, excluded_path_without_dot, formats,
@@ -403,11 +402,15 @@ def run_scanners(
     return success, result_log.get(RESULT_KEY, ""), scan_item, license_list, scanoss_result
 
 
-def pre_scan(path_to_scan: str, excluded_files: set) -> dict:
+def metadata_collector(path_to_scan: str, excluded_files: set) -> dict:
     """
-    Preprocess step executed before scannig:
-    - Collect SPDX downloads (existing behavior) and return dict
-    - Collect manifest-provided licenses and return dict
+    Collect metadata for merging.
+
+    - Traverse files with exclusions applied
+    - spdx_downloads: {rel_path: [download_urls]}
+    - manifest_licenses: {rel_path: [license_names]}
+
+    :return: (spdx_downloads, manifest_licenses)
     """
     abs_path_to_scan = os.path.abspath(path_to_scan)
     spdx_downloads = {}
@@ -426,9 +429,8 @@ def pre_scan(path_to_scan: str, excluded_files: set) -> dict:
 
             if is_manifest_file(file_path):
                 licenses = get_manifest_licenses(file_path)
-                if not licenses:
-                    continue
-                manifest_licenses[rel_path_file] = licenses
+                if licenses:
+                    manifest_licenses[rel_path_file] = licenses
 
     return spdx_downloads, manifest_licenses
 
