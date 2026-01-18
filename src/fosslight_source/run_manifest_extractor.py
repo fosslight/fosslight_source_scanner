@@ -81,24 +81,39 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
 
 
 def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
+    # First, try using the standard INI parser.
     try:
         import configparser
         parser = configparser.ConfigParser()
-        # Preserve case for values; option names are case-insensitive
         parser.read(file_path, encoding='utf-8')
+        if parser.has_section('metadata'):
+            license_value = parser.get('metadata', 'license', fallback='').strip()
+            if license_value:
+                return _split_spdx_expression(license_value)
     except Exception as ex:
-        logger.info(f"Failed to read setup.cfg {file_path}: {ex}")
-        return []
+        logger.info(f"Failed to parse setup.cfg with configparser for {file_path}: {ex}")
 
-    if not parser.has_section('metadata'):
+    # Fallback: regex parse of [metadata] section for `license = ...`
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        meta_match = re.search(r'^\s*\[metadata\]\s*(.*?)(?=^\s*\[|\Z)', content, flags=re.MULTILINE | re.DOTALL)
+        if not meta_match:
+            return []
+        block = meta_match.group(1)
+        m = re.search(r'^\s*license\s*=\s*(.+)$', block, flags=re.MULTILINE)
+        if not m:
+            return []
+        val = m.group(1).strip()
+        # strip surrounding single/double quotes if present
+        if (len(val) >= 2) and ((val[0] == val[-1]) and val[0] in ('"', "'")):
+            val = val[1:-1].strip()
+        if not val:
+            return []
+        return _split_spdx_expression(val)
+    except Exception as ex:
+        logger.info(f"Failed to parse setup.cfg {file_path} via regex fallback: {ex}")
         return []
-
-    license_value = parser.get('metadata', 'license', fallback='').strip()
-    if not license_value:
-        return []
-
-    # Follow SPDX expression style per PyPA guidance (PEP 639)
-    return _split_spdx_expression(license_value)
 
 
 def get_licenses_from_setup_py(file_path: str) -> list[str]:
@@ -119,6 +134,99 @@ def get_licenses_from_setup_py(file_path: str) -> list[str]:
 
     # Split SPDX-like expressions; preserve WITH exceptions.
     return _split_spdx_expression(value)
+
+
+def get_licenses_from_podspec(file_path: str) -> list[str]:
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+    except Exception as ex:
+        logger.info(f"Failed to read podspec {file_path}: {ex}")
+        return []
+
+    # 1) Plain string assignment: spec.license = 'MIT' or "MIT"
+    m = re.search(r'\blicense\s*=\s*([\'"])(.+?)\1', content, flags=re.IGNORECASE)
+    if m:
+        value = m.group(2).strip()
+        if value:
+            return _split_spdx_expression(value)
+
+    # 2) Hash with :type => 'MIT' or "MIT"
+    m = re.search(r'\blicense\s*=\s*\{[^}]*?:type\s*=>\s*([\'"])(.+?)\1', content, flags=re.IGNORECASE | re.DOTALL)
+    if m:
+        value = m.group(2).strip()
+        if value:
+            return _split_spdx_expression(value)
+
+    # 3) Hash with :type => :mit (symbol)
+    m = re.search(r'\blicense\s*=\s*\{[^}]*?:type\s*=>\s*:(\w+)', content, flags=re.IGNORECASE | re.DOTALL)
+    if m:
+        value = m.group(1).strip()
+        if value:
+            return _split_spdx_expression(value)
+
+    # 4) Symbol assignment: spec.license = :mit
+    m = re.search(r'\blicense\s*=\s*:(\w+)', content, flags=re.DOTALL | re.IGNORECASE)
+    if m:
+        value = m.group(1).strip()
+        if value:
+            return _split_spdx_expression(value)
+
+    # 5) Hash with :text => <<-LICENSE ... (not parseable to SPDX id) -> give up
+    return []
+
+
+def get_licenses_from_cargo_toml(file_path: str) -> list[str]:
+    # Prefer a TOML parser if available; otherwise fall back to a lightweight regex parse.
+    try:
+        data = None
+        try:
+            import tomllib as toml_loader  # Python 3.11+
+            with open(file_path, 'rb') as f:
+                data = toml_loader.load(f)
+        except Exception:
+            try:
+                import tomli as toml_loader  # Backport
+                with open(file_path, 'rb') as f:
+                    data = toml_loader.load(f)
+            except Exception:
+                data = None
+
+        if isinstance(data, dict):
+            package_tbl = data.get('package') or {}
+            license_value = package_tbl.get('license')
+            if isinstance(license_value, str) and license_value.strip():
+                return _split_spdx_expression(license_value.strip())
+            # If only license-file is set, we don't read external files here
+            if package_tbl.get('license-file'):
+                return []
+    except Exception as ex:
+        logger.info(f"Failed to parse Cargo.toml via toml parser for {file_path}: {ex}")
+        # fall through to regex parsing
+
+    # Fallback: regex parse of [package] section for license / license-file
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        pkg_match = re.search(r'^\s*\[package\]\s*(.*?)(?=^\s*\[|\Z)', content, flags=re.MULTILINE | re.DOTALL)
+        if not pkg_match:
+            return []
+        block = pkg_match.group(1)
+        # license = "..." or '...' or """...""" or '''...'''
+        m = re.search(r'^\s*license\s*=\s*(?P<q>"""|\'\'\'|"|\')(?P<val>.*?)(?P=q)', block, flags=re.MULTILINE | re.DOTALL)
+        if m:
+            val = m.group('val').strip()
+            if val:
+                return _split_spdx_expression(val)
+        # license-file present → we do not read the file here
+        m2 = re.search(r'^\s*license-file\s*=\s*(?:"""|\'\'\'|"|\')(.*?)(?:"""|\'\'\'|"|\')', block,
+                       flags=re.MULTILINE | re.DOTALL)
+        if m2:
+            return []
+    except Exception as ex:
+        logger.info(f"Failed to parse Cargo.toml {file_path}: {ex}")
+        return []
+    return []
 
 
 def get_manifest_licenses(file_path: str) -> list[str]:
@@ -148,4 +256,16 @@ def get_manifest_licenses(file_path: str) -> list[str]:
             return get_licenses_from_setup_py(file_path)
         except Exception as ex:
             logger.info(f"Failed to extract license from setup.py {file_path}: {ex}")
+            return []
+    elif os.path.basename(file_path).lower().endswith('.podspec'):
+        try:
+            return get_licenses_from_podspec(file_path)
+        except Exception as ex:
+            logger.info(f"Failed to extract license from podspec {file_path}: {ex}")
+            return []
+    elif os.path.basename(file_path).lower() == 'cargo.toml':
+        try:
+            return get_licenses_from_cargo_toml(file_path)
+        except Exception as ex:
+            logger.info(f"Failed to extract license from Cargo.toml {file_path}: {ex}")
             return []
