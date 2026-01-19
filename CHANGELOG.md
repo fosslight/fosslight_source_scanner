@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.2.2 (19/01/2026)
+## Changes
+## 🚀 Features
+
+- Add license extraction for package.json and setup.py,cfg @JustinWonjaePark (#233)
+- Add manifest extractor @JustinWonjaePark (#232)
+
+---
+
 ## v2.2.1 (14/01/2026)
 ## Changes
 ## 🔧 Maintenance
@@ -278,11 +287,3 @@
 ## 🔧 Maintenance
 
 - Check empty license @soimkim (#160)
-
----
-
-## v1.7.10 (11/06/2024)
-## Changes
-## 🐛 Hotfixes
-
-- Move method to limit license characters @soimkim (#158)
