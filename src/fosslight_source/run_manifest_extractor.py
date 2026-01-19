@@ -19,7 +19,6 @@ def _split_spdx_expression(value: str) -> list[str]:
         token = part.strip().strip('()')
         if token:
             tokens.append(token)
-    # de-dup preserve order
     unique: list[str] = []
     for t in tokens:
         if t not in unique:
@@ -46,7 +45,6 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
         if value.upper() == 'UNLICENSED':
             return []
         if value.upper().startswith('SEE LICENSE IN'):
-            # e.g. "SEE LICENSE IN LICENSE" - we do not attempt to read the file here
             return []
         licenses.extend(_split_spdx_expression(value))
     elif isinstance(license_field, dict):
@@ -56,7 +54,6 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
             if type_val and type_val.upper() != 'UNLICENSED':
                 licenses.append(type_val)
 
-    # Legacy "licenses": [...]
     if not licenses:
         legacy = data.get('licenses')
         if isinstance(legacy, list):
@@ -72,7 +69,6 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
                         if t and t.upper() != 'UNLICENSED':
                             licenses.append(t)
 
-    # De-duplicate while preserving order
     unique: list[str] = []
     for lic in licenses:
         if lic not in unique:
@@ -81,7 +77,6 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
 
 
 def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
-    # First, try using the standard INI parser.
     try:
         import configparser
         parser = configparser.ConfigParser()
@@ -93,7 +88,6 @@ def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
     except Exception as ex:
         logger.info(f"Failed to parse setup.cfg with configparser for {file_path}: {ex}")
 
-    # Fallback: regex parse of [metadata] section for `license = ...`
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -105,7 +99,6 @@ def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
         if not m:
             return []
         val = m.group(1).strip()
-        # strip surrounding single/double quotes if present
         if (len(val) >= 2) and ((val[0] == val[-1]) and val[0] in ('"', "'")):
             val = val[1:-1].strip()
         if not val:
@@ -124,7 +117,6 @@ def get_licenses_from_setup_py(file_path: str) -> list[str]:
         logger.info(f"Failed to read setup.py {file_path}: {ex}")
         return []
 
-    # Simple heuristic: look for license="...", license='...', or triple-quoted strings.
     match = re.search(r'license\s*=\s*([\'"]{1,3})(.+?)\1', content, flags=re.IGNORECASE | re.DOTALL)
     if not match:
         return []
@@ -132,7 +124,6 @@ def get_licenses_from_setup_py(file_path: str) -> list[str]:
     if not value:
         return []
 
-    # Split SPDX-like expressions; preserve WITH exceptions.
     return _split_spdx_expression(value)
 
 
@@ -144,40 +135,34 @@ def get_licenses_from_podspec(file_path: str) -> list[str]:
         logger.info(f"Failed to read podspec {file_path}: {ex}")
         return []
 
-    # 1) Plain string assignment: spec.license = 'MIT' or "MIT"
     m = re.search(r'\blicense\s*=\s*([\'"])(.+?)\1', content, flags=re.IGNORECASE)
     if m:
         value = m.group(2).strip()
         if value:
             return _split_spdx_expression(value)
 
-    # 2) Hash with :type => 'MIT' or "MIT"
     m = re.search(r'\blicense\s*=\s*\{[^}]*?:type\s*=>\s*([\'"])(.+?)\1', content, flags=re.IGNORECASE | re.DOTALL)
     if m:
         value = m.group(2).strip()
         if value:
             return _split_spdx_expression(value)
 
-    # 3) Hash with :type => :mit (symbol)
     m = re.search(r'\blicense\s*=\s*\{[^}]*?:type\s*=>\s*:(\w+)', content, flags=re.IGNORECASE | re.DOTALL)
     if m:
         value = m.group(1).strip()
         if value:
             return _split_spdx_expression(value)
 
-    # 4) Symbol assignment: spec.license = :mit
     m = re.search(r'\blicense\s*=\s*:(\w+)', content, flags=re.DOTALL | re.IGNORECASE)
     if m:
         value = m.group(1).strip()
         if value:
             return _split_spdx_expression(value)
 
-    # 5) Hash with :text => <<-LICENSE ... (not parseable to SPDX id) -> give up
     return []
 
 
 def get_licenses_from_cargo_toml(file_path: str) -> list[str]:
-    # Prefer a TOML parser if available; otherwise fall back to a lightweight regex parse.
     try:
         data = None
         try:
@@ -197,14 +182,11 @@ def get_licenses_from_cargo_toml(file_path: str) -> list[str]:
             license_value = package_tbl.get('license')
             if isinstance(license_value, str) and license_value.strip():
                 return _split_spdx_expression(license_value.strip())
-            # If only license-file is set, we don't read external files here
             if package_tbl.get('license-file'):
                 return []
     except Exception as ex:
         logger.info(f"Failed to parse Cargo.toml via toml parser for {file_path}: {ex}")
-        # fall through to regex parsing
 
-    # Fallback: regex parse of [package] section for license / license-file
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
@@ -212,13 +194,11 @@ def get_licenses_from_cargo_toml(file_path: str) -> list[str]:
         if not pkg_match:
             return []
         block = pkg_match.group(1)
-        # license = "..." or '...' or """...""" or '''...'''
         m = re.search(r'^\s*license\s*=\s*(?P<q>"""|\'\'\'|"|\')(?P<val>.*?)(?P=q)', block, flags=re.MULTILINE | re.DOTALL)
         if m:
             val = m.group('val').strip()
             if val:
                 return _split_spdx_expression(val)
-        # license-file present → we do not read the file here
         m2 = re.search(r'^\s*license-file\s*=\s*(?:"""|\'\'\'|"|\')(.*?)(?:"""|\'\'\'|"|\')', block,
                        flags=re.MULTILINE | re.DOTALL)
         if m2:
