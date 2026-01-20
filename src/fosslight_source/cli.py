@@ -40,9 +40,7 @@ MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
                                   'OSS Version', 'License', 'Download Location',
                                   'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
 SCANNER_TYPE = ['kb', 'scancode', 'scanoss', 'all']
-EXCLUDE_FILENAME = ["changelog", "config.guess", "config.sub", "changes", "ltmain.sh",
-                    "configure", "configure.ac", "depcomp", "compile", "missing", "Makefile"]
-EXCLUDE_FILE_EXTENSION = [".m4", ".in", ".po"]
+
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -365,9 +363,9 @@ def run_scanners(
         print_matched_text = False
 
     if success:
-        path_to_exclude_with_filename = path_to_exclude + EXCLUDE_FILENAME
+        path_to_exclude_with_filename = path_to_exclude
         excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files, cnt_file_except_skipped = (
-            get_excluded_paths(path_to_scan, path_to_exclude_with_filename, EXCLUDE_FILE_EXTENSION))
+            get_excluded_paths(path_to_scan, path_to_exclude_with_filename))
         logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
 
         if not selected_scanner:
