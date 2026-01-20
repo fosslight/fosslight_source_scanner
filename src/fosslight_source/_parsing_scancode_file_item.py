@@ -15,11 +15,14 @@ from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 REMOVE_LICENSE = ["warranty-disclaimer"]
-regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
+regex = re.compile(r'(?:licenseref-|SPDX-license-identifier-)([^",\s]+)', re.IGNORECASE)
 find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
 KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
+KEYWORD_SCANCODE_PROPRIETARY_LICENSE = "proprietary-license"
+KEYWORD_UNKNOWN_LICENSE_REFERENCE = "unknown-license-reference"
+KEYWORD_LGE_PROPRIETARY = "lge-proprietary"
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND = r"(?<=\s)and(?=\s)"
 KEY_OR = r"(?<=\s)or(?=\s)"
@@ -147,12 +150,12 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                             license_value = spdx.lower()
 
                         if license_value != "":
-                            if key == KEYWORD_SCANCODE_UNKNOWN:
+                            if key == KEYWORD_SCANCODE_UNKNOWN or key == KEYWORD_SCANCODE_PROPRIETARY_LICENSE:
                                 try:
                                     matched_txt = lic_item.get("matched_text", "").lower()
                                     matched = regex.search(matched_txt)
                                     if matched:
-                                        license_value = str(matched.group())
+                                        license_value = str(matched.group(1))
                                 except Exception:
                                     pass
 
@@ -177,6 +180,13 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                         result_item.is_license_text = matched_rule.get("is_license_text", False)
 
                     if len(license_detected) > 0:
+                        # Remove unknown-license-reference and leave only lge-proprietary
+                        license_lower = [x.lower() for x in license_detected]
+                        if (
+                            KEYWORD_UNKNOWN_LICENSE_REFERENCE.lower() in license_lower
+                            and KEYWORD_LGE_PROPRIETARY.lower() in license_lower
+                        ):
+                            license_detected.remove(KEYWORD_UNKNOWN_LICENSE_REFERENCE)
                         result_item.licenses = license_detected
 
                         # Remove copyright info for license text file of GPL family
@@ -259,11 +269,14 @@ def parsing_scancode_32_later(
                                     found_lic = found_lic.strip()
                                     if found_lic in REMOVE_LICENSE:
                                         continue
-                                    elif found_lic == KEYWORD_SCANCODE_UNKNOWN:
+                                    elif (
+                                        found_lic == KEYWORD_SCANCODE_UNKNOWN
+                                        or found_lic == KEYWORD_SCANCODE_PROPRIETARY_LICENSE
+                                    ):
                                         try:
                                             matched = regex.search(matched_txt.lower())
                                             if matched:
-                                                found_lic = str(matched.group())
+                                                found_lic = str(matched.group(1))
                                         except Exception:
                                             pass
                                     for word in replace_word:
@@ -276,6 +289,15 @@ def parsing_scancode_32_later(
                                             lic_info = MatchedLicense(found_lic, "", matched_txt, file_path)
                                             license_list[lic_matched_key] = lic_info
                                     license_detected.append(found_lic)
+
+                # Remove unknown-license-reference and leave only lge-proprietary
+                license_lower = [x.lower() for x in license_detected]
+                if (
+                    KEYWORD_UNKNOWN_LICENSE_REFERENCE.lower() in license_lower
+                    and KEYWORD_LGE_PROPRIETARY.lower() in license_lower
+                ):
+                    license_detected.remove(KEYWORD_UNKNOWN_LICENSE_REFERENCE)
+
                 result_item.licenses = license_detected
                 file_ext = os.path.splitext(file_path)[1].lower()
                 is_source_file = file_ext and file_ext in SOURCE_EXTENSIONS
