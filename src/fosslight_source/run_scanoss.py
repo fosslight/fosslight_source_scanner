@@ -14,7 +14,6 @@ from fosslight_util.set_log import init_log
 from fosslight_util.output_format import check_output_formats_v2  # , write_output_file
 from ._parsing_scanoss_file import parsing_scan_result  # scanoss
 from ._parsing_scanoss_file import parsing_extra_info  # scanoss
-import shutil
 from pathlib import Path
 from scanoss.scanner import Scanner, ScanType
 import io

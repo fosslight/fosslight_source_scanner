@@ -197,26 +197,25 @@ def create_report_file(
 
     if merged_result:
         scan_item.set_cover_comment(f"Detected source : {len(merged_result)}")
-    else: # not merged_result
+    else:  # not merged_result
         if files_count < 1:
-            scan_item.set_cover_comment(f"(No file detected.)")
+            scan_item.set_cover_comment("(No file detected.)")
         else:
-            scan_item.set_cover_comment(f"(No OSS detected.)")
+            scan_item.set_cover_comment("(No OSS detected.)")
 
     if api_limit_exceed:
-        scan_item.set_cover_comment(f"SCANOSS skipped (API limits)")
+        scan_item.set_cover_comment("SCANOSS skipped (API limits)")
 
     run_kb = True if selected_scanner in ['kb', 'all'] else False
     if run_kb and not check_kb_server_reachable():
-        scan_item.set_cover_comment(f"KB unreachable")
-
+        scan_item.set_cover_comment("KB unreachable")
     if selected_scanner == "kb":
         display_mode = "Scancode, KB"
     elif selected_scanner == "scancode":
         display_mode = "Scancode"
     elif selected_scanner == "scanoss":
         display_mode = "SCANOSS"
-    else: # selected_scanner == "all"
+    else:  # selected_scanner == "all"
         display_mode = "Scancode, KB, SCANOSS"
     scan_item.set_cover_comment(f"Mode : {display_mode}")
 
