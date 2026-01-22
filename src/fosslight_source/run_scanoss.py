@@ -102,13 +102,4 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
 
     logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
 
-    try:
-        if write_json_file:
-            shutil.move(SCANOSS_RESULT_FILE, output_path)
-        else:
-            os.remove(output_json_file)
-            os.remove(SCANOSS_RESULT_FILE)
-    except Exception as error:
-        logger.debug(f"Moving scanoss raw files failed.: {error}")
-
     return scanoss_file_list, api_limit_exceed
