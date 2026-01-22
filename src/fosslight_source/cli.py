@@ -30,6 +30,7 @@ from ._scan_item import SourceItem, KB_URL
 from fosslight_util.oss_item import ScannerItem
 from typing import Tuple
 from ._scan_item import is_manifest_file
+import shutil
 
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
@@ -150,10 +151,7 @@ def create_report_file(
     sheet_list = {}
     _json_ext = ".json"
 
-    if output_path == "":
-        output_path = os.getcwd()
-    else:
-        output_path = os.path.abspath(output_path)
+    output_path = os.path.abspath(output_path)
 
     if not output_files:
         # If -o does not contains file name, set default name
@@ -355,6 +353,11 @@ def run_scanners(
 
     success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, formats)
 
+    if output_path == "":
+        output_path = os.getcwd()
+    final_output_path = output_path
+    output_path = os.path.join(output_path, '.fosslight_temp')
+
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
 
@@ -397,6 +400,13 @@ def run_scanners(
     else:
         result_log[RESULT_KEY] = f"Format error. {msg}"
         success = False
+
+    try:
+        shutil.copytree(output_path, final_output_path, dirs_exist_ok=True)
+        shutil.rmtree(output_path)
+    except Exception as ex:
+        logger.debug(f"Failed to move temp files: {ex}")
+
     return success, result_log.get(RESULT_KEY, ""), scan_item, license_list, scanoss_result
 
 
