@@ -195,14 +195,30 @@ def create_report_file(
     scan_item.set_cover_pathinfo(path_to_scan, path_to_exclude)
     scan_item.set_cover_comment(f"Scanned files: {files_count}")
 
-    if api_limit_exceed:
-        scan_item.set_cover_comment("(Some of) SCANOSS scan was skipped. (API limits being exceeded)")
-
-    if not merged_result:
+    if merged_result:
+        scan_item.set_cover_comment(f"Detected source : {len(merged_result)}")
+    else: # not merged_result
         if files_count < 1:
-            scan_item.set_cover_comment("(No file detected.)")
+            scan_item.set_cover_comment(f"(No file detected.)")
         else:
-            scan_item.set_cover_comment("(No OSS detected.)")
+            scan_item.set_cover_comment(f"(No OSS detected.)")
+
+    if api_limit_exceed:
+        scan_item.set_cover_comment(f"SCANOSS skipped (API limits)")
+
+    run_kb = True if selected_scanner in ['kb', 'all'] else False
+    if run_kb and not check_kb_server_reachable():
+        scan_item.set_cover_comment(f"KB unreachable")
+
+    if selected_scanner == "kb":
+        display_mode = "Scancode, KB"
+    elif selected_scanner == "scancode":
+        display_mode = "Scancode"
+    elif selected_scanner == "scanoss":
+        display_mode = "SCANOSS"
+    else: # selected_scanner == "all"
+        display_mode = "Scancode, KB, SCANOSS"
+    scan_item.set_cover_comment(f"Mode : {display_mode}")
 
     if merged_result:
         sheet_list = {}

@@ -84,7 +84,6 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
             scanner.scan_folder_with_options(scan_dir=path_to_scan)
         captured_output = output_buffer.getvalue()
         api_limit_exceed = "due to service limits being exceeded" in captured_output
-        logger.debug(f"{captured_output}")
 
         if os.path.isfile(output_json_file):
             with open(output_json_file, "r") as st_json:
