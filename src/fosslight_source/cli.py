@@ -335,7 +335,8 @@ def run_scanners(
     called_by_cli: bool = True, print_matched_text: bool = False,
     formats: list = [], time_out: int = 120,
     correct_mode: bool = True, correct_filepath: str = "",
-    selected_scanner: str = 'all', path_to_exclude: list = []
+    selected_scanner: str = 'all', path_to_exclude: list = [],
+    all_exclude_mode: tuple = ()
 ) -> Tuple[bool, str, 'ScannerItem', list, list]:
     """
     Run Scancode and scanoss.py for the given path.
@@ -379,10 +380,18 @@ def run_scanners(
         print_matched_text = False
 
     if success:
-        path_to_exclude_with_filename = path_to_exclude
-        excluded_path_with_default_exclusion, excluded_path_without_dot, excluded_files, cnt_file_except_skipped = (
-            get_excluded_paths(path_to_scan, path_to_exclude_with_filename))
-        logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
+        if all_exclude_mode and len(all_exclude_mode) == 4:
+            (excluded_path_with_default_exclusion,
+             excluded_path_without_dot,
+             excluded_files,
+             cnt_file_except_skipped) = all_exclude_mode
+        else:
+            path_to_exclude_with_filename = path_to_exclude
+            (excluded_path_with_default_exclusion,
+             excluded_path_without_dot,
+             excluded_files,
+             cnt_file_except_skipped) = get_excluded_paths(path_to_scan, path_to_exclude_with_filename)
+            logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
 
         if not selected_scanner:
             selected_scanner = 'all'
