@@ -1,5 +1,22 @@
 # Changelog
 
+## v2.2.3 (23/01/2026)
+## Changes
+- Fix tox.ini @JustinWonjaePark (#237)
+
+## 🐛 Hotfixes
+
+- Use hidden dir for intermeditate to fix scan count @JustinWonjaePark (#234)
+
+## 🔧 Maintenance
+
+- Update Scanner Info sheet and fix bug related to temp directory @JustinWonjaePark (#236)
+- Take UNLICENSED expression from npmjs @JustinWonjaePark (#239)
+- Fix logging @JustinWonjaePark (#238)
+- Replace exclusion to FL Util @soimkim (#235)
+
+---
+
 ## v2.2.2 (19/01/2026)
 ## Changes
 ## 🚀 Features
@@ -275,15 +292,3 @@
 ## 🔧 Maintenance
 
 - Update scancode version for web service @soimkim (#161)
-
----
-
-## v1.7.11 (11/06/2024)
-## Changes
-## 🐛 Hotfixes
-
-- Bug fix related to license duplication @soimkim (#159)
-
-## 🔧 Maintenance
-
-- Check empty license @soimkim (#160)
