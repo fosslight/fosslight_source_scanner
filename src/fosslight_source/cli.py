@@ -137,7 +137,7 @@ def create_report_file(
     output_path: str = "", output_files: list = [],
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
-    formats: list = [], api_limit_exceed: bool = False, files_count: int = 0
+    formats: list = [], api_limit_exceed: bool = False, files_count: int = 0, final_output_path: str = ""
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -239,12 +239,13 @@ def create_report_file(
         #     del sheet_list["scanoss_reference"]
         results.append(write_output_file(combined_path_and_file, output_extension, scan_item, extended_header, "", output_format))
     for success, msg, result_file in results:
+        final_result_file = result_file.replace(output_path, final_output_path)
         if success:
-            logger.info(f"Output file: {result_file}")
+            logger.info(f"Output file: {final_result_file}")
             for row in scan_item.get_cover_comment():
                 logger.info(row)
         else:
-            logger.error(f"Fail to generate result file {result_file}. msg:({msg})")
+            logger.error(f"Fail to generate result file {final_result_file}. msg:({msg})")
     return scan_item
 
 
@@ -356,7 +357,7 @@ def run_scanners(
     if output_path == "":
         output_path = os.getcwd()
     final_output_path = output_path
-    output_path = os.path.join(output_path, '.fosslight_temp')
+    output_path = os.path.join(os.path.dirname(output_path), '.fosslight_temp')
 
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
@@ -392,7 +393,7 @@ def run_scanners(
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, excluded_path_without_dot, formats,
-                                           api_limit_exceed, cnt_file_except_skipped)
+                                           api_limit_exceed, cnt_file_except_skipped, final_output_path)
         else:
             print_help_msg_source_scanner()
             result_log[RESULT_KEY] = "Unsupported scanner"
