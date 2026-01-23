@@ -42,8 +42,6 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
 
     if isinstance(license_field, str):
         value = license_field.strip()
-        if value.upper() == 'UNLICENSED':
-            return []
         if value.upper().startswith('SEE LICENSE IN'):
             return []
         licenses.extend(_split_spdx_expression(value))
@@ -51,7 +49,7 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
         type_val = license_field.get('type')
         if isinstance(type_val, str):
             type_val = type_val.strip()
-            if type_val and type_val.upper() != 'UNLICENSED':
+            if type_val:
                 licenses.append(type_val)
 
     if not licenses:
@@ -60,13 +58,13 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
             for item in legacy:
                 if isinstance(item, str):
                     token = item.strip()
-                    if token and token.upper() != 'UNLICENSED':
+                    if token:
                         licenses.append(token)
                 elif isinstance(item, dict):
                     t = item.get('type')
                     if isinstance(t, str):
                         t = t.strip()
-                        if t and t.upper() != 'UNLICENSED':
+                        if t:
                             licenses.append(t)
 
     unique: list[str] = []
