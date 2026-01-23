@@ -197,7 +197,7 @@ def create_report_file(
 
     if merged_result:
         scan_item.set_cover_comment(f"Detected source : {len(merged_result)}")
-    else:  # not merged_result
+    else:
         if files_count < 1:
             scan_item.set_cover_comment("(No file detected.)")
         else:
@@ -206,17 +206,15 @@ def create_report_file(
     if api_limit_exceed:
         scan_item.set_cover_comment("SCANOSS skipped (API limits)")
 
+    
     run_kb = True if selected_scanner in ['kb', 'all'] else False
-    if run_kb and not check_kb_server_reachable():
-        scan_item.set_cover_comment("KB unreachable")
+    if run_kb:
+        scan_item.set_cover_comment("KB Enabled" if check_kb_server_reachable() else "KB Unreachable")
+    display_mode = selected_scanner
     if selected_scanner == "kb":
-        display_mode = "Scancode, KB"
-    elif selected_scanner == "scancode":
-        display_mode = "Scancode"
-    elif selected_scanner == "scanoss":
-        display_mode = "SCANOSS"
-    else:  # selected_scanner == "all"
-        display_mode = "Scancode, KB, SCANOSS"
+        display_mode += ", scancode"
+    elif selected_scanner == "all":
+        display_mode = "kb, scancode, scanoss"
     scan_item.set_cover_comment(f"Mode : {display_mode}")
 
     if merged_result:
@@ -398,7 +396,7 @@ def run_scanners(
                                                                                       excluded_files)
         excluded_files = set(excluded_files) if excluded_files else set()
         if selected_scanner in ['scanoss', 'all']:
-            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
+            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True,
                                                               num_cores, excluded_path_with_default_exclusion, excluded_files)
         if selected_scanner in SCANNER_TYPE:
             run_kb = True if selected_scanner in ['kb', 'all'] else False

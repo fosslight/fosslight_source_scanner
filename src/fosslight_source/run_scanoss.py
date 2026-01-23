@@ -31,7 +31,7 @@ def get_scanoss_extra_info(scanned_result: dict) -> list:
 
 
 def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list = [],
-                   called_by_cli: bool = False, write_json_file: bool = False, num_threads: int = -1,
+                   called_by_cli: bool = False, num_threads: int = -1,
                    path_to_exclude: list = [], excluded_files: set = None) -> list:
     """
     Run scanoss.py for the given path.
@@ -45,12 +45,6 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
     """
     success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, format)
 
-    if not called_by_cli:
-        global logger
-        _start_time = datetime.now().strftime('%y%m%d_%H%M')
-        logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
-                                       True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
-
     scanoss_file_list = []
     try:
         importlib_metadata.distribution("scanoss")
@@ -59,12 +53,6 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
         logger.warning("Please install scanoss and dataclasses before run fosslight_source with scanoss option.")
         return scanoss_file_list
 
-    if output_path == "":  # if json output with _write_json_file not used, output_path won't be needed.
-        output_path = os.getcwd()
-    else:
-        output_path = os.path.abspath(output_path)
-        if not os.path.isdir(output_path):
-            Path(output_path).mkdir(parents=True, exist_ok=True)
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
     if os.path.exists(output_json_file):  # remove scanner_output.wfp file if exist
         os.remove(output_json_file)
