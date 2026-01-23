@@ -206,7 +206,6 @@ def create_report_file(
     if api_limit_exceed:
         scan_item.set_cover_comment("SCANOSS skipped (API limits)")
 
-    
     run_kb = True if selected_scanner in ['kb', 'all'] else False
     if run_kb:
         scan_item.set_cover_comment("KB Enabled" if check_kb_server_reachable() else "KB Unreachable")

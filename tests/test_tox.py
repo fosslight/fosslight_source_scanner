@@ -118,6 +118,8 @@ def test_help_command():
 
 
 def test_scan_command():
+    os.makedirs("test_scan", exist_ok=True)
+
     success, _ = run_command("fosslight_source -p tests/test_files -o test_scan/scan_result.csv")
     assert success is True, "Test Release: Failed to generate scan result CSV file"
 
@@ -131,6 +133,8 @@ def test_scan_command():
 
 
 def test_exclude_command():
+    os.makedirs("test_scan2", exist_ok=True)
+
     success, _ = run_command(
         "fosslight_source -p tests -e test_files/test cli_test.py -j -m -o test_scan2/scan_exclude_result.csv"
     )
@@ -146,6 +150,8 @@ def test_exclude_command():
 
 
 def test_json_command():
+    os.makedirs("test_scan3", exist_ok=True)
+
     success, _ = run_command("fosslight_source -p tests/test_files -m -j -o test_scan3/")
     assert success is True, "Test release: Failed to generate JSON files"
 

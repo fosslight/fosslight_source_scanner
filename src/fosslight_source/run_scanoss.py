@@ -8,13 +8,10 @@ import importlib_metadata
 import warnings
 import logging
 import json
-from datetime import datetime
 import fosslight_util.constant as constant
-from fosslight_util.set_log import init_log
 from fosslight_util.output_format import check_output_formats_v2  # , write_output_file
 from ._parsing_scanoss_file import parsing_scan_result  # scanoss
 from ._parsing_scanoss_file import parsing_extra_info  # scanoss
-from pathlib import Path
 from scanoss.scanner import Scanner, ScanType
 import io
 import contextlib
@@ -46,6 +43,7 @@ def run_scanoss_py(path_to_scan: str, output_file_name: str = "", format: list =
     success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, format)
 
     scanoss_file_list = []
+    api_limit_exceed = False
     try:
         importlib_metadata.distribution("scanoss")
     except Exception as error:
