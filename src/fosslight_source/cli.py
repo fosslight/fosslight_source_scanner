@@ -195,14 +195,26 @@ def create_report_file(
     scan_item.set_cover_pathinfo(path_to_scan, path_to_exclude)
     scan_item.set_cover_comment(f"Scanned files: {files_count}")
 
-    if api_limit_exceed:
-        scan_item.set_cover_comment("(Some of) SCANOSS scan was skipped. (API limits being exceeded)")
-
-    if not merged_result:
+    if merged_result:
+        scan_item.set_cover_comment(f"Detected source : {len(merged_result)}")
+    else:
         if files_count < 1:
             scan_item.set_cover_comment("(No file detected.)")
         else:
             scan_item.set_cover_comment("(No OSS detected.)")
+
+    if api_limit_exceed:
+        scan_item.set_cover_comment("SCANOSS skipped (API limits)")
+
+    run_kb = True if selected_scanner in ['kb', 'all'] else False
+    if run_kb:
+        scan_item.set_cover_comment("KB Enabled" if check_kb_server_reachable() else "KB Unreachable")
+    display_mode = selected_scanner
+    if selected_scanner == "kb":
+        display_mode += ", scancode"
+    elif selected_scanner == "all":
+        display_mode = "kb, scancode, scanoss"
+    scan_item.set_cover_comment(f"Mode : {display_mode}")
 
     if merged_result:
         sheet_list = {}
@@ -383,7 +395,7 @@ def run_scanners(
                                                                                       excluded_files)
         excluded_files = set(excluded_files) if excluded_files else set()
         if selected_scanner in ['scanoss', 'all']:
-            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True, write_json_file,
+            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_file_name, formats, True,
                                                               num_cores, excluded_path_with_default_exclusion, excluded_files)
         if selected_scanner in SCANNER_TYPE:
             run_kb = True if selected_scanner in ['kb', 'all'] else False
