@@ -6,33 +6,56 @@ from fosslight_util.help import PrintHelpMsg, print_package_version
 from fosslight_util.output_format import SUPPORT_FORMAT
 
 _HELP_MESSAGE_SOURCE_SCANNER = f"""
-    FOSSLight Source Scanner Usage: fosslight_source [option1] <arg1> [option2] <arg2>...
+    📖 Usage
+    ────────────────────────────────────────────────────────────────────
+    fosslight_source [options] <arguments>
 
-    FOSSLight Source Scanner uses ScanCode and SCANOSS, the source code scanners, to detect
-    the copyright and license phrases contained in the file.
-    Some files (ex- build script), binary files, directory and files in specific
-    directories (ex-test) are excluded from the result.
+    📝 Description
+    ────────────────────────────────────────────────────────────────────
+    FOSSLight Source Scanner analyzes source code to detect copyright and
+    license information using several modes.
 
-    Options:
-        Optional
-            -p <source_path>\t   Path to analyze source (Default: current directory)
-            -h\t\t\t   Print help message
-            -v\t\t\t   Print FOSSLight Source Scanner version
-            -m\t\t\t   Print additional information for scan result on separate sheets
-            -e <path>\t\t   Path to exclude from analysis (files and directories)
-            \t\t\t   * IMPORTANT: Always wrap patterns in double quotes ("") to avoid shell expansion.
-            \t\t\t     Example) fosslight_source -e "dev/" "tests/"
-            -o <output_path>\t   Output path (Path or file name)
-            -f <format>\t\t   Output file formats
-            \t\t\t   ({', '.join(SUPPORT_FORMAT)})
-            \t\t\t   Multiple formats can be specified separated by space.
-        Options only for FOSSLight Source Scanner
-            -s <scanner>\t   Select which scanner to be run (scancode, scanoss, kb, all)
-            -j\t\t\t   Generate raw result of scanners in json format
-            -t <float>\t\t   Stop scancode scanning if scanning takes longer than a timeout in seconds.
-            -c <core>\t\t   Select the number of cores to be scanned with ScanCode or threads with SCANOSS.
-            --no_correction\t   Enter if you don't want to correct OSS information with sbom-info.yaml
-            --correct_fpath <path> Path to the sbom-info.yaml file"""
+    Note: Build scripts, binary files, and test directories are automatically
+          excluded from analysis.
+
+    📚 Guide: https://fosslight.org/fosslight-guide/scanner/2_source.html
+
+    ⚙️  General Options
+    ────────────────────────────────────────────────────────────────────
+    -p <path>              Source path to analyze (default: current directory)
+    -o <path>              Output file path or directory
+    -f <format>            Output formats: {', '.join(SUPPORT_FORMAT)}
+                           (multiple formats can be specified, separated by space)
+    -e <pattern>           Exclude paths from analysis (files and directories)
+                           ⚠️  IMPORTANT: Always wrap in quotes to avoid shell expansion
+                           Example: fosslight_source -e "dev/" "tests/" "*.jar"
+    -m                     Generate detailed scan results on separate sheets
+    -h                     Show this help message
+    -v                     Show version information
+
+    🔍 Scanner-Specific Options
+    ────────────────────────────────────────────────────────────────────
+    -s <mode>              Choose mode: scancode, scanoss, kb, or all(default)
+    -c <number>            Number of CPU cores/threads to use for scanning
+    -t <seconds>           Timeout in seconds for ScanCode scanning
+    -j                     Generate raw scanner results in JSON format
+    --no_correction        Skip OSS information correction with sbom-info.yaml
+    --correct_fpath <path> Path to custom sbom-info.yaml file
+
+    💡 Examples
+    ────────────────────────────────────────────────────────────────────
+    # Scan current directory
+    fosslight_source
+
+    # Scan specific path with exclusions
+    fosslight_source -p /path/to/source -e "test/" "node_modules/"
+
+    # Generate output in specific format
+    fosslight_source -f excel -o results/
+
+    # Generate raw scanner results in JSON format
+    fosslight_source -p /path/to/source -j
+"""
 
 
 def print_version(pkg_name: str) -> None:
