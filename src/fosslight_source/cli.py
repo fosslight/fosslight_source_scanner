@@ -370,7 +370,7 @@ def run_scanners(
     if output_path == "":
         output_path = os.getcwd()
     final_output_path = output_path
-    output_path = os.path.join(os.path.dirname(output_path), '.fosslight_temp')
+    output_path = os.path.join(os.path.dirname(output_path), f'.fosslight_temp_{start_time}')
 
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
