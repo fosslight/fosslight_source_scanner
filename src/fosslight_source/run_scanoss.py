@@ -10,7 +10,6 @@ import logging
 import json
 from typing import Tuple
 import fosslight_util.constant as constant
-from fosslight_util.output_format import check_output_formats_v2  # , write_output_file
 from ._parsing_scanoss_file import parsing_scan_result  # scanoss
 from ._parsing_scanoss_file import parsing_extra_info  # scanoss
 from scanoss.scanner import Scanner, ScanType
@@ -20,7 +19,6 @@ import contextlib
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
-SCANOSS_RESULT_FILE = "scanner_output.wfp"
 SCANOSS_OUTPUT_FILE = "scanoss_raw_result.json"
 
 
@@ -42,7 +40,6 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     :param write_json_file: if requested, keep the raw files.
     :return scanoss_file_list: list of ScanItem (scanned result by files).
     """
-    # success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, format)
 
     scanoss_file_list = []
     api_limit_exceed = False
@@ -54,8 +51,6 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
         return scanoss_file_list, api_limit_exceed
 
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
-    if os.path.exists(output_json_file):  # remove scanner_output.wfp file if exist
-        os.remove(output_json_file)
 
     try:
         scanner = Scanner(
@@ -83,7 +78,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
                 scanoss_file_list = parsing_scan_result(st_python, excluded_files)
-            
+
             if not write_json_file and os.path.isfile(output_json_file):
                 os.remove(output_json_file)
 
