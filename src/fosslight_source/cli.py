@@ -404,9 +404,10 @@ def run_scanners(
                                                                                       excluded_files)
         excluded_files = set(excluded_files) if excluded_files else set()
         if selected_scanner in ['scanoss', 'all']:
-            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_path, formats, True,
-                                                              num_cores, excluded_path_with_default_exclusion, excluded_files,
+            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_path, formats, True, num_cores,
+                                                              excluded_path_with_default_exclusion, excluded_files,
                                                               write_json_file)
+
         if selected_scanner in SCANNER_TYPE:
             run_kb = True if selected_scanner in ['kb', 'all'] else False
             spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)

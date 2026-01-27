@@ -8,6 +8,7 @@ import importlib_metadata
 import warnings
 import logging
 import json
+from typing import Tuple
 import fosslight_util.constant as constant
 from fosslight_util.output_format import check_output_formats_v2  # , write_output_file
 from ._parsing_scanoss_file import parsing_scan_result  # scanoss
@@ -30,7 +31,7 @@ def get_scanoss_extra_info(scanned_result: dict) -> list:
 def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
                    called_by_cli: bool = False, num_threads: int = -1,
                    path_to_exclude: list = [], excluded_files: set = None,
-                   write_json_file: bool = False) -> list:
+                   write_json_file: bool = False) -> Tuple[list, bool]:
     """
     Run scanoss.py for the given path.
 
@@ -50,7 +51,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     except Exception as error:
         logger.warning(f"{error}. Skipping scan with scanoss.")
         logger.warning("Please install scanoss and dataclasses before run fosslight_source with scanoss option.")
-        return scanoss_file_list
+        return scanoss_file_list, api_limit_exceed
 
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
     if os.path.exists(output_json_file):  # remove scanner_output.wfp file if exist
