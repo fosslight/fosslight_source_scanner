@@ -51,6 +51,8 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
         return scanoss_file_list, api_limit_exceed
 
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
+    if os.path.exists(output_json_file):
+        os.remove(output_json_file)
 
     try:
         scanner = Scanner(
@@ -79,7 +81,8 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
                 st_python = json.load(st_json)
                 scanoss_file_list = parsing_scan_result(st_python, excluded_files)
 
-            if not write_json_file and os.path.isfile(output_json_file):
+        if not write_json_file:
+            if os.path.isfile(output_json_file):
                 os.remove(output_json_file)
 
     except Exception as error:
