@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.2.4 (02/02/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Fix intermediate file path bug @JustinWonjaePark (#243)
+
+## 🔧 Maintenance
+
+- Update help message @bjk7119 (#241)
+- Update temporary directory name @soimkim (#242)
+
+---
+
 ## v2.2.3 (23/01/2026)
 ## Changes
 - Fix tox.ini @JustinWonjaePark (#237)
@@ -14,6 +27,7 @@
 - Take UNLICENSED expression from npmjs @JustinWonjaePark (#239)
 - Fix logging @JustinWonjaePark (#238)
 - Replace exclusion to FL Util @soimkim (#235)
+- Remove duplicated exclude logic for all mode @dd-jy (#240)
 
 ---
 
@@ -284,11 +298,3 @@
 ## 🐛 Hotfixes
 
 - Amend exclude option @SeongjunJo (#162)
-
----
-
-## v1.7.12 (21/06/2024)
-## Changes
-## 🔧 Maintenance
-
-- Update scancode version for web service @soimkim (#161)
