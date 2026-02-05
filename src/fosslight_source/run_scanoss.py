@@ -20,6 +20,7 @@ import contextlib
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
+SCANOSS_RESULT_FILE = "scanner_output.wfp"
 SCANOSS_OUTPUT_FILE = "scanoss_raw_result.json"
 
 
@@ -52,6 +53,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
         return scanoss_file_list, api_limit_exceed
 
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
+    output_wfp_file = os.path.join(output_path, SCANOSS_RESULT_FILE)
     if os.path.exists(output_json_file):
         os.remove(output_json_file)
 
@@ -89,6 +91,8 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     if not write_json_file:
         if os.path.isfile(output_json_file):
             os.remove(output_json_file)
+        if os.path.isfile(output_wfp_file):
+            os.remove(output_wfp_file)
 
     logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
 
