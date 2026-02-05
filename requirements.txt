@@ -1,5 +1,5 @@
 pyparsing
-scanoss>=1.18.0
+scanoss>=1.19.0
 XlsxWriter
 fosslight_util>=2.1.37
 PyYAML
