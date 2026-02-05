@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.2.5 (05/02/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Fix bug while removing temp files @JustinWonjaePark (#244)
+
+---
+
 ## v2.2.4 (02/02/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -290,11 +298,3 @@
 ## 🔧 Maintenance
 
 - Check hidden files and mark 'Exlcude'. @JustinWonjaePark (#166)
-
----
-
-## v1.7.13 (25/06/2024)
-## Changes
-## 🐛 Hotfixes
-
-- Amend exclude option @SeongjunJo (#162)
