@@ -13,6 +13,7 @@ import fosslight_util.constant as constant
 from ._parsing_scanoss_file import parsing_scan_result  # scanoss
 from ._parsing_scanoss_file import parsing_extra_info  # scanoss
 from scanoss.scanner import Scanner, ScanType
+from scanoss.scanoss_settings import ScanossSettings
 import io
 import contextlib
 
@@ -55,12 +56,14 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
         os.remove(output_json_file)
 
     try:
+        scanoss_settings = ScanossSettings()
         scanner = Scanner(
             ignore_cert_errors=True,
             skip_folders=list(path_to_exclude) if path_to_exclude else [],
             scan_output=output_json_file,
             scan_options=ScanType.SCAN_SNIPPETS.value,
-            nb_threads=num_threads if num_threads > 0 else 10
+            nb_threads=num_threads if num_threads > 0 else 10,
+            scanoss_settings=scanoss_settings
         )
 
         output_buffer = io.StringIO()
@@ -80,13 +83,12 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
                 scanoss_file_list = parsing_scan_result(st_python, excluded_files)
-
-        if not write_json_file:
-            if os.path.isfile(output_json_file):
-                os.remove(output_json_file)
-
     except Exception as error:
         logger.debug(f"SCANOSS Parsing {path_to_scan}: {error}")
+
+    if not write_json_file:
+        if os.path.isfile(output_json_file):
+            os.remove(output_json_file)
 
     logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
 
