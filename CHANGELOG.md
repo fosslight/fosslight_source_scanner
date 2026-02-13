@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.2.6 (13/02/2026)
+## Changes
+## 🚀 Features
+
+- Add snippet matching to FOSSLight KB @soimkim (#245)
+
+---
+
 ## v2.2.5 (05/02/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -281,20 +289,3 @@
 
 - Version up FOSSLight util to fix default file bug @JustinWonjaePark (#170)
 - Complying with SPDX License expression spec @JustinWonjaePark (#167)
-
----
-
-## v1.7.14 (15/07/2024)
-## 🚀 Features
-
-- Enable multiple input for -f and -o option @JustinWonjaePark (#164)
-
-## 🐛 Hotfixes
-
-- Update scancode version for mac @soimkim (#168)
-- Fix SPDX expression split bug @JustinWonjaePark (#165)
-- Revert "Fix SPDX expression split bug" @soimkim (#169)
-
-## 🔧 Maintenance
-
-- Check hidden files and mark 'Exlcude'. @JustinWonjaePark (#166)
