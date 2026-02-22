@@ -9,4 +9,3 @@ fosslight_binary>=5.0.0
 scancode-toolkit>=32.0.2
 fingerprints==1.2.3
 normality==2.6.1
-click==8.2.1
