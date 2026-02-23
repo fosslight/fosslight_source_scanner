@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.2.7 (23/02/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Fix Scancode's dependency package bug @soimkim (#248)
+
+---
+
 ## v2.2.6 (13/02/2026)
 ## Changes
 ## 🚀 Features
@@ -280,12 +288,3 @@
 - Change SCANOSS Invocation Method from Command Line to Library Function @YongGoose (#178)
 - Modify error comment @bjk7119 (#176)
 - Add --ignore-cert-errors to ScanOSS command @soimkim (#174)
-
----
-
-## v1.7.15 (17/07/2024)
-## Changes
-## 🐛 Hotfixes
-
-- Version up FOSSLight util to fix default file bug @JustinWonjaePark (#170)
-- Complying with SPDX License expression spec @JustinWonjaePark (#167)
