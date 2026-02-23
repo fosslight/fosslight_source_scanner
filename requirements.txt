@@ -1,4 +1,4 @@
-setuptools
+setuptools<=80.10.2
 pyparsing
 scanoss>=1.19.0
 XlsxWriter
