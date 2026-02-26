@@ -25,3 +25,7 @@ License: Apache-2.0
 Files: .bumpversion.cfg
 Copyright: 2021 LG Electronics
 License: Apache-2.0
+
+Files: .coderabbit.yaml
+Copyright: 2026 LG Electronics
+License: Apache-2.0
