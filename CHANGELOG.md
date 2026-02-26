@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.2.8 (26/02/2026)
+## Changes
+## 🔧 Maintenance
+
+- Add initial coderabbit configuration @soimkim (#250)
+- Retrieve SPDX from a given license @soimkim (#249)
+
+---
+
 ## v2.2.7 (23/02/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -277,14 +286,3 @@
 ## 🔧 Maintenance
 
 - Refactoring OSS Item @soimkim (#183)
-
----
-
-## v1.7.16 (06/09/2024)
-## Changes
-## 🔧 Maintenance
-
-- Limit installation to fosslight_util 1.4.* @soimkim (#182)
-- Change SCANOSS Invocation Method from Command Line to Library Function @YongGoose (#178)
-- Modify error comment @bjk7119 (#176)
-- Add --ignore-cert-errors to ScanOSS command @soimkim (#174)
