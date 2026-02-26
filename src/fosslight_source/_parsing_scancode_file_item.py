@@ -213,6 +213,8 @@ def get_license_expression_spdx(license_expression: str) -> str:
     try:
         from licensedcode.cache import build_spdx_license_expression
         result = build_spdx_license_expression(license_expression.strip())
+        if result is None:
+            return ""
         if regex.match(result):
             return ""
         return result
