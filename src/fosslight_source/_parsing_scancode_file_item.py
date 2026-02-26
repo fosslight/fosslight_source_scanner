@@ -207,6 +207,21 @@ def split_spdx_expression(spdx_string: str) -> list:
     return license
 
 
+def get_license_expression_spdx(license_expression: str) -> str:
+    if not license_expression or not license_expression.strip():
+        return ""
+    try:
+        from licensedcode.cache import build_spdx_license_expression
+        result = build_spdx_license_expression(license_expression.strip())
+        if result is None:
+            return ""
+        if regex.match(result):
+            return ""
+        return result
+    except Exception:
+        return ""
+
+
 def parsing_scancode_32_later(
     scancode_file_list: list, has_error: bool = False
 ) -> Tuple[bool, list, list, dict]:
@@ -231,7 +246,6 @@ def parsing_scancode_32_later(
                         result_item.comment = ",".join(error_msg)
                         scancode_file_item.append(result_item)
                         continue
-
                 copyright_value_list = []
                 for x in file.get("copyrights", []):
                     copyright_data = x.get("copyright", "")
@@ -242,7 +256,6 @@ def parsing_scancode_32_later(
                         except Exception:
                             pass
                         copyright_value_list.append(copyright_data)
-
                 license_detected = []
                 licenses = file.get("license_detections", [])
                 if not licenses:
@@ -266,6 +279,8 @@ def parsing_scancode_32_later(
                                                 found_lic = str(matched.group())
                                         except Exception:
                                             pass
+                                    license_expression_spdx = get_license_expression_spdx(found_lic)
+                                    found_lic = license_expression_spdx if license_expression_spdx else found_lic
                                     for word in replace_word:
                                         found_lic = found_lic.replace(word, "")
                                     if matched_txt:
