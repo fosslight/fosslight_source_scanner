@@ -212,12 +212,9 @@ def get_license_expression_spdx(license_expression: str) -> str:
         return ""
     try:
         from licensedcode.cache import build_spdx_license_expression
-        result_obj = build_spdx_license_expression(license_expression.strip())
-        if not result_obj:
-            result = ""
-        result = str(result_obj)
-        if result.startswith("LicenseRef-"):
-            result = ""
+        result = build_spdx_license_expression(license_expression.strip())
+        if regex.match(result):
+            return ""
         return result
     except Exception:
         return ""
