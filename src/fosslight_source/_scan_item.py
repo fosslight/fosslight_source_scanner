@@ -96,11 +96,11 @@ class SourceItem(FileItem):
                 except Exception as e:
                     logger.debug(f"Failed to get WFP for {self.source_name_or_path}: {e}")
         except FileNotFoundError:
-            logger.warning(f"File not found: {self.source_name_or_path}")
+            logger.debug(f"File not found: {self.source_name_or_path}")
         except PermissionError:
-            logger.warning(f"Permission denied: {self.source_name_or_path}")
+            logger.debug(f"Permission denied: {self.source_name_or_path}")
         except Exception as e:
-            logger.warning(f"Failed to compute MD5 for {self.source_name_or_path}: {e}")
+            logger.debug(f"Failed to compute MD5 for {self.source_name_or_path}: {e}")
         return md5_hex, wfp
 
     def _get_origin_url_from_md5_hash(self, md5_hash: str, wfp: str = "") -> str:
@@ -122,11 +122,11 @@ class SourceItem(FileItem):
                         if output:
                             return output
         except urllib.error.URLError as e:
-            logger.warning(f"Failed to fetch origin_url from API for MD5 hash {md5_hash}: {e}")
+            logger.debug(f"Failed to fetch origin_url from API for MD5 hash {md5_hash}: {e}")
         except json.JSONDecodeError as e:
-            logger.warning(f"Failed to parse API response for MD5 hash {md5_hash}: {e}")
+            logger.debug(f"Failed to parse API response for MD5 hash {md5_hash}: {e}")
         except Exception as e:
-            logger.warning(f"Error getting origin_url for MD5 hash {md5_hash}: {e}")
+            logger.debug(f"Error getting origin_url for MD5 hash {md5_hash}: {e}")
         return ""
 
     def _extract_oss_info_from_url(self, url: str) -> tuple:
