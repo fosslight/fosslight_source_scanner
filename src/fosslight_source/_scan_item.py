@@ -23,7 +23,7 @@ _manifest_filename = [r'.*\.pom$', r'package\.json$', r'setup\.py$', r'setup\.cf
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
-KB_URL = "http://fosslight-kb.lge.com/query"
+KB_URL = "http://fosslight-kb.lge.com/"
 
 
 class SourceItem(FileItem):
@@ -108,7 +108,7 @@ class SourceItem(FileItem):
             payload = {"file_hash": md5_hash}
             if wfp and wfp.strip():
                 payload["wfp_base64"] = base64.b64encode(wfp.strip().encode("utf-8")).decode("ascii")
-            request = urllib.request.Request(KB_URL, data=json.dumps(payload).encode('utf-8'), method='POST')
+            request = urllib.request.Request(f"{KB_URL}query", data=json.dumps(payload).encode('utf-8'), method='POST')
             request.add_header('Accept', 'application/json')
             request.add_header('Content-Type', 'application/json')
 
