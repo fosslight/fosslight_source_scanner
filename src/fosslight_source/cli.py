@@ -10,9 +10,6 @@ import warnings
 import logging
 import urllib.request
 import urllib.error
-import urllib.parse
-import json
-import socket
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
