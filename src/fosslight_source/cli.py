@@ -263,15 +263,18 @@ def create_report_file(
 
 def check_kb_server_reachable() -> bool:
     try:
-        request = urllib.request.Request(KB_URL, method='HEAD')
-        with urllib.request.urlopen(request, timeout=5) as response:
+        request = urllib.request.Request(f"{KB_URL}health", method='GET')
+        with urllib.request.urlopen(request, timeout=10) as response:
             logger.debug(f"KB server is reachable. Response status: {response.status}")
             return response.status != 404
     except urllib.error.HTTPError as e:
+        logger.debug(f"KB server returned HTTP error: {e.code}")
         return e.code != 404
-    except urllib.error.URLError:
+    except urllib.error.URLError as e:
+        logger.debug(f"KB server is unreachable (timeout or connection error): {e}")
         return False
-    except Exception:
+    except Exception as e:
+        logger.debug(f"Unexpected error checking KB server: {e}")
         return False
 
 
