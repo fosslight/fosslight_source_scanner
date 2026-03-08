@@ -206,14 +206,14 @@ def create_report_file(
     if api_limit_exceed:
         scan_item.set_cover_comment("SCANOSS skipped (API limits)")
 
-    run_kb = True if selected_scanner in ['kb', 'all'] else False
+    run_kb = True if selected_scanner in ['kb'] else False
     if run_kb:
         scan_item.set_cover_comment("KB Enabled" if check_kb_server_reachable() else "KB Unreachable")
     display_mode = selected_scanner
     if selected_scanner == "kb":
         display_mode += ", scancode"
     elif selected_scanner == "all":
-        display_mode = "kb, scancode, scanoss"
+        display_mode = "scancode, scanoss"
     scan_item.set_cover_comment(f"Mode : {display_mode}")
 
     if merged_result:
@@ -412,7 +412,7 @@ def run_scanners(
                                                               write_json_file)
 
         if selected_scanner in SCANNER_TYPE:
-            run_kb = True if selected_scanner in ['kb', 'all'] else False
+            run_kb = True if selected_scanner in ['kb'] else False
             spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads,
                                           path_to_scan, run_kb, manifest_licenses)
