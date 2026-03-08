@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.2.9 (08/03/2026)
+## Changes
+## 🔧 Maintenance
+
+- Remove "Type of change" section from PR default template @woocheol-lge (#252)
+- Refactor logging to use debug for error related API calls @soimkim (#251)
+
+---
+
 ## v2.2.8 (26/02/2026)
 ## Changes
 ## 🔧 Maintenance
@@ -278,11 +287,3 @@
 
 - Tox to pytest @hkkim2021 (#188)
 - Add type hint @hkkim2021 (#184)
-
----
-
-## v2.0.0 (06/09/2024)
-## Changes
-## 🔧 Maintenance
-
-- Refactoring OSS Item @soimkim (#183)
