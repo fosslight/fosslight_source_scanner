@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.2.10 (09/03/2026)
+## Changes
+## 🔧 Maintenance
+
+- Remove kb from all mode @soimkim (#254)
+
+---
+
 ## v2.2.9 (08/03/2026)
 ## Changes
 ## 🔧 Maintenance
@@ -274,16 +282,3 @@
 ## 🔧 Maintenance
 
 - Remove typecode-libmagic from requirements.txt @soonhong99 (#192)
-
----
-
-## v2.1.0 (08/10/2024)
-## Changes
-## 🚀 Features
-
-- Support spdx (only Linux) @dd-jy (#190)
-
-## 🔧 Maintenance
-
-- Tox to pytest @hkkim2021 (#188)
-- Add type hint @hkkim2021 (#184)
