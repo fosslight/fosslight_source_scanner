@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 # Copyright (c) 2021 LG Electronics
 # SPDX-License-Identifier: Apache-2.0
+
+
+##TTEST####
 from codecs import open
 from setuptools import setup, find_packages
 
