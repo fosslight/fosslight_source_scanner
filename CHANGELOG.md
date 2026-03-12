@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.2.11 (12/03/2026)
+## Changes
+## 🚀 Features
+
+- Add kb_reference sheet and KB-only analysis mode @soimkim (#257)
+
+---
+
 ## v2.2.10 (09/03/2026)
 ## Changes
 ## 🔧 Maintenance
@@ -274,11 +282,3 @@
 
 - Print option name with error msg @bjk7119 (#195)
 - Fix the scancode ver for macos @dd-jy (#194)
-
----
-
-## v2.1.1 (13/10/2024)
-## Changes
-## 🔧 Maintenance
-
-- Remove typecode-libmagic from requirements.txt @soonhong99 (#192)
