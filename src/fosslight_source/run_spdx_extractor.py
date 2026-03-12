@@ -3,6 +3,8 @@
 # Copyright (c) 2023 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 
+## TEST ##
+
 import os
 import logging
 import re
