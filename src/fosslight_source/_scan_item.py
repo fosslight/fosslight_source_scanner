@@ -44,6 +44,8 @@ class SourceItem(FileItem):
         self.oss_version = ""
 
         self.checksum = get_checksum_sha1(value)
+        self.kb_origin_url = ""  # URL from OSS KB (_get_origin_url_from_md5_hash)
+        self.kb_evidence = ""   # Evidence from KB API (exact_match or code snippet)
 
     def __del__(self) -> None:
         pass
@@ -104,6 +106,7 @@ class SourceItem(FileItem):
         return md5_hex, wfp
 
     def _get_origin_url_from_md5_hash(self, md5_hash: str, wfp: str = "") -> str:
+        """Return origin_url from KB API."""
         try:
             payload = {"file_hash": md5_hash}
             if wfp and wfp.strip():
@@ -115,7 +118,6 @@ class SourceItem(FileItem):
             with urllib.request.urlopen(request, timeout=10) as response:
                 data = json.loads(response.read().decode())
                 if isinstance(data, dict):
-                    # Only extract output if return_code is 0 (success)
                     return_code = data.get('return_code', -1)
                     if return_code == 0:
                         output = data.get('output', '')
@@ -183,6 +185,8 @@ class SourceItem(FileItem):
                 if md5_hash:
                     origin_url = self._get_origin_url_from_md5_hash(md5_hash, wfp)
                     if origin_url:
+                        self.kb_origin_url = origin_url
+                        self.kb_evidence = "exact_match"
                         extracted_name, extracted_version, repo_url = self._extract_oss_info_from_url(origin_url)
                         if extracted_name:
                             self.oss_name = extracted_name
