@@ -22,6 +22,39 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 
+try:
+    from click.core import UNSET as _CLICK_UNSET  # Click >= 8.3
+    _HAS_CLICK_UNSET = True
+except ImportError:  # pragma: no cover
+    _CLICK_UNSET = None
+    _HAS_CLICK_UNSET = False
+
+
+def _apply_scancode_unset_workaround(kwargs: dict) -> None:
+    """
+    Click 8.3+ uses UNSET for optional multi-value plugin defaults. Those values
+    are truthy, so plugins like --facet run with UNSET and crash (not iterable).
+    Replace UNSET defaults with () or None before cli.run_scan().
+    """
+    try:
+        for opt in cli.plugin_options:
+            if opt.name in kwargs:
+                continue
+            default = getattr(opt, "default", None)
+            unset = (_HAS_CLICK_UNSET and default is _CLICK_UNSET) or (
+                getattr(default, "__class__", type(None)).__name__ == "Sentinel"
+            )
+            if not unset:
+                continue
+            if getattr(opt, "multiple", False):
+                kwargs[opt.name] = ()
+            elif getattr(opt, "is_flag", None):
+                kwargs[opt.name] = False
+            else:
+                kwargs[opt.name] = None
+    except Exception as ex:  # pragma: no cover
+        logger.debug("scancode UNSET workaround skipped: %s", ex)
+
 
 def run_scan(
     path_to_scan: str, output_file_name: str = "",
@@ -128,13 +161,27 @@ def run_scan(
 
                 total_files_to_excluded = sorted(list(set(total_files_to_excluded)))
                 ignore_tuple = tuple(total_files_to_excluded)
-                rc, results = cli.run_scan(path_to_scan, max_depth=100,
-                                           strip_root=True, license=True,
-                                           copyright=True, return_results=True,
-                                           processes=num_cores, pretty_params=pretty_params,
-                                           output_json_pp=output_json_file, only_findings=True,
-                                           license_text=True, url=True, timeout=time_out,
-                                           include=(), ignore=ignore_tuple)
+
+                kwargs = {
+                    "max_depth": 100,
+                    "strip_root": True,
+                    "license": True,
+                    "copyright": True,
+                    "return_results": True,
+                    "processes": num_cores,
+                    "pretty_params": pretty_params,
+                    "output_json_pp": output_json_file,
+                    "only_findings": True,
+                    "license_text": True,
+                    "url": True,
+                    "timeout": time_out,
+                    "include": (),
+                    "ignore": ignore_tuple
+                }
+
+                _apply_scancode_unset_workaround(kwargs)
+
+                rc, results = cli.run_scan(path_to_scan, **kwargs)
                 if not rc:
                     msg = "Source code analysis failed."
                     success = False
