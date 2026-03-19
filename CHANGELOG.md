@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.2.12 (19/03/2026)
+## Changes
+## 🐛 Hotfixes
+
+- fix(scancode): handle Click 8.3+ UNSET in plugin options to avoid Sentinel errors @soimkim (#259)
+
+---
+
 ## v2.2.11 (12/03/2026)
 ## Changes
 ## 🚀 Features
@@ -273,12 +281,3 @@
 ## 🔧 Maintenance
 
 - Fix the cover_comment @ethanleelge (#197)
-
----
-
-## v2.1.2 (18/10/2024)
-## Changes
-## 🔧 Maintenance
-
-- Print option name with error msg @bjk7119 (#195)
-- Fix the scancode ver for macos @dd-jy (#194)
