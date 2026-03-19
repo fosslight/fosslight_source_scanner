@@ -1,0 +1,56 @@
+# Copyright (c) 2026 LG Electronics
+# SPDX-License-Identifier: Apache-2.0
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fosslight_source"
+version = "2.2.12"
+description = "FOSSLight Source Scanner"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [
+    { name = "LG Electronics" }
+]
+keywords = ["fosslight", "scanner", "license", "source"]
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "setuptools<=80.10.2",
+    "pyparsing",
+    "scanoss>=1.19.0",
+    "XlsxWriter",
+    "fosslight_util>=2.1.37",
+    "PyYAML",
+    "wheel>=0.38.1",
+    "intbitset",
+    "fosslight_binary>=5.0.0",
+    "scancode-toolkit>=32.0.2",
+    "fingerprints==1.2.3",
+    "normality==2.6.1",
+]
+
+[project.optional-dependencies]
+# none for now
+
+[project.urls]
+Homepage = "https://github.com/fosslight/fosslight_source_scanner"
+Download = "https://github.com/fosslight/fosslight_source_scanner"
+
+[project.scripts]
+fosslight_source = "fosslight_source.cli:main"
+run_scancode = "fosslight_source.run_scancode:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
