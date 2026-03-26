@@ -1,5 +1,15 @@
 # Changelog
 
+## v2.2.13 (26/03/2026)
+## Changes
+## 🔧 Maintenance
+
+- refactor(build): use SPDX license expression in pyproject.toml @soimkim (#262)
+- feat(python): add Python 3.13/3.14 support @soimkim (#261)
+- refactor(build): migrate from setup.py to pyproject.toml @soimkim (#260)
+
+---
+
 ## v2.2.12 (19/03/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -271,13 +281,3 @@
 ## 🚀 Features
 
 - Support cycloneDX format @dd-jy (#199)
-
----
-
-## v2.1.3 (13/11/2024)
-## Changes
-- Fix errors related to SCANOSS @JustinWonjaePark (#198)
-
-## 🔧 Maintenance
-
-- Fix the cover_comment @ethanleelge (#197)
