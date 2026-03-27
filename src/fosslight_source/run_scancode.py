@@ -113,8 +113,8 @@ def run_scan(
                 pretty_params["path_to_exclude"] = path_to_exclude
                 pretty_params["output_file"] = output_file_name
                 total_files_to_excluded = []
+                abs_path_to_scan = os.path.abspath(path_to_scan)
                 if path_to_exclude:
-                    abs_path_to_scan = os.path.abspath(path_to_scan)
                     for path in path_to_exclude:
                         if os.path.isabs(path):
                             exclude_path = os.path.relpath(path, abs_path_to_scan)
@@ -155,6 +155,19 @@ def run_scan(
                                 total_files_to_excluded.append(f"**/{exclude_path_normalized}")
                             else:
                                 total_files_to_excluded.append(exclude_path_normalized)
+
+                for root, _, files in os.walk(path_to_scan):
+                    for name in files:
+                        full_path = os.path.join(root, name)
+                        try:
+                            if not check_binary(full_path, True):
+                                continue
+                        except Exception:
+                            continue
+                        rel_path = os.path.relpath(full_path, abs_path_to_scan)
+                        rel_norm = os.path.normpath(rel_path).replace("\\", "/")
+                        excluded_files.append(rel_norm)
+                        logger.debug(f"Excluded binary from scancode: {rel_norm}")
 
                 if excluded_files:
                     total_files_to_excluded.extend(f"**/{file_path}" for file_path in excluded_files)
@@ -206,7 +219,7 @@ def run_scan(
                             for scan_item in result_list:
                                 if os.path.isdir(scan_item.source_name_or_path):
                                     continue
-                                if check_binary(os.path.join(path_to_scan, scan_item.source_name_or_path)):
+                                if check_binary(os.path.join(path_to_scan, scan_item.source_name_or_path), True):
                                     scan_item.exclude = True
             except Exception as ex:
                 success = False

@@ -33,7 +33,7 @@ dependencies = [
     "PyYAML",
     "wheel>=0.38.1",
     "intbitset",
-    "fosslight_binary>=5.0.0",
+    "fosslight_binary>=5.1.22",
     "scancode-toolkit>=32.0.2",
     "fingerprints==1.2.3",
     "normality==2.6.1",
