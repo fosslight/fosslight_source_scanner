@@ -14,7 +14,6 @@ import urllib.error
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-from fosslight_util.timer_thread import TimerThread
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats_v2, write_output_file
@@ -111,10 +110,6 @@ def main() -> None:
 
     time_out = args.timeout
     core = args.cores
-
-    timer = TimerThread()
-    timer.setDaemon(True)
-    timer.start()
 
     if os.path.isdir(path_to_scan):
         result = []
