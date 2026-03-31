@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.2.14 (31/03/2026)
+## Changes
+## 🚀 Features
+
+- Ignore binaries during ScanCode scan @soimkim (#265)
+
+## 🔧 Maintenance
+
+- Add --hide_progress command-line flag to suppress progress bar @soimkim (#264)
+
+---
+
 ## v2.2.13 (26/03/2026)
 ## Changes
 ## 🔧 Maintenance
@@ -273,11 +285,3 @@
 ## 🐛 Hotfixes
 
 - Fix the bug @dd-jy (#200)
-
----
-
-## v2.1.4 (05/12/2024)
-## Changes
-## 🚀 Features
-
-- Support cycloneDX format @dd-jy (#199)
