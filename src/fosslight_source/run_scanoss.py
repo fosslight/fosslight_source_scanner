@@ -66,8 +66,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             scan_output=output_json_file,
             scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10,
-            scanoss_settings=scanoss_settings,
-            quiet=hide_progress
+            scanoss_settings=scanoss_settings
         )
         output_buffer = io.StringIO()
         with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
@@ -76,7 +75,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
         api_limit_exceed = "due to service limits being exceeded" in captured_output
 
         if os.path.isfile(output_json_file):
-            logger.debug(f"|---SCANOSS Parsing")
+            logger.debug("|---SCANOSS Parsing")
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
                 for key_to_exclude in excluded_files:

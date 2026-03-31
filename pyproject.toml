@@ -39,6 +39,7 @@ dependencies = [
     "normality==2.6.1",
     # Python 3.13+ needs psycopg2-binary 2.9.10+ (has wheels; 2.9.9 builds fail with _PyInterpreterState_Get)
     "psycopg2-binary>=2.9.10; python_version >= '3.13'",
+    "tqdm",
 ]
 
 [project.optional-dependencies]
