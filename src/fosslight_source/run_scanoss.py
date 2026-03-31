@@ -58,6 +58,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
         os.remove(output_json_file)
 
     try:
+        logger.debug(f"|---Running SCANOSS on {path_to_scan}")
         scanoss_settings = ScanossSettings()
         scanner = Scanner(
             ignore_cert_errors=True,
@@ -67,7 +68,6 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             nb_threads=num_threads if num_threads > 0 else 10,
             scanoss_settings=scanoss_settings
         )
-
         output_buffer = io.StringIO()
         with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
             scanner.scan_folder_with_options(scan_dir=path_to_scan)
@@ -75,6 +75,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
         api_limit_exceed = "due to service limits being exceeded" in captured_output
 
         if os.path.isfile(output_json_file):
+            logger.debug(f"|---SCANOSS Parsing")
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
                 for key_to_exclude in excluded_files:

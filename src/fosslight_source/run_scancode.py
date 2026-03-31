@@ -176,7 +176,8 @@ def run_scan(
                     "url": True,
                     "timeout": time_out,
                     "include": (),
-                    "ignore": ignore_tuple
+                    "ignore": ignore_tuple,
+                    "quiet": False
                 }
 
                 _apply_scancode_unset_workaround(kwargs)
