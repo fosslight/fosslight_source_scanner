@@ -14,7 +14,6 @@ import urllib.error
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-from fosslight_util.timer_thread import TimerThread
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats_v2, write_output_file
@@ -81,6 +80,7 @@ def main() -> None:
     parser.add_argument('-e', '--exclude', nargs='*', required=False, default=[])
     parser.add_argument('--no_correction', action='store_true', required=False)
     parser.add_argument('--correct_fpath', nargs=1, type=str, required=False)
+    parser.add_argument('--hide_progress', action='store_true', required=False)
 
     args = parser.parse_args()
 
@@ -108,19 +108,16 @@ def main() -> None:
     correct_filepath = path_to_scan
     if args.correct_fpath:
         correct_filepath = ''.join(args.correct_fpath)
+    hide_progress = args.hide_progress
 
     time_out = args.timeout
     core = args.cores
-
-    timer = TimerThread()
-    timer.setDaemon(True)
-    timer.start()
 
     if os.path.isdir(path_to_scan):
         result = []
         result = run_scanners(path_to_scan, output_file_name, write_json_file, core, True,
                               print_matched_text, formats, time_out, correct_mode, correct_filepath,
-                              selected_scanner, path_to_exclude)
+                              selected_scanner, path_to_exclude, hide_progress=hide_progress)
 
         _result_log["Scan Result"] = result[1]
 
@@ -318,7 +315,7 @@ def get_kb_reference_to_print(merged_result: list) -> list:
 def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
-    excluded_files: set = None
+    excluded_files: set = None, hide_progress: bool = False
 ) -> list:
 
     """
@@ -367,19 +364,24 @@ def merge_results(
     # Add OSSItem for files in path_to_scan that are not in scancode_result
     # when KB returns an origin URL for their MD5 hash (skip excluded_files)
     if run_kb:
+        import tqdm
         abs_path_to_scan = os.path.abspath(path_to_scan)
         scancode_paths = {item.source_name_or_path for item in scancode_result}
+
+        files_to_scan = []
         for root, _dirs, files in os.walk(path_to_scan):
             for file in files:
-                file_path = os.path.join(root, file)
-                rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
-                if rel_path in scancode_paths or rel_path in excluded_files:
-                    continue
-                extra_item = SourceItem(rel_path)
-                extra_item.set_oss_item(path_to_scan, run_kb)
-                if extra_item.download_location:
-                    scancode_result.append(extra_item)
-                    scancode_paths.add(rel_path)
+                files_to_scan.append(os.path.join(root, file))
+
+        for file_path in tqdm.tqdm(files_to_scan, desc="KB Scanning", disable=hide_progress):
+            rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
+            if rel_path in scancode_paths or rel_path in excluded_files:
+                continue
+            extra_item = SourceItem(rel_path)
+            extra_item.set_oss_item(path_to_scan, run_kb)
+            if extra_item.download_location:
+                scancode_result.append(extra_item)
+                scancode_paths.add(rel_path)
 
     return scancode_result
 
@@ -391,7 +393,7 @@ def run_scanners(
     formats: list = [], time_out: int = 120,
     correct_mode: bool = True, correct_filepath: str = "",
     selected_scanner: str = ALL_MODE, path_to_exclude: list = [],
-    all_exclude_mode: tuple = ()
+    all_exclude_mode: tuple = (), hide_progress: bool = False
 ) -> Tuple[bool, str, 'ScannerItem', list, list]:
     """
     Run Scancode and scanoss.py for the given path.
@@ -456,12 +458,12 @@ def run_scanners(
                                                                                       print_matched_text, formats, called_by_cli,
                                                                                       time_out, correct_mode, correct_filepath,
                                                                                       excluded_path_with_default_exclusion,
-                                                                                      excluded_files)
+                                                                                      excluded_files, hide_progress)
         excluded_files = set(excluded_files) if excluded_files else set()
         if selected_scanner in ['scanoss', ALL_MODE]:
             scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_path, formats, True, num_cores,
                                                               excluded_path_with_default_exclusion, excluded_files,
-                                                              write_json_file)
+                                                              write_json_file, hide_progress)
 
         run_kb_msg = ""
         if selected_scanner in SCANNER_TYPE:
@@ -475,7 +477,7 @@ def run_scanners(
 
             spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads,
-                                          path_to_scan, run_kb, manifest_licenses, excluded_files)
+                                          path_to_scan, run_kb, manifest_licenses, excluded_files, hide_progress)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, excluded_path_without_dot, formats,
