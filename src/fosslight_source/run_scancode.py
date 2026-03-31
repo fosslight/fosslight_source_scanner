@@ -63,7 +63,7 @@ def run_scan(
     formats: list = [], called_by_cli: bool = False,
     time_out: int = 120, correct_mode: bool = True,
     correct_filepath: str = "", path_to_exclude: list = [],
-    excluded_files: list = []
+    excluded_files: list = [], hide_progress: bool = False
 ) -> Tuple[bool, str, list, list]:
     if not called_by_cli:
         global logger
@@ -177,7 +177,7 @@ def run_scan(
                     "timeout": time_out,
                     "include": (),
                     "ignore": ignore_tuple,
-                    "quiet": False
+                    "quiet": hide_progress
                 }
 
                 _apply_scancode_unset_workaround(kwargs)
