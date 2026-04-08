@@ -7,3 +7,4 @@ dataclasses
 scanoss
 importlib-metadata
 pytest-xdist
+pyopenssl>=26.0.0 # not directly required, pinned by Snyk to avoid a vulnerability
