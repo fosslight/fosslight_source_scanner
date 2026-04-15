@@ -432,6 +432,8 @@ def run_scanners(
     logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
                                   True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
 
+    logger.info(f"Tool Info : {result_log['Tool Info']}")
+
     if '.xlsx' not in output_extensions and print_matched_text:
         logger.warning("-m option is only available for excel.")
         print_matched_text = False
