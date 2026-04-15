@@ -103,6 +103,9 @@ def run_scan(
         if not called_by_cli:
             logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
                                            True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
+
+            logger.info(f"Tool Info : {_result_log['Tool Info']}")
+
         num_cores = multiprocessing.cpu_count() - 1 if num_cores < 0 else num_cores
 
         if os.path.isdir(path_to_scan):
