@@ -207,6 +207,49 @@ def get_licenses_from_cargo_toml(file_path: str) -> list[str]:
     return []
 
 
+def get_licenses_from_huggingface_metadata(file_path: str) -> list[str]:
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except Exception as ex:
+        logger.info(f"Failed to read huggingface_hub_metadata.json {file_path}: {ex}")
+        return []
+
+    if not isinstance(data, dict):
+        return []
+
+    licenses: list[str] = []
+
+    def append_license(value):
+        if isinstance(value, str):
+            token = value.strip()
+            if token and token not in licenses:
+                licenses.append(token)
+        elif isinstance(value, list):
+            for item in value:
+                append_license(item)
+
+    # Hugging Face model API commonly returns top-level `license`
+    append_license(data.get('license'))
+
+    # Some metadata may include cardData/license variants
+    card_data = data.get('cardData')
+    if isinstance(card_data, dict):
+        append_license(card_data.get('license'))
+        append_license(card_data.get('licenses'))
+
+    # Many Hub API responses expose license only via tags, e.g. "license:apache-2.0".
+    tags = data.get('tags')
+    if isinstance(tags, list):
+        for tag in tags:
+            if isinstance(tag, str):
+                prefix = 'license:'
+                if tag.lower().startswith(prefix):
+                    append_license(tag[len(prefix):].strip())
+
+    return licenses
+
+
 def get_manifest_licenses(file_path: str) -> list[str]:
     if file_path.endswith('.pom'):
         try:
@@ -246,4 +289,10 @@ def get_manifest_licenses(file_path: str) -> list[str]:
             return get_licenses_from_cargo_toml(file_path)
         except Exception as ex:
             logger.info(f"Failed to extract license from Cargo.toml {file_path}: {ex}")
+            return []
+    elif os.path.basename(file_path).lower() == 'huggingface_hub_metadata.json':
+        try:
+            return get_licenses_from_huggingface_metadata(file_path)
+        except Exception as ex:
+            logger.info(f"Failed to extract license from huggingface_hub_metadata.json {file_path}: {ex}")
             return []
