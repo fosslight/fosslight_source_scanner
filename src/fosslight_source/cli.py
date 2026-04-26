@@ -346,15 +346,18 @@ def merge_results(
                 scancode_result.append(new_result_item)
     if manifest_licenses:
         for file_name, licenses in manifest_licenses.items():
+            valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
+            if not valid_licenses:
+                continue
             if file_name in scancode_result:
                 merged_result_item = scancode_result[scancode_result.index(file_name)]
                 # overwrite existing detected licenses with manifest-provided licenses
                 merged_result_item.licenses = []  # clear existing licenses (setter clears when value falsy)
-                merged_result_item.licenses = licenses
+                merged_result_item.licenses = valid_licenses
                 merged_result_item.is_manifest_file = True
             else:
                 new_result_item = SourceItem(file_name)
-                new_result_item.licenses = licenses
+                new_result_item.licenses = valid_licenses
                 new_result_item.is_manifest_file = True
                 scancode_result.append(new_result_item)
 
