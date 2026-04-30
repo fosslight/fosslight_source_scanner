@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.2.15 (30/04/2026)
+## 🚀 Features
+- Support Hugging Face metadata license extraction in manifest flow @soimkim (#269)
+
+## 🔧 Maintenance
+- [Snyk] Security upgrade pyopenssl from 25.3.0 to 26.0.0 @bjk7119 (#266)
+- Add scanner version log at startup @woocheol-lge (#268)
+- Remove pyopenssl pin from requirements-dev.txt @bjk7119 (#267)
+
+---
+
 ## v2.2.14 (31/03/2026)
 ## Changes
 ## 🚀 Features
@@ -277,11 +288,3 @@
 
 - Fix scancode copyright scanning err @dd-jy (#203)
 - Fix exclude error @JustinWonjaePark (#201)
-
----
-
-## v2.1.5 (09/12/2024)
-## Changes
-## 🐛 Hotfixes
-
-- Fix the bug @dd-jy (#200)
