@@ -43,6 +43,13 @@ MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
 KB_REFERENCE_HEADER = ['ID', 'Source Path', 'KB Origin URL', 'Evidence']
 ALL_MODE = 'all'
 SCANNER_TYPE = ['kb', 'scancode', 'scanoss', ALL_MODE]
+OSS_INFO_CORRECTION_FILENAMES = {
+    'sbom-info.yaml',
+    'sbom-info.yml',
+    'oss-pkg-info.yaml',
+    'oss-pkg-info.yml',
+}
+OSS_INFO_CORRECTION_COMMENT = "OSS info correction file"
 
 
 logger = logging.getLogger(constant.LOGGER_NAME)
@@ -312,6 +319,14 @@ def get_kb_reference_to_print(merged_result: list) -> list:
     return data
 
 
+def mark_oss_info_correction_files_as_excluded(scan_results: list) -> None:
+    for item in scan_results:
+        file_name = os.path.basename(item.source_name_or_path).lower()
+        if file_name in OSS_INFO_CORRECTION_FILENAMES:
+            item.exclude = True
+            item.comment = OSS_INFO_CORRECTION_COMMENT
+
+
 def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
@@ -483,6 +498,7 @@ def run_scanners(
             spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads,
                                           path_to_scan, run_kb, manifest_licenses, excluded_files, hide_progress)
+            mark_oss_info_correction_files_as_excluded(merged_result)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, excluded_path_without_dot, formats,
