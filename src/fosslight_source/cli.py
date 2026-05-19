@@ -324,7 +324,12 @@ def mark_oss_info_correction_files_as_excluded(scan_results: list) -> None:
         file_name = os.path.basename(item.source_name_or_path).lower()
         if file_name in OSS_INFO_CORRECTION_FILENAMES:
             item.exclude = True
-            item.comment = OSS_INFO_CORRECTION_COMMENT
+        if file_name in OSS_INFO_CORRECTION_FILENAMES:
+            item.exclude = True
+            if item.comment:
+                item.comment = f"{item.comment}, {OSS_INFO_CORRECTION_COMMENT}"
+            else:
+                item.comment = OSS_INFO_CORRECTION_COMMENT
 
 
 def merge_results(
