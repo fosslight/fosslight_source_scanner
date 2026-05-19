@@ -321,19 +321,20 @@ def get_kb_reference_to_print(merged_result: list) -> list:
 
 def mark_oss_info_correction_files_as_excluded(scan_results: list) -> None:
     for item in scan_results:
+        if not item.source_name_or_path:
+            continue
         file_name = os.path.basename(item.source_name_or_path).lower()
         if file_name in OSS_INFO_CORRECTION_FILENAMES:
             item.exclude = True
-        if file_name in OSS_INFO_CORRECTION_FILENAMES:
-            item.exclude = True
-            if item.comment:
-                item.comment = f"{item.comment}, {OSS_INFO_CORRECTION_COMMENT}"
-            else:
-                item.comment = OSS_INFO_CORRECTION_COMMENT
+            item.comment = (
+                f"{item.comment}/ {OSS_INFO_CORRECTION_COMMENT}"
+                if item.comment
+                else OSS_INFO_CORRECTION_COMMENT
+            )
 
 
 def merge_results(
-    scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
+
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
     excluded_files: set = None, hide_progress: bool = False
 ) -> list:
