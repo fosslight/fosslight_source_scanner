@@ -42,6 +42,7 @@ _HELP_MESSAGE_SOURCE_SCANNER = f"""
     --no_correction        Skip OSS information correction with sbom-info.yaml
     --correct_fpath <path> Path to custom sbom-info.yaml file
     --hide_progress        Hide the progress bar during scanning
+    --no_summary           Keep source paths file-based without folder summary
 
     💡 Examples
     ────────────────────────────────────────────────────────────────────

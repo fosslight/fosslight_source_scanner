@@ -24,6 +24,7 @@ from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
 import argparse
+import copy
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, KB_URL
@@ -81,6 +82,7 @@ def main() -> None:
     parser.add_argument('--no_correction', action='store_true', required=False)
     parser.add_argument('--correct_fpath', nargs=1, type=str, required=False)
     parser.add_argument('--hide_progress', action='store_true', required=False)
+    parser.add_argument('--no_summary', action='store_true', required=False)
 
     args = parser.parse_args()
 
@@ -109,6 +111,7 @@ def main() -> None:
     if args.correct_fpath:
         correct_filepath = ''.join(args.correct_fpath)
     hide_progress = args.hide_progress
+    summarize_by_folder = not args.no_summary
 
     time_out = args.timeout
     core = args.cores
@@ -117,7 +120,8 @@ def main() -> None:
         result = []
         result = run_scanners(path_to_scan, output_file_name, write_json_file, core, True,
                               print_matched_text, formats, time_out, correct_mode, correct_filepath,
-                              selected_scanner, path_to_exclude, hide_progress=hide_progress)
+                              selected_scanner, path_to_exclude, hide_progress=hide_progress,
+                              summarize_by_folder=summarize_by_folder)
 
         _result_log["Scan Result"] = result[1]
 
@@ -389,6 +393,78 @@ def merge_results(
     return scancode_result
 
 
+def _get_summary_key(scan_item: SourceItem) -> tuple:
+    # Folder summary is allowed only when OSS name, version, and licenses all match.
+    return (
+        scan_item.oss_name,
+        scan_item.oss_version,
+        tuple(sorted([license.strip() for license in scan_item.licenses if license and license.strip()]))
+    )
+
+
+def _create_summary_item(scan_items: list, summary_path: str) -> SourceItem:
+    # Reuse the shortest path item as the representative row, but keep original paths untouched.
+    representative_item = min(scan_items, key=lambda item: (len(item.source_name_or_path), item.source_name_or_path))
+    summarized_item = copy.copy(representative_item)
+    summarized_item.source_name_or_path = f"{summary_path} ({len(scan_items)})"
+    return summarized_item
+
+
+def summarize_results_by_folder(scan_result: list) -> list:
+    """
+    Summarize output rows by folder when OSS name, OSS version, and license are identical.
+    """
+    # Build a folder tree first so summary never jumps straight to root ".".
+    summary_tree = {"items": [], "children": {}}
+
+    for scan_item in scan_result:
+        normalized_path = os.path.normpath(scan_item.source_name_or_path).replace("\\", "/")
+        path_parts = [part for part in normalized_path.split("/") if part and part != "."]
+        current_node = summary_tree
+
+        for folder_name in path_parts[:-1]:
+            current_node = current_node["children"].setdefault(folder_name, {"items": [], "children": {}})
+        current_node["items"].append(scan_item)
+
+    def get_node_items(summary_node: dict) -> list:
+        # Collect every file item under this folder, including nested folders.
+        node_items = list(summary_node["items"])
+        for child_node in summary_node["children"].values():
+            node_items.extend(get_node_items(child_node))
+        return node_items
+
+    def summarize_direct_items(scan_items: list, summary_path: str) -> list:
+        # If a mixed folder cannot be fully summarized, summarize only files directly in it.
+        grouped_items = {}
+        for scan_item in scan_items:
+            grouped_items.setdefault(_get_summary_key(scan_item), []).append(scan_item)
+
+        summarized_items = []
+        for group in grouped_items.values():
+            if len(group) > 1:
+                summarized_items.append(_create_summary_item(group, summary_path))
+            else:
+                summarized_items.append(group[0])
+        return summarized_items
+
+    def summarize_node(summary_node: dict, summary_path: str = "", depth: int = 0) -> list:
+        node_items = get_node_items(summary_node)
+        # Keep at least one path depth in the report; root-level ". (N)" is too broad.
+        if depth > 0 and len(node_items) > 1 and len({_get_summary_key(item) for item in node_items}) == 1:
+            return [_create_summary_item(node_items, summary_path)]
+
+        summarized_items = (
+            summarize_direct_items(summary_node["items"], summary_path)
+            if depth > 0 else list(summary_node["items"])
+        )
+        for folder_name, child_node in summary_node["children"].items():
+            child_path = f"{summary_path}/{folder_name}" if summary_path else folder_name
+            summarized_items.extend(summarize_node(child_node, child_path, depth + 1))
+        return summarized_items
+
+    return summarize_node(summary_tree)
+
+
 def run_scanners(
     path_to_scan: str, output_file_name: str = "",
     write_json_file: bool = False, num_cores: int = -1,
@@ -396,7 +472,8 @@ def run_scanners(
     formats: list = [], time_out: int = 120,
     correct_mode: bool = True, correct_filepath: str = "",
     selected_scanner: str = ALL_MODE, path_to_exclude: list = [],
-    all_exclude_mode: tuple = (), hide_progress: bool = False
+    all_exclude_mode: tuple = (), hide_progress: bool = False,
+    summarize_by_folder: bool = True
 ) -> Tuple[bool, str, 'ScannerItem', list, list]:
     """
     Run Scancode and scanoss.py for the given path.
@@ -483,7 +560,8 @@ def run_scanners(
             spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
             merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads,
                                           path_to_scan, run_kb, manifest_licenses, excluded_files, hide_progress)
-            scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
+            report_result = summarize_results_by_folder(merged_result) if summarize_by_folder else merged_result
+            scan_item = create_report_file(start_time, report_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                            correct_filepath, path_to_scan, excluded_path_without_dot, formats,
                                            api_limit_exceed, cnt_file_except_skipped, final_output_path, run_kb_msg)
