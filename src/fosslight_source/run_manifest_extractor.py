@@ -144,11 +144,11 @@ def get_licenses_from_pyproject_toml(file_path: str) -> list[str]:
             project_tbl = data.get('project') or {}
             license_value = project_tbl.get('license')
             if isinstance(license_value, str) and license_value.strip():
-                return _split_spdx_expression(license_value.strip())
+                return [license_value.strip()]
             if isinstance(license_value, dict):
                 text_value = license_value.get('text')
                 if isinstance(text_value, str) and text_value.strip():
-                    return _split_spdx_expression(text_value.strip())
+                    return [text_value.strip()]
                 if license_value.get('file'):
                     return []
     except Exception as ex:
@@ -166,13 +166,13 @@ def get_licenses_from_pyproject_toml(file_path: str) -> list[str]:
         if m:
             val = m.group('val').strip()
             if val:
-                return _split_spdx_expression(val)
+                return [val]
         m2 = re.search(r'^\s*license\s*=\s*\{[^}]*?\btext\s*=\s*(?P<q>"""|\'\'\'|"|\')(?P<val>.*?)(?P=q)',
                        block, flags=re.MULTILINE | re.DOTALL)
         if m2:
             val = m2.group('val').strip()
             if val:
-                return _split_spdx_expression(val)
+                return [val]
         m3 = re.search(r'^\s*license\s*=\s*\{[^}]*?\bfile\s*=', block, flags=re.MULTILINE | re.DOTALL)
         if m3:
             return []
