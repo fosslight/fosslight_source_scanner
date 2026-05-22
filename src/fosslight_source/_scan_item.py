@@ -24,6 +24,7 @@ _manifest_filename = [
     r'package\.json$',
     r'setup\.py$',
     r'setup\.cfg$',
+    r'pyproject\.toml$',
     r'.*\.podspec$',
     r'Cargo\.toml$',
     r'huggingface_hub_metadata\.json$',
