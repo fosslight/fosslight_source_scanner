@@ -1,5 +1,22 @@
 # Changelog
 
+## v2.2.16 (28/05/2026)
+## Changes
+## 🚀 Features
+
+- Support configurable KB URL and bearer token @soimkim (#273)
+- Add license extraction for pyproject.toml @JustinWonjaePark (#270)
+
+## 🐛 Hotfixes
+
+- Prevent mutation of shared excluded_files list @bjk7119 (#275)
+
+## 🔧 Maintenance
+
+- Exclude OSS info correction files @JustinWonjaePark (#271)
+
+---
+
 ## v2.2.15 (30/04/2026)
 ## 🚀 Features
 - Support Hugging Face metadata license extraction in manifest flow @soimkim (#269)
@@ -279,12 +296,3 @@
 ## 🔧 Maintenance
 
 - Update SCANOSS version and redirect log @JustinWonjaePark (#204)
-
----
-
-## v2.1.6 (06/02/2025)
-## Changes
-## 🐛 Hotfixes
-
-- Fix scancode copyright scanning err @dd-jy (#203)
-- Fix exclude error @JustinWonjaePark (#201)
