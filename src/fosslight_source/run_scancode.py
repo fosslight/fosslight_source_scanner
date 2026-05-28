@@ -116,6 +116,7 @@ def run_scan(
                 pretty_params["path_to_exclude"] = path_to_exclude
                 pretty_params["output_file"] = output_file_name
                 total_files_to_excluded = []
+                binary_files_to_exclude = []
                 abs_path_to_scan = os.path.abspath(path_to_scan)
                 if path_to_exclude:
                     for path in path_to_exclude:
@@ -169,11 +170,12 @@ def run_scan(
                             continue
                         rel_path = os.path.relpath(full_path, abs_path_to_scan)
                         rel_norm = os.path.normpath(rel_path).replace("\\", "/")
-                        excluded_files.append(rel_norm)
+                        binary_files_to_exclude.append(rel_norm)
                         logger.debug(f"Excluded binary from scancode: {rel_norm}")
 
-                if excluded_files:
-                    total_files_to_excluded.extend(f"**/{file_path}" for file_path in excluded_files)
+                all_excluded_for_scancode = list(excluded_files) + binary_files_to_exclude
+                if all_excluded_for_scancode:
+                    total_files_to_excluded.extend(f"**/{file_path}" for file_path in all_excluded_for_scancode)
 
                 total_files_to_excluded = sorted(list(set(total_files_to_excluded)))
                 ignore_tuple = tuple(total_files_to_excluded)
