@@ -42,6 +42,8 @@ _HELP_MESSAGE_SOURCE_SCANNER = f"""
     --no_correction        Skip OSS information correction with sbom-info.yaml
     --correct_fpath <path> Path to custom sbom-info.yaml file
     --hide_progress        Hide the progress bar during scanning
+    --kb_url <url>         KB API URL (priority: parameter > KB_URL env > default)
+    --kb_token <token>     KB bearer token (priority: parameter > KB_TOKEN env)
 
     💡 Examples
     ────────────────────────────────────────────────────────────────────

@@ -32,7 +32,17 @@ _manifest_filename = [
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
-KB_URL = "http://fosslight-kb.lge.com/"
+DEFAULT_KB_URL = "http://fosslight-kb.lge.com/"
+
+
+def resolve_kb_config(kb_url: str = "", kb_token: str = "") -> tuple[str, str]:
+    url = (kb_url or os.environ.get("KB_URL", DEFAULT_KB_URL)).strip() or DEFAULT_KB_URL
+
+    token = (kb_token or "").strip()
+    if not token:
+        token = (os.environ.get("KB_TOKEN") or "").strip()
+
+    return f"{url.rstrip('/')}/", token
 
 
 class SourceItem(FileItem):
@@ -114,15 +124,21 @@ class SourceItem(FileItem):
             logger.debug(f"Failed to compute MD5 for {self.source_name_or_path}: {e}")
         return md5_hex, wfp
 
-    def _get_origin_url_from_md5_hash(self, md5_hash: str, wfp: str = "") -> str:
+    def _get_origin_url_from_md5_hash(
+        self, md5_hash: str, wfp: str = "", kb_url: str = DEFAULT_KB_URL, kb_token: str = ""
+    ) -> str:
         """Return origin_url from KB API."""
         try:
             payload = {"file_hash": md5_hash}
             if wfp and wfp.strip():
                 payload["wfp_base64"] = base64.b64encode(wfp.strip().encode("utf-8")).decode("ascii")
-            request = urllib.request.Request(f"{KB_URL}query", data=json.dumps(payload).encode('utf-8'), method='POST')
+            request = urllib.request.Request(
+                f"{kb_url}query", data=json.dumps(payload).encode('utf-8'), method='POST'
+            )
             request.add_header('Accept', 'application/json')
             request.add_header('Content-Type', 'application/json')
+            if kb_token:
+                request.add_header('Authorization', f'Bearer {kb_token}')
 
             with urllib.request.urlopen(request, timeout=10) as response:
                 data = json.loads(response.read().decode())
@@ -179,7 +195,9 @@ class SourceItem(FileItem):
             logger.debug(f"Failed to extract OSS info from URL {url}: {e}")
             return "", "", ""
 
-    def set_oss_item(self, path_to_scan: str = "", run_kb: bool = False) -> None:
+    def set_oss_item(
+        self, path_to_scan: str = "", run_kb: bool = False, kb_url: str = DEFAULT_KB_URL, kb_token: str = ""
+    ) -> None:
         self.oss_items = []
         if self.download_location:
             for url in self.download_location:
@@ -192,7 +210,7 @@ class SourceItem(FileItem):
             if run_kb and not self.is_license_text:
                 md5_hash, wfp = self._get_hash(path_to_scan)
                 if md5_hash:
-                    origin_url = self._get_origin_url_from_md5_hash(md5_hash, wfp)
+                    origin_url = self._get_origin_url_from_md5_hash(md5_hash, wfp, kb_url, kb_token)
                     if origin_url:
                         self.kb_origin_url = origin_url
                         self.kb_evidence = "exact_match"
