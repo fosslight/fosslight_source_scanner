@@ -6,11 +6,7 @@
 import os
 import logging
 import re
-import json
-import base64
 import hashlib
-import urllib.request
-import urllib.error
 import fosslight_util.constant as constant
 from fosslight_util.oss_item import FileItem, OssItem, get_checksum_sha1
 
@@ -63,7 +59,7 @@ class SourceItem(FileItem):
         self.oss_version = ""
 
         self.checksum = get_checksum_sha1(value)
-        self.kb_origin_url = ""  # URL from OSS KB (_get_origin_url_from_md5_hash)
+        self.kb_origin_url = ""  # URL from OSS KB
         self.kb_evidence = ""   # Evidence from KB API (exact_match or code snippet)
 
     def __del__(self) -> None:
@@ -124,37 +120,18 @@ class SourceItem(FileItem):
             logger.debug(f"Failed to compute MD5 for {self.source_name_or_path}: {e}")
         return md5_hex, wfp
 
-    def _get_origin_url_from_md5_hash(
-        self, md5_hash: str, wfp: str = "", kb_url: str = DEFAULT_KB_URL, kb_token: str = ""
-    ) -> str:
-        """Return origin_url from KB API."""
-        try:
-            payload = {"file_hash": md5_hash}
-            if wfp and wfp.strip():
-                payload["wfp_base64"] = base64.b64encode(wfp.strip().encode("utf-8")).decode("ascii")
-            request = urllib.request.Request(
-                f"{kb_url}query", data=json.dumps(payload).encode('utf-8'), method='POST'
-            )
-            request.add_header('Accept', 'application/json')
-            request.add_header('Content-Type', 'application/json')
-            if kb_token:
-                request.add_header('Authorization', f'Bearer {kb_token}')
-
-            with urllib.request.urlopen(request, timeout=10) as response:
-                data = json.loads(response.read().decode())
-                if isinstance(data, dict):
-                    return_code = data.get('return_code', -1)
-                    if return_code == 0:
-                        output = data.get('output', '')
-                        if output:
-                            return output
-        except urllib.error.URLError as e:
-            logger.debug(f"Failed to fetch origin_url from API for MD5 hash {md5_hash}: {e}")
-        except json.JSONDecodeError as e:
-            logger.debug(f"Failed to parse API response for MD5 hash {md5_hash}: {e}")
-        except Exception as e:
-            logger.debug(f"Error getting origin_url for MD5 hash {md5_hash}: {e}")
-        return ""
+    def _apply_kb_origin_url(self, origin_url: str) -> tuple[str, str, str]:
+        """KB origin URL을 반영하고 (oss_name, oss_version, download_url)을 반환합니다."""
+        self.kb_origin_url = origin_url
+        self.kb_evidence = "exact_match"
+        extracted_name, extracted_version, repo_url = self._extract_oss_info_from_url(origin_url)
+        if extracted_name:
+            self.oss_name = extracted_name
+        if extracted_version:
+            self.oss_version = extracted_version
+        download_url = repo_url if repo_url else origin_url
+        self.download_location = [download_url]
+        return self.oss_name, self.oss_version, download_url
 
     def _extract_oss_info_from_url(self, url: str) -> tuple:
         """
@@ -196,7 +173,9 @@ class SourceItem(FileItem):
             return "", "", ""
 
     def set_oss_item(
-        self, path_to_scan: str = "", run_kb: bool = False, kb_url: str = DEFAULT_KB_URL, kb_token: str = ""
+        self,
+        path_to_scan: str = "",
+        kb_origin_urls: dict[str, str] | None = None,
     ) -> None:
         self.oss_items = []
         if self.download_location:
@@ -207,21 +186,15 @@ class SourceItem(FileItem):
                 self.oss_items.append(item)
         else:
             item = OssItem(self.oss_name, self.oss_version, self.licenses)
-            if run_kb and not self.is_license_text:
-                md5_hash, wfp = self._get_hash(path_to_scan)
+            if kb_origin_urls is not None and not self.is_license_text:
+                md5_hash = getattr(self, "_cached_kb_md5", "")
+                if not md5_hash:
+                    md5_hash, _wfp = self._get_hash(path_to_scan)
                 if md5_hash:
-                    origin_url = self._get_origin_url_from_md5_hash(md5_hash, wfp, kb_url, kb_token)
+                    origin_url = kb_origin_urls.get(md5_hash, "")
                     if origin_url:
-                        self.kb_origin_url = origin_url
-                        self.kb_evidence = "exact_match"
-                        extracted_name, extracted_version, repo_url = self._extract_oss_info_from_url(origin_url)
-                        if extracted_name:
-                            self.oss_name = extracted_name
-                        if extracted_version:
-                            self.oss_version = extracted_version
-                        download_url = repo_url if repo_url else origin_url
-                        self.download_location = [download_url]
-                        item = OssItem(self.oss_name, self.oss_version, self.licenses, download_url)
+                        oss_name, oss_version, download_url = self._apply_kb_origin_url(origin_url)
+                        item = OssItem(oss_name, oss_version, self.licenses, download_url)
 
             item.copyright = "\n".join(self.copyright)
             item.comment = self.comment
