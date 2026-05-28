@@ -29,6 +29,7 @@ import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, resolve_kb_config
+from ._kb_client import fetch_origin_urls_via_scan_job
 from fosslight_util.oss_item import ScannerItem
 from typing import Tuple
 from ._scan_item import is_manifest_file
@@ -330,6 +331,47 @@ def mark_oss_info_correction_files_as_excluded(scan_results: list) -> None:
             item.comment = OSS_INFO_CORRECTION_COMMENT
 
 
+def _collect_kb_file_hashes(
+    scancode_result: list,
+    path_to_scan: str,
+    excluded_files: set,
+    hide_progress: bool,
+) -> tuple[list[str], list[tuple[SourceItem, str]]]:
+    """scancode 결과 및 walk 대상 파일의 MD5 목록과 (extra_item, md5) 후보를 수집합니다."""
+    file_hashes: list[str] = []
+    extra_candidates: list[tuple[SourceItem, str]] = []
+
+    for item in scancode_result:
+        if item.is_license_text:
+            continue
+        md5_hash, _wfp = item._get_hash(path_to_scan)
+        if md5_hash:
+            item._cached_kb_md5 = md5_hash
+            file_hashes.append(md5_hash)
+
+    import tqdm
+    abs_path_to_scan = os.path.abspath(path_to_scan)
+    scancode_paths = {item.source_name_or_path for item in scancode_result}
+
+    files_to_scan = []
+    for root, _dirs, files in os.walk(path_to_scan):
+        for file in files:
+            files_to_scan.append(os.path.join(root, file))
+
+    for file_path in tqdm.tqdm(files_to_scan, desc="KB Hashing", disable=hide_progress):
+        rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
+        if rel_path in scancode_paths or rel_path in excluded_files:
+            continue
+        extra_item = SourceItem(rel_path)
+        md5_hash, _wfp = extra_item._get_hash(path_to_scan)
+        if md5_hash:
+            extra_item._cached_kb_md5 = md5_hash
+            file_hashes.append(md5_hash)
+            extra_candidates.append((extra_item, md5_hash))
+
+    return file_hashes, extra_candidates
+
+
 def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
@@ -381,30 +423,25 @@ def merge_results(
                 new_result_item.is_manifest_file = True
                 scancode_result.append(new_result_item)
 
+    kb_origin_urls: dict[str, str] = {}
+    extra_candidates: list[tuple[SourceItem, str]] = []
+    if run_kb:
+        file_hashes, extra_candidates = _collect_kb_file_hashes(
+            scancode_result, path_to_scan, excluded_files, hide_progress
+        )
+        if file_hashes:
+            kb_origin_urls = fetch_origin_urls_via_scan_job(file_hashes, kb_url, kb_token)
+
     for item in scancode_result:
-        item.set_oss_item(path_to_scan, run_kb, kb_url, kb_token)
+        item.set_oss_item(path_to_scan, kb_origin_urls=kb_origin_urls)
 
     # Add OSSItem for files in path_to_scan that are not in scancode_result
     # when KB returns an origin URL for their MD5 hash (skip excluded_files)
     if run_kb:
-        import tqdm
-        abs_path_to_scan = os.path.abspath(path_to_scan)
-        scancode_paths = {item.source_name_or_path for item in scancode_result}
-
-        files_to_scan = []
-        for root, _dirs, files in os.walk(path_to_scan):
-            for file in files:
-                files_to_scan.append(os.path.join(root, file))
-
-        for file_path in tqdm.tqdm(files_to_scan, desc="KB Scanning", disable=hide_progress):
-            rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
-            if rel_path in scancode_paths or rel_path in excluded_files:
-                continue
-            extra_item = SourceItem(rel_path)
-            extra_item.set_oss_item(path_to_scan, run_kb, kb_url, kb_token)
+        for extra_item, _md5_hash in extra_candidates:
+            extra_item.set_oss_item(path_to_scan, kb_origin_urls=kb_origin_urls)
             if extra_item.download_location:
                 scancode_result.append(extra_item)
-                scancode_paths.add(rel_path)
 
     return scancode_result
 
