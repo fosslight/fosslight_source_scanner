@@ -16,7 +16,14 @@ from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.output_format import check_output_formats_v2
 from fosslight_binary.binary_analysis import check_binary
-from typing import Tuple
+from fosslight_util.exclude import (
+    EXCLUDE_DIRECTORY,
+    EXCLUDE_FILE_EXTENSION,
+    EXCLUDE_FILENAME,
+    PACKAGE_DIRECTORY,
+)
+from commoncode.fileset import is_included
+from typing import Tuple, Iterable
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -54,6 +61,88 @@ def _apply_scancode_unset_workaround(kwargs: dict) -> None:
                 kwargs[opt.name] = None
     except Exception as ex:  # pragma: no cover
         logger.debug("scancode UNSET workaround skipped: %s", ex)
+
+
+def _default_scancode_coarse_ignore_patterns() -> frozenset:
+    """
+    Coarse ignore patterns aligned with fosslight_util.get_excluded_paths() rules.
+    Uses segment-style globs so scancode does not need one pattern per file.
+    """
+    patterns = {".*"}
+    for name in PACKAGE_DIRECTORY + EXCLUDE_DIRECTORY:
+        patterns.add(name)
+    for ext in EXCLUDE_FILE_EXTENSION:
+        patterns.add(f"*.{ext}")
+    for name in EXCLUDE_FILENAME:
+        patterns.add(name)
+    return frozenset(patterns)
+
+
+def _is_covered_by_coarse_ignore(rel_path: str, coarse_patterns: Iterable[str]) -> bool:
+    excludes = {pattern: "" for pattern in coarse_patterns}
+    return not is_included(rel_path, includes={}, excludes=excludes)
+
+
+def _add_path_to_exclude_pattern(
+    patterns: set,
+    exclude_path: str,
+    abs_path_to_scan: str,
+    coarse_patterns: frozenset,
+) -> None:
+    exclude_path_normalized = os.path.normpath(exclude_path).replace("\\", "/")
+
+    if exclude_path_normalized.endswith("/**"):
+        base_dir = exclude_path_normalized[:-3].rstrip("/")
+        if base_dir:
+            full_exclude_path = os.path.join(abs_path_to_scan, base_dir)
+            if os.path.isdir(full_exclude_path):
+                patterns.add(base_dir)
+                patterns.add(exclude_path_normalized)
+            else:
+                patterns.add(exclude_path_normalized)
+        else:
+            patterns.add(exclude_path_normalized)
+        return
+
+    has_glob_chars = any(char in exclude_path_normalized for char in ['*', '?', '['])
+    if has_glob_chars:
+        patterns.add(exclude_path_normalized)
+        return
+
+    full_exclude_path = os.path.join(abs_path_to_scan, exclude_path_normalized)
+    if os.path.isdir(full_exclude_path):
+        base_path = exclude_path_normalized.rstrip("/")
+        if base_path:
+            patterns.add(base_path)
+            patterns.add(f"{base_path}/**")
+        else:
+            patterns.add(exclude_path_normalized)
+    elif os.path.isfile(full_exclude_path):
+        if not _is_covered_by_coarse_ignore(exclude_path_normalized, coarse_patterns):
+            patterns.add(f"**/{exclude_path_normalized}")
+    else:
+        patterns.add(exclude_path_normalized)
+
+
+def _build_scancode_ignore_patterns(
+    path_to_exclude: list,
+    abs_path_to_scan: str,
+    binary_paths: list,
+) -> tuple:
+    coarse_patterns = _default_scancode_coarse_ignore_patterns()
+    patterns = set(coarse_patterns)
+
+    for path in path_to_exclude or []:
+        if os.path.isabs(path):
+            exclude_path = os.path.relpath(path, abs_path_to_scan)
+        else:
+            exclude_path = path
+        _add_path_to_exclude_pattern(patterns, exclude_path, abs_path_to_scan, coarse_patterns)
+
+    for rel_path in binary_paths:
+        patterns.add(f"**/{rel_path}")
+
+    return tuple(sorted(patterns))
 
 
 def run_scan(
@@ -115,51 +204,8 @@ def run_scan(
                 pretty_params["path_to_scan"] = path_to_scan
                 pretty_params["path_to_exclude"] = path_to_exclude
                 pretty_params["output_file"] = output_file_name
-                total_files_to_excluded = []
-                binary_files_to_exclude = []
                 abs_path_to_scan = os.path.abspath(path_to_scan)
-                if path_to_exclude:
-                    for path in path_to_exclude:
-                        if os.path.isabs(path):
-                            exclude_path = os.path.relpath(path, abs_path_to_scan)
-                        else:
-                            exclude_path = path
-
-                        exclude_path_normalized = os.path.normpath(exclude_path).replace("\\", "/")
-
-                        if exclude_path_normalized.endswith("/**"):
-                            base_dir = exclude_path_normalized[:-3].rstrip("/")
-                            if base_dir:
-                                full_exclude_path = os.path.join(abs_path_to_scan, base_dir)
-                                if os.path.isdir(full_exclude_path):
-                                    total_files_to_excluded.append(base_dir)
-                                    total_files_to_excluded.append(exclude_path_normalized)
-                                else:
-                                    total_files_to_excluded.append(exclude_path_normalized)
-                            else:
-                                total_files_to_excluded.append(exclude_path_normalized)
-                        else:
-                            has_glob_chars = any(char in exclude_path_normalized for char in ['*', '?', '['])
-                            if not has_glob_chars:
-                                full_exclude_path = os.path.join(abs_path_to_scan, exclude_path_normalized)
-                                is_dir = os.path.isdir(full_exclude_path)
-                                is_file = os.path.isfile(full_exclude_path)
-                            else:
-                                is_dir = False
-                                is_file = False
-
-                            if is_dir:
-                                base_path = exclude_path_normalized.rstrip("/")
-                                if base_path:
-                                    total_files_to_excluded.append(base_path)
-                                    total_files_to_excluded.append(f"{base_path}/**")
-                                else:
-                                    total_files_to_excluded.append(exclude_path_normalized)
-                            elif is_file:
-                                total_files_to_excluded.append(f"**/{exclude_path_normalized}")
-                            else:
-                                total_files_to_excluded.append(exclude_path_normalized)
-
+                binary_paths = []
                 for root, _, files in os.walk(path_to_scan):
                     for name in files:
                         full_path = os.path.join(root, name)
@@ -170,15 +216,13 @@ def run_scan(
                             continue
                         rel_path = os.path.relpath(full_path, abs_path_to_scan)
                         rel_norm = os.path.normpath(rel_path).replace("\\", "/")
-                        binary_files_to_exclude.append(rel_norm)
+                        binary_paths.append(rel_norm)
                         logger.debug(f"Excluded binary from scancode: {rel_norm}")
 
-                all_excluded_for_scancode = list(excluded_files) + binary_files_to_exclude
-                if all_excluded_for_scancode:
-                    total_files_to_excluded.extend(f"**/{file_path}" for file_path in all_excluded_for_scancode)
-
-                total_files_to_excluded = sorted(list(set(total_files_to_excluded)))
-                ignore_tuple = tuple(total_files_to_excluded)
+                ignore_tuple = _build_scancode_ignore_patterns(
+                    path_to_exclude, abs_path_to_scan, binary_paths
+                )
+                logger.debug(f"Scancode ignore patterns: {len(ignore_tuple)}")
 
                 kwargs = {
                     "max_depth": 100,
@@ -197,9 +241,7 @@ def run_scan(
                     "ignore": ignore_tuple,
                     "quiet": hide_progress
                 }
-
                 _apply_scancode_unset_workaround(kwargs)
-
                 rc, results = cli.run_scan(path_to_scan, **kwargs)
                 if not rc:
                     msg = "Source code analysis failed."
