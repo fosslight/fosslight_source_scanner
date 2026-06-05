@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.2.17 (05/06/2026)
+## Changes
+## 🔧 Maintenance
+
+- Reduce scancode ignore patterns with coarse exclude globs @soimkim (#276)
+
+---
+
 ## v2.2.16 (28/05/2026)
 ## Changes
 ## 🚀 Features
@@ -288,11 +296,3 @@
 ## 🔧 Maintenance
 
 - Fix api_limit_exceed_parameter @JustinWonjaePark (#206)
-
----
-
-## v2.1.7 (26/02/2025)
-## Changes
-## 🔧 Maintenance
-
-- Update SCANOSS version and redirect log @JustinWonjaePark (#204)
