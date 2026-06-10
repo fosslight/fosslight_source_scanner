@@ -12,6 +12,9 @@ import logging
 import re
 import urllib.request
 import urllib.error
+import tempfile
+import zipfile
+import xml.etree.ElementTree as ET
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
@@ -40,6 +43,7 @@ import shutil
 
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
+PRE_MERGE_SHEET_NAME = 'SRC_FL_Source_before_merge'
 SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
                                    'OSS Version', 'License', 'Download Location',
                                    'Homepage', 'Copyright Text', 'Exclude', 'Comment']}
@@ -56,6 +60,72 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 PKG_NAME = "fosslight_source"
 RESULT_KEY = "Scan Result"
+
+
+def _get_source_rows_to_print(source_items: list) -> list:
+    source_rows = []
+    for source_item in source_items:
+        source_rows.extend(source_item.get_print_array())
+    return source_rows
+
+
+def _add_pre_merge_sheet(scan_item: 'ScannerItem') -> None:
+    external_sheets = getattr(scan_item, "external_sheets", {}) or {}
+    external_sheets[PRE_MERGE_SHEET_NAME] = [
+        MERGED_HEADER[SRC_SHEET_NAME],
+        *_get_source_rows_to_print(scan_item.file_items.get(PKG_NAME, [])),
+    ]
+    scan_item.external_sheets = external_sheets
+
+
+def _hide_xlsx_sheet(xlsx_path: str, sheet_name: str) -> None:
+    workbook_xml_path = "xl/workbook.xml"
+    namespace_uri = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    relationship_uri = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    ET.register_namespace("", namespace_uri)
+    ET.register_namespace("r", relationship_uri)
+
+    try:
+        with zipfile.ZipFile(xlsx_path, "r") as workbook:
+            try:
+                workbook_xml = workbook.read(workbook_xml_path)
+            except KeyError:
+                logger.debug(f"Failed to hide sheet. workbook.xml not found: {xlsx_path}")
+                return
+
+            root = ET.fromstring(workbook_xml)
+            target_sheet = None
+            for sheet in root.findall(f".//{{{namespace_uri}}}sheet"):
+                if sheet.attrib.get("name") == sheet_name:
+                    target_sheet = sheet
+                    break
+
+            if target_sheet is None:
+                logger.debug(f"Failed to hide sheet. sheet not found: {sheet_name}")
+                return
+
+            target_sheet.set("state", "hidden")
+            updated_workbook_xml = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+
+            output_dir = os.path.dirname(xlsx_path) or "."
+            with tempfile.NamedTemporaryFile(delete=False, dir=output_dir, suffix=".xlsx") as temp_file:
+                temp_xlsx_path = temp_file.name
+
+            try:
+                with zipfile.ZipFile(temp_xlsx_path, "w") as updated_workbook:
+                    for item in workbook.infolist():
+                        if item.filename == workbook_xml_path:
+                            content = updated_workbook_xml
+                        else:
+                            content = workbook.read(item.filename)
+                        updated_workbook.writestr(item, content)
+                shutil.move(temp_xlsx_path, xlsx_path)
+            except Exception:
+                if os.path.exists(temp_xlsx_path):
+                    os.remove(temp_xlsx_path)
+                raise
+    except Exception as ex:
+        logger.debug(f"Failed to hide sheet {sheet_name}: {ex}")
 
 
 def main() -> None:
@@ -264,14 +334,22 @@ def create_report_file(
             logger.info("Success to correct with yaml.")
 
     if merged_result and merge_by_folder:
+        _add_pre_merge_sheet(scan_item)
         scan_item.file_items[PKG_NAME] = merge_results_by_folder(scan_item.file_items[PKG_NAME])
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
+    has_pre_merge_sheet = PRE_MERGE_SHEET_NAME in getattr(scan_item, "external_sheets", {})
     for combined_path_and_file, output_extension, output_format in zip(combined_paths_and_files, output_extensions, formats):
         # if need_license and output_extension == _json_ext and "scanoss_reference" in sheet_list:
         #     del sheet_list["scanoss_reference"]
-        results.append(write_output_file(combined_path_and_file, output_extension, scan_item, extended_header, "", output_format))
+        result = write_output_file(
+            combined_path_and_file, output_extension, scan_item, extended_header, "", output_format
+        )
+        success, _, result_file = result
+        if success and has_pre_merge_sheet and result_file.endswith(".xlsx"):
+            _hide_xlsx_sheet(result_file, PRE_MERGE_SHEET_NAME)
+        results.append(result)
     for success, msg, result_file in results:
         final_result_file = result_file.replace(output_path, final_output_path)
         if success:
