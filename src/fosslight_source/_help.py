@@ -44,6 +44,7 @@ _HELP_MESSAGE_SOURCE_SCANNER = f"""
     --hide_progress        Hide the progress bar during scanning
     --kb_url <url>         KB API URL (priority: parameter > KB_URL env > default)
     --kb_token <token>     KB bearer token (priority: parameter > KB_TOKEN env)
+    --no_merge             Keep source paths file-based without folder merge
 
     💡 Examples
     ────────────────────────────────────────────────────────────────────

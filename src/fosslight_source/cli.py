@@ -27,6 +27,8 @@ from .run_scanoss import get_scanoss_extra_info
 import yaml
 import tqdm
 import argparse
+import copy
+from collections import Counter
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, resolve_kb_config, is_notice_file
@@ -88,6 +90,7 @@ def main() -> None:
     parser.add_argument('--hide_progress', action='store_true', required=False)
     parser.add_argument('--kb_url', type=str, required=False, default="")
     parser.add_argument('--kb_token', type=str, required=False, default="")
+    parser.add_argument('--no_merge', action='store_true', required=False)
 
     args = parser.parse_args()
 
@@ -118,6 +121,7 @@ def main() -> None:
     hide_progress = args.hide_progress
     kb_url = args.kb_url
     kb_token = args.kb_token
+    merge_by_folder = not args.no_merge
 
     time_out = args.timeout
     core = args.cores
@@ -127,7 +131,8 @@ def main() -> None:
         result = run_scanners(path_to_scan, output_file_name, write_json_file, core, True,
                               print_matched_text, formats, time_out, correct_mode, correct_filepath,
                               selected_scanner, path_to_exclude, hide_progress=hide_progress,
-                              kb_url=kb_url, kb_token=kb_token)
+                              kb_url=kb_url, kb_token=kb_token,
+                              merge_by_folder=merge_by_folder)
 
         _result_log["Scan Result"] = result[1]
 
@@ -148,7 +153,7 @@ def create_report_file(
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
     formats: list = [], api_limit_exceed: bool = False, files_count: int = 0, final_output_path: str = "",
-    run_kb_msg: str = ""
+    run_kb_msg: str = "", merge_by_folder: bool = False, kb_reference_result: list = None
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -239,12 +244,12 @@ def create_report_file(
             elif selected_scanner == 'scanoss':
                 sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanoss_result)
             elif selected_scanner == 'kb':
-                kb_ref = get_kb_reference_to_print(merged_result)
+                kb_ref = get_kb_reference_to_print(kb_reference_result or merged_result)
                 sheet_list["kb_reference"] = kb_ref
             else:
                 sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
                 sheet_list["scanoss_reference"] = get_scanoss_extra_info(scanoss_result)
-                kb_ref = get_kb_reference_to_print(merged_result)
+                kb_ref = get_kb_reference_to_print(kb_reference_result or merged_result)
                 sheet_list["kb_reference"] = kb_ref
 
         if sheet_list:
@@ -257,6 +262,9 @@ def create_report_file(
         else:
             scan_item = correct_item
             logger.info("Success to correct with yaml.")
+
+    if merged_result and merge_by_folder:
+        scan_item.file_items[PKG_NAME] = merge_results_by_folder(scan_item.file_items[PKG_NAME])
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
@@ -485,6 +493,107 @@ def _finalize_temp_output(
     return publish_ok
 
 
+def _normalize_merge_text(value: str) -> str:
+    return value.strip() if value else ""
+
+
+def _get_merge_licenses(scan_item: SourceItem) -> tuple:
+    return tuple(sorted([license.strip() for license in scan_item.licenses if license and license.strip()]))
+
+
+def _get_merge_field_value(scan_items: list, value_getter) -> str:
+    for scan_item in scan_items:
+        value = value_getter(scan_item)
+        if value:
+            return value
+    return ""
+
+
+def _is_merge_field_compatible(scan_items: list, value_getter) -> bool:
+    values = []
+    for scan_item in scan_items:
+        value = value_getter(scan_item)
+        if value:
+            values.append(value)
+    return len(set(values)) <= 1
+
+
+def _iter_merge_values(values) -> list:
+    if not values:
+        return []
+    if isinstance(values, str):
+        return [values]
+    return values
+
+
+def _get_top_merge_values(scan_items: list, value_getter) -> list:
+    values = []
+    for scan_item in scan_items:
+        for value in _iter_merge_values(value_getter(scan_item)):
+            normalized_value = _normalize_merge_text(value)
+            if normalized_value:
+                values.append(normalized_value)
+    return [value for value, _ in Counter(values).most_common(3)]
+
+
+def _can_merge_folder(scan_items: list) -> bool:
+    return (
+        len(scan_items) > 1
+        and len({bool(item.exclude) for item in scan_items}) <= 1
+        and _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(item.oss_name))
+        and _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(item.oss_version))
+        and _is_merge_field_compatible(scan_items, _get_merge_licenses)
+    )
+
+
+def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
+    # Reuse the shortest path item as the representative row, but keep original paths untouched.
+    representative_item = min(scan_items, key=lambda item: (len(item.source_name_or_path), item.source_name_or_path))
+    merged_item = copy.copy(representative_item)
+    merged_item.source_name_or_path = f"{merge_path} ({len(scan_items)})"
+    merged_item.oss_name = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(item.oss_name))
+    merged_item.oss_version = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(item.oss_version))
+    merged_item._licenses = []
+    merged_item.licenses = list(_get_merge_field_value(scan_items, _get_merge_licenses))
+    merged_downloads = _get_top_merge_values(scan_items, lambda item: item.download_location)
+    merged_copyrights = _get_top_merge_values(scan_items, lambda item: item.copyright)
+    merged_item.download_location = [", ".join(merged_downloads)] if merged_downloads else []
+    merged_item.copyright = [", ".join(merged_copyrights)] if merged_copyrights else []
+    merged_item.set_oss_item(run_kb=False)
+    return merged_item
+
+
+def merge_results_by_folder(scan_result: list) -> list:
+    """
+    Merge output rows within the same folder when OSS name, OSS version, and license are compatible.
+    """
+    # Build a folder tree first so merge never jumps straight to root ".".
+    merge_tree = {"items": [], "children": {}}
+
+    for scan_item in scan_result:
+        normalized_path = os.path.normpath(scan_item.source_name_or_path).replace("\\", "/")
+        path_parts = [part for part in normalized_path.split("/") if part and part != "."]
+        current_node = merge_tree
+
+        for folder_name in path_parts[:-1]:
+            current_node = current_node["children"].setdefault(folder_name, {"items": [], "children": {}})
+        current_node["items"].append(scan_item)
+
+    def merge_node(merge_node_item: dict, merge_path: str = "", depth: int = 0) -> list:
+        # Keep at least one path depth in the report; root-level ". (N)" is too broad.
+        if depth > 0 and _can_merge_folder(merge_node_item["items"]):
+            merged_items = [_create_merged_item(merge_node_item["items"], merge_path)]
+        else:
+            merged_items = list(merge_node_item["items"])
+
+        for folder_name, child_node in merge_node_item["children"].items():
+            child_path = f"{merge_path}/{folder_name}" if merge_path else folder_name
+            merged_items.extend(merge_node(child_node, child_path, depth + 1))
+        return merged_items
+
+    return merge_node(merge_tree)
+
+
 def run_scanners(
     path_to_scan: str, output_file_name: str = "",
     write_json_file: bool = False, num_cores: int = -1,
@@ -492,7 +601,8 @@ def run_scanners(
     formats: list = [], time_out: int = 120,
     correct_mode: bool = True, correct_filepath: str = "",
     selected_scanner: str = ALL_MODE, path_to_exclude: list = [],
-    all_exclude_mode: tuple = (), hide_progress: bool = False, kb_url: str = "", kb_token: str = ""
+    all_exclude_mode: tuple = (), hide_progress: bool = False,
+    kb_url: str = "", kb_token: str = "", merge_by_folder: bool = True
 ) -> Tuple[bool, str, 'ScannerItem', list, list]:
     """
     Run Scancode and scanoss.py for the given path.
@@ -598,7 +708,8 @@ def run_scanners(
                 scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                                print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                                correct_filepath, path_to_scan, excluded_path_without_dot, formats,
-                                               api_limit_exceed, cnt_file_except_skipped, final_output_path, run_kb_msg)
+                                               api_limit_exceed, cnt_file_except_skipped, final_output_path, run_kb_msg,
+                                               merge_by_folder, merged_result)
             else:
                 print_help_msg_source_scanner()
                 result_log[RESULT_KEY] = "Unsupported scanner"
