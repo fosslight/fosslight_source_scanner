@@ -35,6 +35,8 @@ dependencies = [
     "intbitset",
     "fosslight_binary>=5.1.22",
     "scancode-toolkit>=32.0.2",
+    # cryptography 49.x does not provide macOS x86_64 wheels, causing source builds to require OpenSSL/pkg-config.
+    "cryptography<49; platform_system == 'Darwin' and platform_machine == 'x86_64'",
     "fingerprints==1.2.3",
     "normality==2.6.1",
     # Python 3.13+ needs psycopg2-binary 2.9.10+ (has wheels; 2.9.9 builds fail with _PyInterpreterState_Get)
