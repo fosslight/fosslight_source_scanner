@@ -15,6 +15,7 @@ import urllib.error
 import tempfile
 import zipfile
 import defusedxml.ElementTree as ET
+import xml.etree.ElementTree as xmlET
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
@@ -82,8 +83,8 @@ def _hide_xlsx_sheet(xlsx_path: str, sheet_name: str) -> None:
     workbook_xml_path = "xl/workbook.xml"
     namespace_uri = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
     relationship_uri = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-    ET.register_namespace("", namespace_uri)
-    ET.register_namespace("r", relationship_uri)
+    xmlET.register_namespace("", namespace_uri)
+    xmlET.register_namespace("r", relationship_uri)
 
     try:
         with zipfile.ZipFile(xlsx_path, "r") as workbook:
