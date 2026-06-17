@@ -43,6 +43,7 @@ dependencies = [
     "psycopg2-binary>=2.9.10; python_version >= '3.13'",
     "tomli; python_version < '3.11'",
     "tqdm",
+    "defusedxml",
 ]
 
 [project.optional-dependencies]

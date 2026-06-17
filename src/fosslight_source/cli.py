@@ -14,7 +14,7 @@ import urllib.request
 import urllib.error
 import tempfile
 import zipfile
-import xml.etree.ElementTree as ET
+import defusedxml.ElementTree as ET
 from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
@@ -223,7 +223,7 @@ def create_report_file(
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
     formats: list = [], api_limit_exceed: bool = False, files_count: int = 0, final_output_path: str = "",
-    run_kb_msg: str = "", merge_by_folder: bool = False, kb_reference_result: list = None
+    run_kb_msg: str = "", merge_by_folder: bool = False, kb_reference_result: Optional[list] = None
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -576,7 +576,7 @@ def _normalize_merge_text(value: str) -> str:
 
 
 def _get_merge_licenses(scan_item: SourceItem) -> tuple:
-    return tuple(sorted([license.strip() for license in scan_item.licenses if license and license.strip()]))
+    return tuple(sorted([lic.strip() for lic in scan_item.licenses if lic and lic.strip()]))
 
 
 def _get_merge_field_value(scan_items: list, value_getter) -> str:
