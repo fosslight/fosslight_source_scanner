@@ -580,6 +580,15 @@ def _get_merge_licenses(scan_item: SourceItem) -> tuple:
     return tuple(sorted([lic.strip() for lic in scan_item.licenses if lic and lic.strip()]))
 
 
+def _get_merge_download_locations(scan_item: SourceItem) -> tuple:
+    downloads = scan_item.download_location
+    if not downloads:
+        return ()
+    if isinstance(downloads, str):
+        downloads = [downloads]
+    return tuple(sorted([dl.strip() for dl in downloads if dl and dl.strip()]))
+
+
 def _get_merge_field_value(scan_items: list, value_getter) -> str:
     for scan_item in scan_items:
         value = value_getter(scan_item)
@@ -618,10 +627,10 @@ def _get_top_merge_values(scan_items: list, value_getter) -> list:
 def _can_merge_folder(scan_items: list) -> bool:
     return (
         len(scan_items) > 1
-        and len({bool(item.exclude) for item in scan_items}) <= 1
         and _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(item.oss_name))
         and _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(item.oss_version))
         and _is_merge_field_compatible(scan_items, _get_merge_licenses)
+        and _is_merge_field_compatible(scan_items, _get_merge_download_locations)
     )
 
 
@@ -659,9 +668,12 @@ def merge_results_by_folder(scan_result: list) -> list:
         current_node["items"].append(scan_item)
 
     def merge_node(merge_node_item: dict, merge_path: str = "", depth: int = 0) -> list:
+        excluded_items = [item for item in merge_node_item["items"] if item.exclude]
+        eligible_items = [item for item in merge_node_item["items"] if not item.exclude]
+
         # Keep at least one path depth in the report; root-level ". (N)" is too broad.
-        if depth > 0 and _can_merge_folder(merge_node_item["items"]):
-            merged_items = [_create_merged_item(merge_node_item["items"], merge_path)]
+        if depth > 0 and _can_merge_folder(eligible_items):
+            merged_items = [_create_merged_item(eligible_items, merge_path)] + excluded_items
         else:
             merged_items = list(merge_node_item["items"])
 
