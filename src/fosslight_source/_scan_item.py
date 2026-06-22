@@ -61,6 +61,7 @@ class SourceItem(FileItem):
         self.checksum = get_checksum_sha1(value)
         self.kb_origin_url = ""  # URL from OSS KB
         self.kb_evidence = ""   # Evidence from KB API (exact_match or code snippet)
+        self._cached_kb_md5 = ""  # MD5 precomputed for KB lookup (set by _collect_kb_file_hashes)
 
     def __del__(self) -> None:
         pass
@@ -121,7 +122,7 @@ class SourceItem(FileItem):
         return md5_hex, wfp
 
     def _apply_kb_origin_url(self, origin_url: str) -> tuple[str, str, str]:
-        """KB origin URL을 반영하고 (oss_name, oss_version, download_url)을 반환합니다."""
+        """Apply KB origin URL and return (oss_name, oss_version, download_url)."""
         self.kb_origin_url = origin_url
         self.kb_evidence = "exact_match"
         extracted_name, extracted_version, repo_url = self._extract_oss_info_from_url(origin_url)
@@ -187,7 +188,7 @@ class SourceItem(FileItem):
         else:
             item = OssItem(self.oss_name, self.oss_version, self.licenses)
             if kb_origin_urls and not self.is_license_text:
-                md5_hash = getattr(self, "_cached_kb_md5", "")
+                md5_hash = self._cached_kb_md5
                 if not md5_hash:
                     md5_hash, _wfp = self._get_hash(path_to_scan)
                 if md5_hash:

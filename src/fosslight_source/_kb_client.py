@@ -65,7 +65,11 @@ def fetch_origin_urls_via_scan_job(
     kb_token: str,
 ) -> Dict[str, str]:
     """
-    POST /scan/jobs 후 완료될 때까지 polling하여 file_hash -> origin_url 맵을 반환합니다.
+    Create a POST /scan/jobs request, poll until completion, and return a file_hash -> origin_url map.
+    :param file_hashes: list of MD5 file hashes to look up.
+    :param kb_url: KB API base URL.
+    :param kb_token: KB API bearer token.
+    :return: mapping of file_hash to origin_url for successful matches.
     """
     unique_hashes = list(dict.fromkeys(h for h in file_hashes if h))
     if not unique_hashes:
@@ -80,7 +84,7 @@ def fetch_origin_urls_via_scan_job(
     except urllib.error.URLError as e:
         logger.warning(f"KB scan job create failed: {e}")
         return {}
-    except (json.JSONDecodeError, Exception) as e:
+    except Exception as e:
         logger.warning(f"KB scan job create failed: {e}")
         return {}
 
@@ -124,7 +128,7 @@ def fetch_origin_urls_via_scan_job(
             time.sleep(interval)
             interval = min(interval * 1.5, _SCAN_JOB_POLL_MAX_INTERVAL_SEC)
             continue
-        except (json.JSONDecodeError, Exception) as e:
+        except Exception as e:
             logger.warning(f"KB scan job status parse failed: {e}")
             time.sleep(interval)
             interval = min(interval * 1.5, _SCAN_JOB_POLL_MAX_INTERVAL_SEC)

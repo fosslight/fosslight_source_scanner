@@ -25,6 +25,7 @@ from fosslight_util.exclude import get_excluded_paths
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
+import tqdm
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
@@ -337,7 +338,7 @@ def _collect_kb_file_hashes(
     excluded_files: set,
     hide_progress: bool,
 ) -> tuple[list[str], list[tuple[SourceItem, str]]]:
-    """scancode 결과 및 walk 대상 파일의 MD5 목록과 (extra_item, md5) 후보를 수집합니다."""
+    """Collect MD5 hashes from scancode results and walk targets, plus (extra_item, md5) candidates."""
     file_hashes: list[str] = []
     extra_candidates: list[tuple[SourceItem, str]] = []
 
@@ -349,7 +350,6 @@ def _collect_kb_file_hashes(
             item._cached_kb_md5 = md5_hash
             file_hashes.append(md5_hash)
 
-    import tqdm
     abs_path_to_scan = os.path.abspath(path_to_scan)
     scancode_paths = {item.source_name_or_path for item in scancode_result}
 
