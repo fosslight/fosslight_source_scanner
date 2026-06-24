@@ -15,7 +15,7 @@ from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 REMOVE_LICENSE = ["warranty-disclaimer"]
-regex = re.compile(r'licenseref-(\S+)', re.IGNORECASE)
+regex = re.compile(r'licenseref-([a-z0-9\.\-]+)', re.IGNORECASE)
 find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
