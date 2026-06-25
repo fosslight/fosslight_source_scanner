@@ -29,7 +29,7 @@ import tqdm
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
-from ._scan_item import SourceItem, resolve_kb_config
+from ._scan_item import SourceItem, resolve_kb_config, is_notice_file
 from ._kb_client import fetch_origin_urls_via_scan_job
 from fosslight_util.oss_item import ScannerItem
 from typing import Optional, Tuple
@@ -343,7 +343,7 @@ def _collect_kb_file_hashes(
     extra_candidates: list[tuple[SourceItem, str]] = []
 
     for item in scancode_result:
-        if item.is_license_text:
+        if item.is_license_text or is_notice_file(item.source_name_or_path):
             continue
         md5_hash, _wfp = item._get_hash(path_to_scan)
         if md5_hash:
@@ -360,7 +360,7 @@ def _collect_kb_file_hashes(
 
     for file_path in tqdm.tqdm(files_to_scan, desc="KB Hashing", disable=hide_progress):
         rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
-        if rel_path in scancode_paths or rel_path in excluded_files:
+        if rel_path in scancode_paths or rel_path in excluded_files or is_notice_file(file_path):
             continue
         extra_item = SourceItem(rel_path)
         md5_hash, _wfp = extra_item._get_hash(path_to_scan)
