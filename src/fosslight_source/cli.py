@@ -29,10 +29,10 @@ import tqdm
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
-from ._scan_item import SourceItem, resolve_kb_config
+from ._scan_item import SourceItem, resolve_kb_config, is_notice_file
 from ._kb_client import fetch_origin_urls_via_scan_job
 from fosslight_util.oss_item import ScannerItem
-from typing import Tuple
+from typing import Optional, Tuple
 from ._scan_item import is_manifest_file
 import shutil
 
@@ -343,7 +343,7 @@ def _collect_kb_file_hashes(
     extra_candidates: list[tuple[SourceItem, str]] = []
 
     for item in scancode_result:
-        if item.is_license_text:
+        if item.is_license_text or is_notice_file(item.source_name_or_path):
             continue
         md5_hash, _wfp = item._get_hash(path_to_scan)
         if md5_hash:
@@ -360,7 +360,7 @@ def _collect_kb_file_hashes(
 
     for file_path in tqdm.tqdm(files_to_scan, desc="KB Hashing", disable=hide_progress):
         rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
-        if rel_path in scancode_paths or rel_path in excluded_files:
+        if rel_path in scancode_paths or rel_path in excluded_files or is_notice_file(file_path):
             continue
         extra_item = SourceItem(rel_path)
         md5_hash, _wfp = extra_item._get_hash(path_to_scan)
@@ -376,7 +376,7 @@ def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
     excluded_files: set = None, hide_progress: bool = False, kb_url: str = "", kb_token: str = ""
-) -> list:
+) -> tuple[list, Optional[str], int, int]:
 
     """
     Merge scanner results and spdx parsing result.
@@ -388,7 +388,7 @@ def merge_results(
     :param excluded_files: set of relative paths to exclude from KB-only file discovery.
     :param kb_url: KB API base URL.
     :param kb_token: KB API bearer token.
-    :return merged_result: list of merged result in SourceItem.
+    :return: (merged_result, kb failure message, requested file_hash count, returned match count).
     """
     if excluded_files is None:
         excluded_files = set()
@@ -424,13 +424,20 @@ def merge_results(
                 scancode_result.append(new_result_item)
 
     kb_origin_urls: dict[str, str] = {}
+    kb_status_message: Optional[str] = None
+    kb_requested_count = 0
+    kb_returned_count = 0
     extra_candidates: list[tuple[SourceItem, str]] = []
     if run_kb:
         file_hashes, extra_candidates = _collect_kb_file_hashes(
             scancode_result, path_to_scan, excluded_files, hide_progress
         )
         if file_hashes:
-            kb_origin_urls = fetch_origin_urls_via_scan_job(file_hashes, kb_url, kb_token)
+            kb_result = fetch_origin_urls_via_scan_job(file_hashes, kb_url, kb_token)
+            kb_origin_urls = kb_result.origin_urls
+            kb_status_message = kb_result.failure_message
+            kb_requested_count = kb_result.requested_count
+            kb_returned_count = kb_result.returned_count
 
     for item in scancode_result:
         item.set_oss_item(path_to_scan, kb_origin_urls=kb_origin_urls)
@@ -443,7 +450,7 @@ def merge_results(
             if extra_item.download_location:
                 scancode_result.append(extra_item)
 
-    return scancode_result
+    return scancode_result, kb_status_message, kb_requested_count, kb_returned_count
 
 
 def run_scanners(
@@ -537,13 +544,20 @@ def run_scanners(
                 if not check_kb_server_reachable(kb_url, kb_token):
                     run_kb = False
                     run_kb_msg = f"KB({kb_url}) Unreachable"
-                else:
-                    run_kb_msg = f"KB({kb_url}) Enabled"
 
             spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
-            merged_result = merge_results(scancode_result, scanoss_result, spdx_downloads,
-                                          path_to_scan, run_kb, manifest_licenses, excluded_files,
-                                          hide_progress, kb_url, kb_token)
+            merged_result, kb_status_message, kb_requested_count, kb_returned_count = merge_results(
+                scancode_result, scanoss_result, spdx_downloads,
+                path_to_scan, run_kb, manifest_licenses, excluded_files,
+                hide_progress, kb_url, kb_token,
+            )
+            if kb_status_message:
+                run_kb_msg = f"KB({kb_url}) {kb_status_message}"
+            elif run_kb and kb_requested_count > 0:
+                run_kb_msg = (
+                    f"KB({kb_url}) response : {kb_returned_count}/"
+                    f" requested: {kb_requested_count}"
+                )
             mark_oss_info_correction_files_as_excluded(merged_result)
             scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                            print_matched_text, output_path, output_files, output_extensions, correct_mode,
