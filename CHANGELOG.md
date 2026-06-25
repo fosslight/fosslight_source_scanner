@@ -1,5 +1,22 @@
 # Changelog
 
+## v2.3.0 (25/06/2026)
+## Changes
+## 🚀 Features
+
+- Switch KB lookup from query to scan jobs polling @soimkim (#277)
+
+## 🐛 Hotfixes
+
+- Fix refine regex pattern for parsing custom license @JustinWonjaePark (#280)
+- Fix release CI failures from cryptography and pytest-flake8 @JustinWonjaePark (#279)
+
+## 🔧 Maintenance
+
+- Print kb server message on Cover sheet @soimkim (#281)
+
+---
+
 ## v2.2.17 (05/06/2026)
 ## Changes
 ## 🔧 Maintenance
@@ -288,11 +305,3 @@
 ## 🔧 Maintenance
 
 - Fix github action warning message @bjk7119 (#208)
-
----
-
-## v2.1.8 (09/04/2025)
-## Changes
-## 🔧 Maintenance
-
-- Fix api_limit_exceed_parameter @JustinWonjaePark (#206)
