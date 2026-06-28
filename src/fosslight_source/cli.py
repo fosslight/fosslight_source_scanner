@@ -338,12 +338,18 @@ def _collect_kb_file_hashes(
     excluded_files: set,
     hide_progress: bool,
 ) -> tuple[list[str], list[tuple[SourceItem, str]]]:
-    """Collect MD5 hashes from scancode results and walk targets, plus (extra_item, md5) candidates."""
+    """Collect MD5 hashes from scancode results and walk targets, plus (extra_item, md5) candidates.
+
+    Skips license/notice files and scancode_result items that already have download_location.
+    ScanOSS/SPDX results are merged into scancode_result before this runs.
+    """
     file_hashes: list[str] = []
     extra_candidates: list[tuple[SourceItem, str]] = []
 
     for item in scancode_result:
         if item.is_license_text or is_notice_file(item.source_name_or_path):
+            continue
+        if item.download_location:
             continue
         md5_hash, _wfp = item._get_hash(path_to_scan)
         if md5_hash:
