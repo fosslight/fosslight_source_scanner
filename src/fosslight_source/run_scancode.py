@@ -63,14 +63,23 @@ def _apply_scancode_unset_workaround(kwargs: dict) -> None:
         logger.debug("scancode UNSET workaround skipped: %s", ex)
 
 
+def _directory_ignore_pattern(dir_name: str) -> str:
+    """Path-based glob for a directory name (avoids matching the scan root itself)."""
+    normalized = dir_name.strip().strip("/").replace("\\", "/")
+    if not normalized:
+        return dir_name
+    return f"**/{normalized}/**"
+
+
 def _default_scancode_coarse_ignore_patterns() -> frozenset:
     """
     Coarse ignore patterns aligned with fosslight_util.get_excluded_paths() rules.
-    Uses segment-style globs so scancode does not need one pattern per file.
+    Directory names use path-based globs (e.g. **/tests/**) so they do not match
+    the scan root directory name itself.
     """
     patterns = {".*"}
     for name in PACKAGE_DIRECTORY + EXCLUDE_DIRECTORY:
-        patterns.add(name)
+        patterns.add(_directory_ignore_pattern(name))
     for ext in EXCLUDE_FILE_EXTENSION:
         patterns.add(f"*.{ext}")
     for name in EXCLUDE_FILENAME:
@@ -96,7 +105,7 @@ def _add_path_to_exclude_pattern(
         if base_dir:
             full_exclude_path = os.path.join(abs_path_to_scan, base_dir)
             if os.path.isdir(full_exclude_path):
-                patterns.add(base_dir)
+                patterns.add(_directory_ignore_pattern(base_dir))
                 patterns.add(exclude_path_normalized)
             else:
                 patterns.add(exclude_path_normalized)
@@ -113,8 +122,7 @@ def _add_path_to_exclude_pattern(
     if os.path.isdir(full_exclude_path):
         base_path = exclude_path_normalized.rstrip("/")
         if base_path:
-            patterns.add(base_path)
-            patterns.add(f"{base_path}/**")
+            patterns.add(_directory_ignore_pattern(base_path))
         else:
             patterns.add(exclude_path_normalized)
     elif os.path.isfile(full_exclude_path):
