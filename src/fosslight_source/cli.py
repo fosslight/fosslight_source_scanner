@@ -459,6 +459,32 @@ def merge_results(
     return scancode_result, kb_status_message, kb_requested_count, kb_returned_count
 
 
+def _finalize_temp_output(
+    temp_output_path: str,
+    final_output_path: str,
+    publish: bool,
+    log: Optional[logging.Logger] = None,
+) -> bool:
+    """Copy scan artifacts from temp dir, then always remove the temp directory."""
+    if not temp_output_path or not os.path.isdir(temp_output_path):
+        return True
+    publish_ok = True
+    try:
+        if publish:
+            shutil.copytree(temp_output_path, final_output_path, dirs_exist_ok=True)
+    except Exception as ex:
+        publish_ok = False
+        if log:
+            log.error(f"Failed to publish scan artifacts: {ex}")
+    finally:
+        try:
+            shutil.rmtree(temp_output_path)
+        except Exception as ex:
+            if log:
+                log.debug(f"Failed to cleanup temp output directory: {ex}")
+    return publish_ok
+
+
 def run_scanners(
     path_to_scan: str, output_file_name: str = "",
     write_json_file: bool = False, num_cores: int = -1,
@@ -504,84 +530,94 @@ def run_scanners(
         output_path = os.getcwd()
     final_output_path = output_path
     output_path = os.path.join(os.path.dirname(output_path), f'.fosslight_temp_{start_time}')
-
-    logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
-                                  True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
-
-    logger.info(f"Tool Info : {result_log['Tool Info']}")
-
-    if '.xlsx' not in output_extensions and print_matched_text:
-        logger.warning("-m option is only available for excel.")
-        print_matched_text = False
-
-    if success:
-        if all_exclude_mode and len(all_exclude_mode) == 4:
-            (excluded_path_with_default_exclusion,
-             excluded_path_without_dot,
-             excluded_files,
-             cnt_file_except_skipped) = all_exclude_mode
-        else:
-            path_to_exclude_with_filename = path_to_exclude
-            (excluded_path_with_default_exclusion,
-             excluded_path_without_dot,
-             excluded_files,
-             cnt_file_except_skipped) = get_excluded_paths(path_to_scan, path_to_exclude_with_filename)
-            logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
-
-        if not selected_scanner:
-            selected_scanner = ALL_MODE
-        if selected_scanner in ['scancode', ALL_MODE]:
-            success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(path_to_scan, output_file_name,
-                                                                                      write_json_file, num_cores, True,
-                                                                                      print_matched_text, formats, called_by_cli,
-                                                                                      time_out, correct_mode, correct_filepath,
-                                                                                      excluded_path_with_default_exclusion,
-                                                                                      excluded_files, hide_progress)
-        excluded_files = set(excluded_files) if excluded_files else set()
-        if selected_scanner in ['scanoss', ALL_MODE]:
-            scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_path, formats, True, num_cores,
-                                                              excluded_path_with_default_exclusion, excluded_files,
-                                                              write_json_file, hide_progress)
-
-        run_kb_msg = ""
-        if selected_scanner in SCANNER_TYPE:
-            run_kb = True if selected_scanner in ['kb', ALL_MODE] else False
-            if run_kb:
-                if not check_kb_server_reachable(kb_url, kb_token):
-                    run_kb = False
-                    run_kb_msg = f"KB({kb_url}) Unreachable"
-
-            spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
-            merged_result, kb_status_message, kb_requested_count, kb_returned_count = merge_results(
-                scancode_result, scanoss_result, spdx_downloads,
-                path_to_scan, run_kb, manifest_licenses, excluded_files,
-                hide_progress, kb_url, kb_token,
-            )
-            if kb_status_message:
-                run_kb_msg = f"KB({kb_url}) {kb_status_message}"
-            elif run_kb and kb_requested_count > 0:
-                run_kb_msg = (
-                    f"KB({kb_url}) response : {kb_returned_count}/"
-                    f" requested: {kb_requested_count}"
-                )
-            mark_oss_info_correction_files_as_excluded(merged_result)
-            scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
-                                           print_matched_text, output_path, output_files, output_extensions, correct_mode,
-                                           correct_filepath, path_to_scan, excluded_path_without_dot, formats,
-                                           api_limit_exceed, cnt_file_except_skipped, final_output_path, run_kb_msg)
-        else:
-            print_help_msg_source_scanner()
-            result_log[RESULT_KEY] = "Unsupported scanner"
-            success = False
-    else:
-        result_log[RESULT_KEY] = f"Format error. {msg}"
-        success = False
+    publish_temp_output = False
+    logger = None
+    publish_ok = True
 
     try:
-        shutil.copytree(output_path, final_output_path, dirs_exist_ok=True)
-        shutil.rmtree(output_path)
-    except Exception as ex:
-        logger.debug(f"Failed to move temp files: {ex}")
+        logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
+                                      True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
+
+        logger.info(f"Tool Info : {result_log['Tool Info']}")
+
+        if '.xlsx' not in output_extensions and print_matched_text:
+            logger.warning("-m option is only available for excel.")
+            print_matched_text = False
+
+        if success:
+            if all_exclude_mode and len(all_exclude_mode) == 4:
+                (excluded_path_with_default_exclusion,
+                 excluded_path_without_dot,
+                 excluded_files,
+                 cnt_file_except_skipped) = all_exclude_mode
+            else:
+                path_to_exclude_with_filename = path_to_exclude
+                (excluded_path_with_default_exclusion,
+                 excluded_path_without_dot,
+                 excluded_files,
+                 cnt_file_except_skipped) = get_excluded_paths(path_to_scan, path_to_exclude_with_filename)
+                logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
+
+            if not selected_scanner:
+                selected_scanner = ALL_MODE
+            if selected_scanner in ['scancode', ALL_MODE]:
+                success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(
+                    path_to_scan, output_file_name, write_json_file, num_cores, True,
+                    print_matched_text, formats, called_by_cli, time_out, correct_mode,
+                    correct_filepath, excluded_path_with_default_exclusion,
+                    excluded_files, hide_progress,
+                )
+            excluded_files = set(excluded_files) if excluded_files else set()
+            if selected_scanner in ['scanoss', ALL_MODE]:
+                scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_path, formats, True, num_cores,
+                                                                  excluded_path_with_default_exclusion, excluded_files,
+                                                                  write_json_file, hide_progress)
+
+            run_kb_msg = ""
+            if selected_scanner in SCANNER_TYPE:
+                run_kb = True if selected_scanner in ['kb', ALL_MODE] else False
+                if run_kb:
+                    if not check_kb_server_reachable(kb_url, kb_token):
+                        run_kb = False
+                        run_kb_msg = f"KB({kb_url}) Unreachable"
+
+                spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
+                merged_result, kb_status_message, kb_requested_count, kb_returned_count = merge_results(
+                    scancode_result, scanoss_result, spdx_downloads,
+                    path_to_scan, run_kb, manifest_licenses, excluded_files,
+                    hide_progress, kb_url, kb_token,
+                )
+                if kb_status_message:
+                    run_kb_msg = f"KB({kb_url}) {kb_status_message}"
+                elif run_kb and kb_requested_count > 0:
+                    run_kb_msg = (
+                        f"KB({kb_url}) response : {kb_returned_count}/"
+                        f" requested: {kb_requested_count}"
+                    )
+                mark_oss_info_correction_files_as_excluded(merged_result)
+                scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
+                                               print_matched_text, output_path, output_files, output_extensions, correct_mode,
+                                               correct_filepath, path_to_scan, excluded_path_without_dot, formats,
+                                               api_limit_exceed, cnt_file_except_skipped, final_output_path, run_kb_msg)
+            else:
+                print_help_msg_source_scanner()
+                result_log[RESULT_KEY] = "Unsupported scanner"
+                success = False
+        else:
+            result_log[RESULT_KEY] = f"Format error. {msg}"
+            success = False
+
+        publish_temp_output = True
+    finally:
+        publish_ok = _finalize_temp_output(output_path, final_output_path, publish_temp_output, logger)
+
+    if publish_temp_output and not publish_ok:
+        success = False
+        prev_msg = result_log.get(RESULT_KEY, "")
+        result_log[RESULT_KEY] = (
+            f"{prev_msg}, Failed to publish scan artifacts" if prev_msg
+            else "Failed to publish scan artifacts"
+        )
 
     return success, result_log.get(RESULT_KEY, ""), scan_item, license_list, scanoss_result
 
