@@ -32,10 +32,16 @@ We describe the user guide in the FOSSLight guide page.
 Please see the [**User Guide**](https://fosslight.org/fosslight-guide-en/scanner/2_source.html) for more information on how to install and run it.
 
 
+## 📝 How to report issue
+
+Please report any ideas or bugs to improve by creating an issue in [Git Repository][repo]. Then there will be quick bug fixes and upgrades. Ideas to improve are always welcome.
+
+[repo]: https://github.com/fosslight/fosslight_source_scanner/issues
+
+
 ## 👏 Contributing Guide
 
-We always welcome your contributions.  
-Please see the [CONTRIBUTING guide](https://fosslight.org/hub-guide-en/contribution/1_contribution.html) for how to contribute.
+We always welcome your contributions. Please see the [CONTRIBUTING guide](https://fosslight.org/hub-guide-en/contribution/1_contribution.html) for how to contribute.
 
 
 ## 📄 License
