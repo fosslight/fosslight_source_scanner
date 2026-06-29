@@ -105,7 +105,7 @@ def _add_path_to_exclude_pattern(
         if base_dir:
             full_exclude_path = os.path.join(abs_path_to_scan, base_dir)
             if os.path.isdir(full_exclude_path):
-                patterns.add(_directory_ignore_pattern(base_dir))
+                patterns.add(base_dir)
                 patterns.add(exclude_path_normalized)
             else:
                 patterns.add(exclude_path_normalized)
@@ -122,7 +122,8 @@ def _add_path_to_exclude_pattern(
     if os.path.isdir(full_exclude_path):
         base_path = exclude_path_normalized.rstrip("/")
         if base_path:
-            patterns.add(_directory_ignore_pattern(base_path))
+            patterns.add(base_path)
+            patterns.add(f"{base_path}/**")
         else:
             patterns.add(exclude_path_normalized)
     elif os.path.isfile(full_exclude_path):
