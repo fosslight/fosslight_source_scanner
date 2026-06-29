@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.3.1 (29/06/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Use path-based ignore globs for directory excludes @soimkim (#283)
+
+## 🔧 Maintenance
+
+- Cleanup .fosslight_temp_{start_time} on scan interrupt @soimkim (#284)
+- Skip hash collection for files with download_location @soimkim (#282)
+
+---
+
 ## v2.3.0 (25/06/2026)
 ## Changes
 ## 🚀 Features
@@ -295,13 +308,3 @@
 ## 🔧 Maintenance
 
 - Update Python support to 3.10+ and remove scanners' version limits @JustinWonjaePark (#211)
-
----
-
-## v2.1.9 (10/07/2025)
-## Changes
-- Remove copyright from SCANOSS result @JustinWonjaePark (#209)
-
-## 🔧 Maintenance
-
-- Fix github action warning message @bjk7119 (#208)
