@@ -3,10 +3,13 @@
 # Copyright (c) 2020 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 import os
+import shlex
 import subprocess
 import pytest
 import shutil
 import sys
+import csv
+import glob
 
 # Add project root to sys.path for importing FL Source modules
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -18,6 +21,26 @@ from fosslight_source._parsing_scancode_file_item import (
 )
 
 remove_directories = ["test_scan", "test_scan2", "test_scan3"]
+TEST_FILES_SCAN_DIR = "test_scan"
+
+
+def _parse_license_tokens(license_value: str) -> set[str]:
+    return {token.strip().lower() for token in (license_value or "").split(",") if token.strip()}
+
+
+def _read_src_csv_rows(csv_path: str) -> list[dict]:
+    with open(csv_path, "r", encoding="utf-8") as file:
+        return list(csv.DictReader(file, delimiter="\t"))
+
+
+def _rows_for_source(rows: list[dict], source_name: str) -> list[dict]:
+    return [row for row in rows if row.get("Source Path") == source_name]
+
+
+def _find_scan_csv(output_dir: str) -> str:
+    csv_files = sorted(glob.glob(os.path.join(output_dir, "*.csv")))
+    assert csv_files, f"No CSV report found under {output_dir}"
+    return csv_files[-1]
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -31,8 +54,22 @@ def setup_test_result_dir():
 
 
 def run_command(command):
-    process = subprocess.run(command, shell=True, capture_output=True, text=True)
-    success = (process.returncode == 0)
+    command = command.strip()
+    if command.startswith("fosslight_source"):
+        args = shlex.split(command, posix=(os.name != "nt"))[1:]
+        if os.environ.get("FOSSLIGHT_USE_LOCAL_SRC"):
+            src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
+            env = os.environ.copy()
+            existing = env.get("PYTHONPATH", "")
+            env["PYTHONPATH"] = src_path if not existing else f"{src_path}{os.pathsep}{existing}"
+            cmd = [sys.executable, "-m", "fosslight_source.cli", *args]
+            process = subprocess.run(cmd, capture_output=True, text=True, env=env)
+        else:
+            cmd = ["fosslight_source", *args]
+            process = subprocess.run(cmd, capture_output=True, text=True)
+    else:
+        process = subprocess.run(command, shell=True, capture_output=True, text=True)
+    success = process.returncode == 0
     return success, process.stdout if success else process.stderr
 
 
@@ -110,6 +147,32 @@ def test_run():
     assert scan_exclude_success is True, "Test Run: Exclude command failed"
     assert len(scan_files) > 0, "Test Run: No scan files created in test_scan directory"
     assert len(scan2_files) > 0, "Test Run: No scan files created in test_scan2 directory"
+
+
+def test_test_files_scan_results():
+    os.makedirs(TEST_FILES_SCAN_DIR, exist_ok=True)
+
+    success, msg = run_command(
+        f"fosslight_source -p tests/test_files -s scancode -f csv -o {TEST_FILES_SCAN_DIR}/"
+    )
+    assert success is True, f"Test Run: test_files scan failed: {msg}"
+
+    csv_path = _find_scan_csv(TEST_FILES_SCAN_DIR)
+    rows = _read_src_csv_rows(csv_path)
+
+    sample_rows = _rows_for_source(rows, "sample.cpp")
+    assert sample_rows, "Test Run: sample.cpp not found in scan result"
+    for row in sample_rows:
+        licenses = _parse_license_tokens(row.get("License", ""))
+        assert "apache-2.0" in licenses, f"sample.cpp missing Apache-2.0 license: {row.get('License')}"
+        assert "mit" in licenses, f"sample.cpp missing MIT license: {row.get('License')}"
+
+    temp_rows = _rows_for_source(rows, "temp.cpp")
+    assert temp_rows, "Test Run: temp.cpp not found in scan result"
+    temp_row = temp_rows[0]
+    temp_licenses = _parse_license_tokens(temp_row.get("License", ""))
+    assert "apache-2.0" in temp_licenses, f"temp.cpp missing Apache-2.0 license: {temp_row.get('License')}"
+    assert (temp_row.get("Copyright Text") or "").strip(), "Test Run: temp.cpp copyright not extracted"
 
 
 def test_help_command():
