@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.2 (30/06/2026)
+## Changes
+## 🔧 Maintenance
+
+- Report scan job create failures on Cover sheet @soimkim (#285)
+
+---
+
 ## v2.3.1 (29/06/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -298,13 +306,3 @@
 ## 🔧 Maintenance
 
 - Remove copyright info for license text file of GPL family @JustinWonjaePark (#212)
-
----
-
-## v2.1.10 (17/07/2025)
-## Changes
-- Recognize manifest file as License File @JustinWonjaePark (#210)
-
-## 🔧 Maintenance
-
-- Update Python support to 3.10+ and remove scanners' version limits @JustinWonjaePark (#211)
