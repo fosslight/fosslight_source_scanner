@@ -134,17 +134,18 @@ def fetch_origin_urls_via_scan_job(
         created = _kb_request(kb_url, "scan/jobs", method="POST", payload=create_payload, kb_token=kb_token)
     except urllib.error.HTTPError as e:
         failure_message = _scan_job_failure_message(_parse_http_error_body(e))
-        if failure_message:
-            logger.warning(f"KB scan job create failed: {failure_message}")
-            return _kb_scan_job_result({}, failure_message, requested_count)
-        logger.warning(f"KB scan job create failed: HTTP {e.code} {e.reason}")
-        return _kb_scan_job_result({}, None, requested_count)
+        if not failure_message:
+            failure_message = f"HTTP {e.code} {e.reason}"
+        logger.warning(f"KB scan job create failed: {failure_message}")
+        return _kb_scan_job_result({}, failure_message, requested_count)
     except urllib.error.URLError as e:
-        logger.warning(f"KB scan job create failed: {e}")
-        return _kb_scan_job_result({}, None, requested_count)
+        failure_message = str(e)
+        logger.warning(f"KB scan job create failed: {failure_message}")
+        return _kb_scan_job_result({}, failure_message, requested_count)
     except Exception as e:
-        logger.warning(f"KB scan job create failed: {e}")
-        return _kb_scan_job_result({}, None, requested_count)
+        failure_message = str(e)
+        logger.warning(f"KB scan job create failed: {failure_message}")
+        return _kb_scan_job_result({}, failure_message, requested_count)
 
     failure_message = _scan_job_failure_message(created)
     if failure_message:
@@ -152,13 +153,15 @@ def fetch_origin_urls_via_scan_job(
         return _kb_scan_job_result({}, failure_message, requested_count)
 
     if str(created.get("status", "")).lower() == "failed":
-        logger.warning("KB scan job create failed")
-        return _kb_scan_job_result({}, None, requested_count)
+        failure_message = "scan job create failed"
+        logger.warning(f"KB scan job create failed: {failure_message}")
+        return _kb_scan_job_result({}, failure_message, requested_count)
 
     job_id = created.get("job_id", "")
     if not job_id:
-        logger.warning("KB scan job create response missing job_id")
-        return _kb_scan_job_result({}, None, requested_count)
+        failure_message = "scan job create response missing job_id"
+        logger.warning(f"KB scan job create failed: {failure_message}")
+        return _kb_scan_job_result({}, failure_message, requested_count)
 
     fallback_count = len(unique_hashes)
     accepted = _coerce_count(
