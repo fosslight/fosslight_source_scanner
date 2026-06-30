@@ -44,7 +44,7 @@ import shutil
 
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
-PRE_MERGE_SHEET_NAME = 'SRC_FL_Source_before_merge'
+PRE_MERGE_SHEET_NAME = '.SRC_FL_Source_no_merge'
 SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
                                    'OSS Version', 'License', 'Download Location',
                                    'Homepage', 'Copyright Text', 'Exclude', 'Comment']}
@@ -643,10 +643,10 @@ def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
     merged_item.oss_version = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(item.oss_version))
     merged_item._licenses = []
     merged_item.licenses = list(_get_merge_field_value(scan_items, _get_merge_licenses))
-    merged_downloads = _get_top_merge_values(scan_items, lambda item: item.download_location)
+    merged_downloads = _get_merge_field_value(scan_items, _get_merge_download_locations)
+    merged_item.download_location = list(merged_downloads) if merged_downloads else []
     merged_copyrights = _get_top_merge_values(scan_items, lambda item: item.copyright)
-    merged_item.download_location = [", ".join(merged_downloads)] if merged_downloads else []
-    merged_item.copyright = [", ".join(merged_copyrights)] if merged_copyrights else []
+    merged_item.copyright = merged_copyrights if merged_copyrights else []
     merged_item.set_oss_item(run_kb=False)
     return merged_item
 
