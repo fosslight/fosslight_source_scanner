@@ -155,7 +155,7 @@ def create_report_file(
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
     formats: list = [], api_limit_exceed: bool = False, files_count: int = 0, final_output_path: str = "",
-    run_kb_msg: str = "", merge_by_folder: bool = False
+    run_kb_msg: str = "", merge_by_folder: bool = True
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.

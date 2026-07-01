@@ -74,6 +74,14 @@ def _hide_xlsx_sheet(xlsx_path: str, sheet_name: str) -> None:
             updated_workbook_xml = ET.tostring(root, encoding="utf-8", xml_declaration=True)
 
             output_dir = os.path.dirname(xlsx_path) or "."
+
+            original_mode = None
+            if os.path.exists(xlsx_path):
+                try:
+                    original_mode = os.stat(xlsx_path).st_mode
+                except Exception as ex:
+                    logger.debug(f"Failed to capture original permissions of {xlsx_path}: {ex}")
+
             with tempfile.NamedTemporaryFile(delete=False, dir=output_dir, suffix=".xlsx") as temp_file:
                 temp_xlsx_path = temp_file.name
 
@@ -86,6 +94,12 @@ def _hide_xlsx_sheet(xlsx_path: str, sheet_name: str) -> None:
                             content = workbook.read(item.filename)
                         updated_workbook.writestr(item, content)
                 shutil.move(temp_xlsx_path, xlsx_path)
+
+                if original_mode is not None:
+                    try:
+                        os.chmod(xlsx_path, original_mode)
+                    except Exception as ex:
+                        logger.debug(f"Failed to restore original permissions of {xlsx_path}: {ex}")
             except Exception:
                 if os.path.exists(temp_xlsx_path):
                     os.remove(temp_xlsx_path)
