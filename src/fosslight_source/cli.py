@@ -36,10 +36,8 @@ from typing import Optional, Tuple
 from ._scan_item import is_manifest_file
 import shutil
 from ._merge import (
-    PRE_MERGE_SHEET_NAME,
     MERGED_HEADER,
     _add_pre_merge_sheet,
-    _hide_xlsx_sheet,
     merge_results_by_folder
 )
 
@@ -271,16 +269,12 @@ def create_report_file(
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
-    has_pre_merge_sheet = PRE_MERGE_SHEET_NAME in getattr(scan_item, "external_sheets", {})
     for combined_path_and_file, output_extension, output_format in zip(combined_paths_and_files, output_extensions, formats):
         # if need_license and output_extension == _json_ext and "scanoss_reference" in sheet_list:
         #     del sheet_list["scanoss_reference"]
         result = write_output_file(
             combined_path_and_file, output_extension, scan_item, extended_header, "", output_format
         )
-        success, _, result_file = result
-        if success and has_pre_merge_sheet and result_file.endswith(".xlsx"):
-            _hide_xlsx_sheet(result_file, PRE_MERGE_SHEET_NAME)
         results.append(result)
     for success, msg, result_file in results:
         final_result_file = result_file.replace(output_path, final_output_path)

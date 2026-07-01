@@ -5,19 +5,10 @@
 
 import os
 import copy
-import logging
-import zipfile
-import tempfile
-import shutil
-import defusedxml.ElementTree as ET
-import xml.etree.ElementTree as xmlET
 from collections import Counter
 
-import fosslight_util.constant as constant
 from ._scan_item import SourceItem
 from fosslight_util.oss_item import ScannerItem
-
-logger = logging.getLogger(constant.LOGGER_NAME)
 
 PKG_NAME = "fosslight_source"
 SRC_SHEET_NAME = 'SRC_FL_Source'
@@ -42,70 +33,6 @@ def _add_pre_merge_sheet(scan_item: 'ScannerItem') -> None:
         *_get_source_rows_to_print(scan_item.file_items.get(PKG_NAME, [])),
     ]
     scan_item.external_sheets = external_sheets
-
-
-def _hide_xlsx_sheet(xlsx_path: str, sheet_name: str) -> None:
-    workbook_xml_path = "xl/workbook.xml"
-    namespace_uri = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-    relationship_uri = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-    xmlET.register_namespace("", namespace_uri)
-    xmlET.register_namespace("r", relationship_uri)
-
-    try:
-        with zipfile.ZipFile(xlsx_path, "r") as workbook:
-            try:
-                workbook_xml = workbook.read(workbook_xml_path)
-            except KeyError:
-                logger.debug(f"Failed to hide sheet. workbook.xml not found: {xlsx_path}")
-                return
-
-            root = ET.fromstring(workbook_xml)
-            target_sheet = None
-            for sheet in root.findall(f".//{{{namespace_uri}}}sheet"):
-                if sheet.attrib.get("name") == sheet_name:
-                    target_sheet = sheet
-                    break
-
-            if target_sheet is None:
-                logger.debug(f"Failed to hide sheet. sheet not found: {sheet_name}")
-                return
-
-            target_sheet.set("state", "hidden")
-            updated_workbook_xml = ET.tostring(root, encoding="utf-8", xml_declaration=True)
-
-            output_dir = os.path.dirname(xlsx_path) or "."
-
-            original_mode = None
-            if os.path.exists(xlsx_path):
-                try:
-                    original_mode = os.stat(xlsx_path).st_mode
-                except Exception as ex:
-                    logger.debug(f"Failed to capture original permissions of {xlsx_path}: {ex}")
-
-            with tempfile.NamedTemporaryFile(delete=False, dir=output_dir, suffix=".xlsx") as temp_file:
-                temp_xlsx_path = temp_file.name
-
-            try:
-                with zipfile.ZipFile(temp_xlsx_path, "w") as updated_workbook:
-                    for item in workbook.infolist():
-                        if item.filename == workbook_xml_path:
-                            content = updated_workbook_xml
-                        else:
-                            content = workbook.read(item.filename)
-                        updated_workbook.writestr(item, content)
-                shutil.move(temp_xlsx_path, xlsx_path)
-
-                if original_mode is not None:
-                    try:
-                        os.chmod(xlsx_path, original_mode)
-                    except Exception as ex:
-                        logger.debug(f"Failed to restore original permissions of {xlsx_path}: {ex}")
-            except Exception:
-                if os.path.exists(temp_xlsx_path):
-                    os.remove(temp_xlsx_path)
-                raise
-    except Exception as ex:
-        logger.debug(f"Failed to hide sheet {sheet_name}: {ex}")
 
 
 def _normalize_merge_text(value: str) -> str:
