@@ -36,16 +36,19 @@ from typing import Optional, Tuple
 from ._scan_item import is_manifest_file
 import shutil
 from ._merge import (
-    MERGED_HEADER,
     _add_pre_merge_sheet,
     merge_results_by_folder
 )
 
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
+PRE_MERGE_SHEET_NAME = '.SRC_FL_Source_no_merge'
 SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
                                    'OSS Version', 'License', 'Download Location',
                                    'Homepage', 'Copyright Text', 'Exclude', 'Comment']}
+MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
+                                  'OSS Version', 'License', 'Download Location',
+                                  'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
 KB_REFERENCE_HEADER = ['ID', 'Source Path', 'KB Origin URL', 'Evidence']
 ALL_MODE = 'all'
 SCANNER_TYPE = ['kb', 'scancode', 'scanoss', ALL_MODE]
@@ -264,7 +267,7 @@ def create_report_file(
             logger.info("Success to correct with yaml.")
 
     if merged_result and merge_by_folder:
-        _add_pre_merge_sheet(scan_item)
+        _add_pre_merge_sheet(scan_item, PRE_MERGE_SHEET_NAME, MERGED_HEADER[SRC_SHEET_NAME], PKG_NAME)
         scan_item.file_items[PKG_NAME] = merge_results_by_folder(scan_item.file_items[PKG_NAME])
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]

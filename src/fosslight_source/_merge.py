@@ -8,16 +8,6 @@ import copy
 from collections import Counter
 
 from ._scan_item import SourceItem
-from fosslight_util.oss_item import ScannerItem
-
-PKG_NAME = "fosslight_source"
-SRC_SHEET_NAME = 'SRC_FL_Source'
-PRE_MERGE_SHEET_NAME = '.SRC_FL_Source_no_merge'
-
-MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
-                                  'OSS Version', 'License', 'Download Location',
-                                  'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
-
 
 def _get_source_rows_to_print(source_items: list) -> list:
     source_rows = []
@@ -26,11 +16,11 @@ def _get_source_rows_to_print(source_items: list) -> list:
     return source_rows
 
 
-def _add_pre_merge_sheet(scan_item: 'ScannerItem') -> None:
+def _add_pre_merge_sheet(scan_item, pre_merge_sheet_name: str, header_row: list, pkg_name: str) -> None:
     external_sheets = getattr(scan_item, "external_sheets", {}) or {}
-    external_sheets[PRE_MERGE_SHEET_NAME] = [
-        MERGED_HEADER[SRC_SHEET_NAME],
-        *_get_source_rows_to_print(scan_item.file_items.get(PKG_NAME, [])),
+    external_sheets[pre_merge_sheet_name] = [
+        header_row,
+        *_get_source_rows_to_print(scan_item.file_items.get(pkg_name, [])),
     ]
     scan_item.external_sheets = external_sheets
 
