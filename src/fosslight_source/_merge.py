@@ -9,6 +9,7 @@ from collections import Counter
 
 from ._scan_item import SourceItem
 
+
 def _get_source_rows_to_print(source_items: list) -> list:
     source_rows = []
     for source_item in source_items:
@@ -87,6 +88,26 @@ def _can_merge_folder(scan_items: list) -> bool:
     )
 
 
+def _get_merged_comments(scan_items: list) -> str:
+    comments = []
+    for item in scan_items:
+        val = item.comment
+        if val:
+            parts = [p.strip() for p in val.split(" / ") if p.strip()]
+            for p in parts:
+                if p not in comments:
+                    comments.append(p)
+    if not comments:
+        return ""
+
+    delimiter = " / "
+    merged = delimiter.join(comments)
+    max_len = 32767
+    if len(merged) > max_len:
+        merged = merged[:max_len - 3] + "..."
+    return merged
+
+
 def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
     # Reuse the shortest path item as the representative row, but keep original paths untouched.
     representative_item = min(scan_items, key=lambda item: (len(item.source_name_or_path), item.source_name_or_path))
@@ -100,6 +121,7 @@ def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
     merged_item.download_location = list(merged_downloads) if merged_downloads else []
     merged_copyrights = _get_top_merge_values(scan_items, lambda item: item.copyright)
     merged_item.copyright = merged_copyrights if merged_copyrights else []
+    merged_item._comment = _get_merged_comments(scan_items)
     merged_item.set_oss_item()
     return merged_item
 

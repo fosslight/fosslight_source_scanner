@@ -561,6 +561,11 @@ def run_scanners(
             print_matched_text = False
 
         if success:
+            has_sbom_format = any(f.startswith('spdx') or f.startswith('cyclonedx') for f in formats) if formats else False
+            if has_sbom_format and merge_by_folder:
+                logger.info("SPDX/CycloneDX format does not support merge. Merging is not performed.")
+                merge_by_folder = False
+
             if all_exclude_mode and len(all_exclude_mode) == 4:
                 (excluded_path_with_default_exclusion,
                  excluded_path_without_dot,
