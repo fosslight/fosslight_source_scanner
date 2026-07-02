@@ -7,11 +7,11 @@ import os
 import multiprocessing
 import warnings
 import logging
-import yaml
 from scancode import cli
-from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
+from fosslight_util.cover import dump_result_log
+from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.output_format import check_output_formats_v2
@@ -168,12 +168,12 @@ def run_scan(
 
     success = True
     msg = ""
-    _str_final_result_log = ""
     _result_log = {}
     result_list = []
     license_list = []
     _json_ext = ".json"
-    _start_time = datetime.now().strftime('%y%m%d_%H%M')
+    _start_time = current_timestamp_utc()
+    _file_time = timestamp_for_filename(_start_time)
 
     if not correct_filepath:
         correct_filepath = path_to_scan
@@ -189,9 +189,9 @@ def run_scan(
             for i, output_extension in enumerate(output_extensions):
                 if output_files[i] is None or output_files[i] == "":
                     if output_extension == _json_ext:
-                        output_files[i] = f"fosslight_opossum_src_{_start_time}"
+                        output_files[i] = f"fosslight_opossum_src_{_file_time}"
                     else:
-                        output_files[i] = f"fosslight_report_src_{_start_time}"
+                        output_files[i] = f"fosslight_report_src_{_file_time}"
 
         if _write_json_file:
             output_json_file = os.path.join(output_path, "scancode_raw_result.json")
@@ -199,7 +199,7 @@ def run_scan(
             output_json_file = ""
 
         if not called_by_cli:
-            logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
+            logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_file_time}.txt"),
                                            True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
 
             logger.info(f"Tool Info : {_result_log['Tool Info']}")
@@ -292,9 +292,11 @@ def run_scan(
     scan_result_msg = str(success) if msg == "" else f"{success}, {msg}"
     _result_log["Scan Result"] = scan_result_msg
     _result_log["Output Directory"] = output_path
+    _finish_time = current_timestamp_utc()
+    if _start_time:
+        _result_log["Running time"] = format_running_time(_start_time, _finish_time)
     try:
-        _str_final_result_log = yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True)
-        logger.info(_str_final_result_log)
+        logger.info(dump_result_log(_result_log))
     except Exception as ex:
         logger.warning(f"Failed to print result log. {ex}")
 

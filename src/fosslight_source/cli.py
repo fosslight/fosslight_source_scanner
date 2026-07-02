@@ -12,7 +12,6 @@ import logging
 import re
 import urllib.request
 import urllib.error
-from datetime import datetime
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
 from ._help import print_version, print_help_msg_source_scanner
@@ -31,6 +30,8 @@ from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, resolve_kb_config, is_notice_file
 from ._kb_client import fetch_origin_urls_via_scan_job
+from fosslight_util.cover import dump_result_log
+from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
 from fosslight_util.oss_item import ScannerItem
 from typing import Optional, Tuple
 from ._scan_item import is_manifest_file
@@ -128,9 +129,8 @@ def main() -> None:
                               print_matched_text, formats, time_out, correct_mode, correct_filepath,
                               selected_scanner, path_to_exclude, hide_progress=hide_progress,
                               kb_url=kb_url, kb_token=kb_token)
-
+        
         _result_log["Scan Result"] = result[1]
-
         try:
             logger.info(yaml.safe_dump(_result_log, allow_unicode=True, sort_keys=True))
         except Exception as ex:
@@ -161,6 +161,7 @@ def create_report_file(
     extended_header = {}
     sheet_list = {}
     _json_ext = ".json"
+    name_time = timestamp_for_filename(_start_time)
 
     output_path = os.path.abspath(output_path)
 
@@ -178,19 +179,19 @@ def create_report_file(
                             to_remove.append(i)
                         else:
                             if formats[i].startswith('spdx'):
-                                output_files[i] = f"fosslight_spdx_src_{_start_time}"
+                                output_files[i] = f"fosslight_spdx_src_{name_time}"
                             elif formats[i].startswith('cyclonedx'):
-                                output_files[i] = f'fosslight_cyclonedx_src_{_start_time}'
+                                output_files[i] = f'fosslight_cyclonedx_src_{name_time}'
                     else:
                         if output_extension == _json_ext:
-                            output_files[i] = f"fosslight_opossum_src_{_start_time}"
+                            output_files[i] = f"fosslight_opossum_src_{name_time}"
                         else:
-                            output_files[i] = f"fosslight_report_src_{_start_time}"
+                            output_files[i] = f"fosslight_report_src_{name_time}"
                 else:
                     if output_extension == _json_ext:
-                        output_files[i] = f"fosslight_opossum_src_{_start_time}"
+                        output_files[i] = f"fosslight_opossum_src_{name_time}"
                     else:
-                        output_files[i] = f"fosslight_report_src_{_start_time}"
+                        output_files[i] = f"fosslight_report_src_{name_time}"
         for index in sorted(to_remove, reverse=True):
             # remove elements of spdx format on windows
             del output_files[index]
@@ -257,6 +258,9 @@ def create_report_file(
         else:
             scan_item = correct_item
             logger.info("Success to correct with yaml.")
+
+    finish_time = current_timestamp_utc()
+    scan_item.set_cover_finish_time(finish_time)
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
@@ -513,7 +517,8 @@ def run_scanners(
     """
     global logger
 
-    start_time = datetime.now().strftime('%y%m%d_%H%M')
+    start_time = current_timestamp_utc()
+    file_time = timestamp_for_filename(start_time)
     scancode_result = []
     scanoss_result = []
     merged_result = []
@@ -529,13 +534,13 @@ def run_scanners(
     if output_path == "":
         output_path = os.getcwd()
     final_output_path = output_path
-    output_path = os.path.join(os.path.dirname(output_path), f'.fosslight_temp_{start_time}')
+    output_path = os.path.join(os.path.dirname(output_path), f'.fosslight_temp_{file_time}')
     publish_temp_output = False
     logger = None
     publish_ok = True
 
     try:
-        logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{start_time}.txt"),
+        logger, result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{file_time}.txt"),
                                       True, logging.INFO, logging.DEBUG, PKG_NAME, path_to_scan, path_to_exclude)
 
         logger.info(f"Tool Info : {result_log['Tool Info']}")
@@ -618,6 +623,17 @@ def run_scanners(
             f"{prev_msg}, Failed to publish scan artifacts" if prev_msg
             else "Failed to publish scan artifacts"
         )
+
+    if logger:
+        if scan_item and not isinstance(scan_item, list):
+            result_log["Running time"] = scan_item.cover.running_time
+        else:
+            finish_time = current_timestamp_utc()
+            result_log["Running time"] = format_running_time(start_time, finish_time)
+        try:
+            logger.info(dump_result_log(result_log))
+        except Exception as ex:
+            logger.warning(f"Failed to print result log. {ex}")
 
     return success, result_log.get(RESULT_KEY, ""), scan_item, license_list, scanoss_result
 
