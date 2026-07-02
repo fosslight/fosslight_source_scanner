@@ -101,11 +101,7 @@ def _get_merged_comments(scan_items: list) -> str:
         return ""
 
     delimiter = " / "
-    merged = delimiter.join(comments)
-    max_len = 32767
-    if len(merged) > max_len:
-        merged = merged[:max_len - 3] + "..."
-    return merged
+    return delimiter.join(comments)
 
 
 def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
