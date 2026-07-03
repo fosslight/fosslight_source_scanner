@@ -123,6 +123,7 @@ def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
     return merged_item
 
 
+
 def merge_results_by_folder(scan_result: list) -> list:
     """
     Merge output rows within the same folder when OSS name, OSS version, license,
@@ -144,19 +145,64 @@ def merge_results_by_folder(scan_result: list) -> list:
             current_node = current_node["children"].setdefault(folder_name, {"items": [], "children": {}})
         current_node["items"].append(scan_item)
 
-    def merge_node(merge_node_item: dict, merge_path: str = "", depth: int = 0) -> list:
-        excluded_items = [item for item in merge_node_item["items"] if item.exclude]
-        eligible_items = [item for item in merge_node_item["items"] if not item.exclude]
-
-        # Keep at least one path depth in the report; root-level ". (N)" is too broad.
-        if depth > 0 and _can_merge_folder(eligible_items):
-            merged_items = [_create_merged_item(eligible_items, merge_path)] + excluded_items
-        else:
-            merged_items = list(merge_node_item["items"])
-
+    def merge_node(merge_node_item: dict, merge_path: str = "", depth: int = 0) -> tuple:
+        child_finalized = []
+        child_unfinalized = []
         for folder_name, child_node in merge_node_item["children"].items():
             child_path = f"{merge_path}/{folder_name}" if merge_path else folder_name
-            merged_items.extend(merge_node(child_node, child_path, depth + 1))
-        return merged_items
+            fin, unfin = merge_node(child_node, child_path, depth + 1)
+            child_finalized.extend(fin)
+            child_unfinalized.extend(unfin)
 
-    return merge_node(merge_tree)
+        local_excluded = [item for item in merge_node_item["items"] if item.exclude]
+        local_eligible = [item for item in merge_node_item["items"] if not item.exclude]
+
+        all_eligible_candidates = list(local_eligible)
+        for _, g_items in child_unfinalized:
+            all_eligible_candidates.extend(g_items)
+
+        # We can merge under the current node if depth > 0 and we are combining multiple sources:
+        # e.g., local files + child groups, or multiple child groups, or multiple local files.
+        can_merge_here = (depth > 0) and (len(local_eligible) + len(child_unfinalized) > 1)
+
+        if can_merge_here:
+            if _can_merge_folder(all_eligible_candidates):
+                new_finalized = child_finalized + local_excluded
+                new_unfinalized = [(merge_path, all_eligible_candidates)]
+                return new_finalized, new_unfinalized
+            else:
+                # Compatibility broke at this level. We must finalize the subtrees.
+                finalized_child_groups = []
+                for c_path, c_items in child_unfinalized:
+                    if len(c_items) > 1 and _can_merge_folder(c_items):
+                        finalized_child_groups.append(_create_merged_item(c_items, c_path))
+                    else:
+                        finalized_child_groups.extend(c_items)
+
+                finalized_local = []
+                if len(local_eligible) > 1 and _can_merge_folder(local_eligible):
+                    finalized_local.append(_create_merged_item(local_eligible, merge_path))
+                else:
+                    finalized_local.extend(local_eligible)
+
+                new_finalized = child_finalized + local_excluded + finalized_child_groups + finalized_local
+                new_unfinalized = []
+                return new_finalized, new_unfinalized
+        else:
+            # We cannot merge or don't need to merge at this level (e.g. depth == 0 or only 1 source).
+            # We propagate everything up as unfinalized.
+            new_finalized = child_finalized + local_excluded
+            new_unfinalized = list(child_unfinalized)
+            if local_eligible:
+                new_unfinalized.append((merge_path, local_eligible))
+            return new_finalized, new_unfinalized
+
+    fin, unfin = merge_node(merge_tree)
+    finalized_results = list(fin)
+    for path, items in unfin:
+        if len(items) > 1 and _can_merge_folder(items):
+            finalized_results.append(_create_merged_item(items, path))
+        else:
+            finalized_results.extend(items)
+
+    return finalized_results
