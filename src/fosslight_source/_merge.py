@@ -7,6 +7,8 @@ import os
 import copy
 from collections import Counter
 
+from fosslight_util.constant import COMMENT_DELIMITER
+
 from ._scan_item import SourceItem
 
 
@@ -93,15 +95,14 @@ def _get_merged_comments(scan_items: list) -> str:
     for item in scan_items:
         val = item.comment
         if val:
-            parts = [p.strip() for p in val.split(" / ") if p.strip()]
+            parts = [p.strip() for p in val.split(COMMENT_DELIMITER) if p.strip()]
             for p in parts:
                 if p not in comments:
                     comments.append(p)
     if not comments:
         return ""
 
-    delimiter = " / "
-    return delimiter.join(comments)
+    return COMMENT_DELIMITER.join(comments)
 
 
 def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
@@ -124,7 +125,12 @@ def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
 
 def merge_results_by_folder(scan_result: list) -> list:
     """
-    Merge output rows within the same folder when OSS name, OSS version, and license are compatible.
+    Merge output rows within the same folder when OSS name, OSS version, license,
+    and download location are compatible.
+
+    A field is compatible when non-empty values across rows differ by at most one
+    (empty values are ignored). All eligible rows in the folder must be compatible
+    together; rows are not grouped by key subsets.
     """
     # Build a folder tree first so merge never jumps straight to root ".".
     merge_tree = {"items": [], "children": {}}
