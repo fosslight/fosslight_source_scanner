@@ -1,0 +1,44 @@
+version = 1
+SPDX-PackageName = "FOSSLight Source"
+SPDX-PackageDownloadLocation = "https://github.com/fosslight/fosslight_source_scanner"
+
+[[annotations]]
+path = "**.md"
+SPDX-FileCopyrightText = "2021 LG Electronics"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "tests/scancode_raw.json"
+precedence = "override"
+SPDX-FileCopyrightText = "2021 LG Electronics"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "tests/json_result/**"
+SPDX-FileCopyrightText = "2021 LG Electronics"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "tests/test_files/**"
+SPDX-FileCopyrightText = "2021 LG Electronics"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ".github/**"
+SPDX-FileCopyrightText = "2021 LG Electronics"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "MANIFEST.in"
+SPDX-FileCopyrightText = "2021 LG Electronics"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = "requirements**.txt"
+SPDX-FileCopyrightText = "2021 LG Electronics"
+SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ".coderabbit.yaml"
+SPDX-FileCopyrightText = "2026 LG Electronics"
+SPDX-License-Identifier = "Apache-2.0"
