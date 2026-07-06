@@ -32,12 +32,29 @@ def _normalize_merge_text(value: str) -> str:
     return value.strip() if value else ""
 
 
+def _get_item_oss_name(item: SourceItem) -> str:
+    if item.oss_items:
+        return item.oss_items[0].name
+    return item.oss_name
+
+
+def _get_item_oss_version(item: SourceItem) -> str:
+    if item.oss_items:
+        return item.oss_items[0].version
+    return item.oss_version
+
+
 def _get_merge_licenses(scan_item: SourceItem) -> tuple:
+    if scan_item.oss_items:
+        return tuple(sorted([lic.strip() for lic in scan_item.oss_items[0].license if lic and lic.strip()]))
     return tuple(sorted([lic.strip() for lic in scan_item.licenses if lic and lic.strip()]))
 
 
 def _get_merge_download_locations(scan_item: SourceItem) -> tuple:
-    downloads = scan_item.download_location
+    if scan_item.oss_items:
+        downloads = scan_item.oss_items[0].download_location
+    else:
+        downloads = scan_item.download_location
     if not downloads:
         return ()
     if isinstance(downloads, str):
@@ -81,10 +98,15 @@ def _get_top_merge_values(scan_items: list, value_getter) -> list:
 
 
 def _can_merge_folder(scan_items: list) -> bool:
+    if len(scan_items) <= 1:
+        return False
+    # If any file has multiple OSS components, do not merge this folder
+    for item in scan_items:
+        if len(item.oss_items) > 1:
+            return False
     return (
-        len(scan_items) > 1
-        and _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(item.oss_name))
-        and _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(item.oss_version))
+        _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(_get_item_oss_name(item)))
+        and _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(_get_item_oss_version(item)))
         and _is_merge_field_compatible(scan_items, _get_merge_licenses)
         and _is_merge_field_compatible(scan_items, _get_merge_download_locations)
     )
@@ -106,12 +128,11 @@ def _get_merged_comments(scan_items: list) -> str:
 
 
 def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
-    # Reuse the shortest path item as the representative row, but keep original paths untouched.
-    representative_item = min(scan_items, key=lambda item: (len(item.source_name_or_path), item.source_name_or_path))
+    representative_item = scan_items[0]
     merged_item = copy.copy(representative_item)
     merged_item.source_name_or_path = f"{merge_path} ({len(scan_items)})"
-    merged_item.oss_name = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(item.oss_name))
-    merged_item.oss_version = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(item.oss_version))
+    merged_item.oss_name = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(_get_item_oss_name(item)))
+    merged_item.oss_version = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(_get_item_oss_version(item)))
     merged_item._licenses = []
     merged_item.licenses = list(_get_merge_field_value(scan_items, _get_merge_licenses))
     merged_downloads = _get_merge_field_value(scan_items, _get_merge_download_locations)
@@ -121,7 +142,6 @@ def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
     merged_item._comment = _get_merged_comments(scan_items)
     merged_item.set_oss_item()
     return merged_item
-
 
 
 def merge_results_by_folder(scan_result: list) -> list:
@@ -145,6 +165,12 @@ def merge_results_by_folder(scan_result: list) -> list:
             current_node = current_node["children"].setdefault(folder_name, {"items": [], "children": {}})
         current_node["items"].append(scan_item)
 
+    def get_all_eligible_items(node: dict) -> list:
+        items = [item for item in node["items"] if not item.exclude]
+        for child_node in node["children"].values():
+            items.extend(get_all_eligible_items(child_node))
+        return items
+
     def merge_node(merge_node_item: dict, merge_path: str = "", depth: int = 0) -> tuple:
         child_finalized = []
         child_unfinalized = []
@@ -166,7 +192,8 @@ def merge_results_by_folder(scan_result: list) -> list:
         can_merge_here = (depth > 0) and (len(local_eligible) + len(child_unfinalized) > 1)
 
         if can_merge_here:
-            if _can_merge_folder(all_eligible_candidates):
+            all_subtree_eligible = get_all_eligible_items(merge_node_item)
+            if _can_merge_folder(all_subtree_eligible):
                 new_finalized = child_finalized + local_excluded
                 new_unfinalized = [(merge_path, all_eligible_candidates)]
                 return new_finalized, new_unfinalized
@@ -200,7 +227,7 @@ def merge_results_by_folder(scan_result: list) -> list:
     fin, unfin = merge_node(merge_tree)
     finalized_results = list(fin)
     for path, items in unfin:
-        if len(items) > 1 and _can_merge_folder(items):
+        if path and len(items) > 1 and _can_merge_folder(items):
             finalized_results.append(_create_merged_item(items, path))
         else:
             finalized_results.extend(items)
