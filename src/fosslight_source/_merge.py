@@ -186,7 +186,6 @@ def merge_results_by_folder(scan_result: list) -> list:
             current_node = current_node["children"].setdefault(folder_name, {"items": [], "children": {}})
         current_node["items"].append(scan_item)
 
-
     def merge_node(merge_node_item: dict, merge_path: str = "", depth: int = 0) -> tuple:
         child_finalized = []
         child_unfinalized = []
