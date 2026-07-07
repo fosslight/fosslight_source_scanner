@@ -62,7 +62,7 @@ def _get_merge_download_locations(scan_item: SourceItem) -> tuple:
     return tuple(sorted([dl.strip() for dl in downloads if dl and dl.strip()]))
 
 
-def _get_merge_field_value(scan_items: list, value_getter) -> str:
+def _get_merge_field_value(scan_items: list, value_getter):
     for scan_item in scan_items:
         value = value_getter(scan_item)
         if value:
@@ -154,7 +154,8 @@ def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
     merged_item.oss_name = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(_get_item_oss_name(item)))
     merged_item.oss_version = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(_get_item_oss_version(item)))
     merged_item._licenses = []
-    merged_item.licenses = list(_get_merge_field_value(scan_items, _get_merge_licenses))
+    merged_licenses = _get_merge_field_value(scan_items, _get_merge_licenses)
+    merged_item.licenses = list(merged_licenses) if merged_licenses else []
     merged_downloads = _get_merge_field_value(scan_items, _get_merge_download_locations)
     merged_item.download_location = list(merged_downloads) if merged_downloads else []
     merged_copyrights = _get_top_merge_values(scan_items, lambda item: item.copyright)
