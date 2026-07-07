@@ -266,7 +266,7 @@ def create_report_file(
             logger.info("Success to correct with yaml.")
 
     if merged_result and merge_by_folder:
-        _add_pre_merge_sheet(scan_item, PRE_MERGE_SHEET_NAME, MERGED_HEADER[SRC_SHEET_NAME], PKG_NAME)
+        _add_pre_merge_sheet(scan_item, PRE_MERGE_SHEET_NAME, extended_header[SRC_SHEET_NAME], PKG_NAME)
         _merge_start = time.time()
         scan_item.file_items[PKG_NAME] = merge_results_by_folder(scan_item.file_items[PKG_NAME])
         logger.debug(f"[TIMING] merge_results_by_folder: {time.time() - _merge_start:.4f}s")
