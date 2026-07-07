@@ -70,15 +70,6 @@ def _get_merge_field_value(scan_items: list, value_getter) -> str:
     return ""
 
 
-def _is_merge_field_compatible(scan_items: list, value_getter) -> bool:
-    values = []
-    for scan_item in scan_items:
-        value = value_getter(scan_item)
-        if value:
-            values.append(value)
-    return len(set(values)) <= 1
-
-
 def _iter_merge_values(values) -> list:
     if not values:
         return []
@@ -100,16 +91,45 @@ def _get_top_merge_values(scan_items: list, value_getter) -> list:
 def _can_merge_folder(scan_items: list) -> bool:
     if len(scan_items) <= 1:
         return False
-    # If any file has multiple OSS components, do not merge this folder
+
+    ref_name = None
+    ref_version = None
+    ref_licenses = None
+    ref_downloads = None
+
     for item in scan_items:
         if len(item.oss_items) > 1:
             return False
-    return (
-        _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(_get_item_oss_name(item)))
-        and _is_merge_field_compatible(scan_items, lambda item: _normalize_merge_text(_get_item_oss_version(item)))
-        and _is_merge_field_compatible(scan_items, _get_merge_licenses)
-        and _is_merge_field_compatible(scan_items, _get_merge_download_locations)
-    )
+
+        name = _normalize_merge_text(_get_item_oss_name(item))
+        if name:
+            if ref_name is None:
+                ref_name = name
+            elif name != ref_name:
+                return False
+
+        version = _normalize_merge_text(_get_item_oss_version(item))
+        if version:
+            if ref_version is None:
+                ref_version = version
+            elif version != ref_version:
+                return False
+
+        licenses = _get_merge_licenses(item)
+        if licenses:
+            if ref_licenses is None:
+                ref_licenses = licenses
+            elif licenses != ref_licenses:
+                return False
+
+        downloads = _get_merge_download_locations(item)
+        if downloads:
+            if ref_downloads is None:
+                ref_downloads = downloads
+            elif downloads != ref_downloads:
+                return False
+
+    return True
 
 
 def _get_merged_comments(scan_items: list) -> str:
