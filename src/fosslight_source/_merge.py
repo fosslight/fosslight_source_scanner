@@ -165,11 +165,6 @@ def merge_results_by_folder(scan_result: list) -> list:
             current_node = current_node["children"].setdefault(folder_name, {"items": [], "children": {}})
         current_node["items"].append(scan_item)
 
-    def get_all_eligible_items(node: dict) -> list:
-        items = [item for item in node["items"] if not item.exclude]
-        for child_node in node["children"].values():
-            items.extend(get_all_eligible_items(child_node))
-        return items
 
     def merge_node(merge_node_item: dict, merge_path: str = "", depth: int = 0) -> tuple:
         child_finalized = []
@@ -192,8 +187,7 @@ def merge_results_by_folder(scan_result: list) -> list:
         can_merge_here = (depth > 0) and (len(local_eligible) + len(child_unfinalized) > 1)
 
         if can_merge_here:
-            all_subtree_eligible = get_all_eligible_items(merge_node_item)
-            if _can_merge_folder(all_subtree_eligible):
+            if _can_merge_folder(all_eligible_candidates):
                 new_finalized = child_finalized + local_excluded
                 new_unfinalized = [(merge_path, all_eligible_candidates)]
                 return new_finalized, new_unfinalized
