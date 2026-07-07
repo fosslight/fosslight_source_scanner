@@ -131,11 +131,13 @@ def main() -> None:
 
     if os.path.isdir(path_to_scan):
         result = []
+        _total_start = time.time()
         result = run_scanners(path_to_scan, output_file_name, write_json_file, core, True,
                               print_matched_text, formats, time_out, correct_mode, correct_filepath,
                               selected_scanner, path_to_exclude, hide_progress=hide_progress,
                               kb_url=kb_url, kb_token=kb_token,
                               merge_by_folder=merge_by_folder)
+        logger.info(f"[TIMING] run_scanners total: {time.time() - _total_start:.4f}s")
 
         _result_log["Scan Result"] = result[1]
 
@@ -268,7 +270,9 @@ def create_report_file(
 
     if merged_result and merge_by_folder:
         _add_pre_merge_sheet(scan_item, PRE_MERGE_SHEET_NAME, MERGED_HEADER[SRC_SHEET_NAME], PKG_NAME)
+        _merge_start = time.time()
         scan_item.file_items[PKG_NAME] = merge_results_by_folder(scan_item.file_items[PKG_NAME])
+        logger.info(f"[TIMING] merge_results_by_folder: {time.time() - _merge_start:.4f}s")
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
