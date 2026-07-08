@@ -32,34 +32,69 @@ def _normalize_merge_text(value: str) -> str:
     return value.strip() if value else ""
 
 
-def _get_item_oss_name(item: SourceItem) -> str:
-    if item.oss_items:
-        return item.oss_items[0].name
-    return item.oss_name
+def _iter_merge_values(values) -> list:
+    if not values:
+        return []
+    if isinstance(values, str):
+        return [values]
+    return values
 
 
-def _get_item_oss_version(item: SourceItem) -> str:
-    if item.oss_items:
-        return item.oss_items[0].version
-    return item.oss_version
+def _normalize_merge_licenses(licenses) -> tuple:
+    return tuple(sorted([lic.strip() for lic in _iter_merge_values(licenses) if lic and lic.strip()]))
 
 
-def _get_merge_licenses(scan_item: SourceItem) -> tuple:
-    if scan_item.oss_items:
-        return tuple(sorted([lic.strip() for lic in scan_item.oss_items[0].license if lic and lic.strip()]))
-    return tuple(sorted([lic.strip() for lic in scan_item.licenses if lic and lic.strip()]))
-
-
-def _get_merge_download_locations(scan_item: SourceItem) -> tuple:
-    if scan_item.oss_items:
-        downloads = scan_item.oss_items[0].download_location
-    else:
-        downloads = scan_item.download_location
+def _normalize_merge_downloads(downloads) -> tuple:
     if not downloads:
         return ()
     if isinstance(downloads, str):
         downloads = [downloads]
     return tuple(sorted([dl.strip() for dl in downloads if dl and dl.strip()]))
+
+
+def _iter_merge_rows(item: SourceItem):
+    if item.oss_items:
+        for oss_item in item.oss_items:
+            name = _normalize_merge_text(oss_item.name) or _normalize_merge_text(item.oss_name)
+            version = _normalize_merge_text(oss_item.version) or _normalize_merge_text(item.oss_version)
+            licenses = _normalize_merge_licenses(oss_item.license or item.licenses)
+            downloads = _normalize_merge_downloads(oss_item.download_location or item.download_location)
+            yield name, version, licenses, downloads
+    else:
+        yield (
+            _normalize_merge_text(item.oss_name),
+            _normalize_merge_text(item.oss_version),
+            _normalize_merge_licenses(item.licenses),
+            _normalize_merge_downloads(item.download_location),
+        )
+
+
+def _get_item_oss_name(item: SourceItem) -> str:
+    for name, _, _, _ in _iter_merge_rows(item):
+        if name:
+            return name
+    return ""
+
+
+def _get_item_oss_version(item: SourceItem) -> str:
+    for _, version, _, _ in _iter_merge_rows(item):
+        if version:
+            return version
+    return ""
+
+
+def _get_merge_licenses(scan_item: SourceItem) -> tuple:
+    for _, _, licenses, _ in _iter_merge_rows(scan_item):
+        if licenses:
+            return licenses
+    return ()
+
+
+def _get_merge_download_locations(scan_item: SourceItem) -> tuple:
+    for _, _, _, downloads in _iter_merge_rows(scan_item):
+        if downloads:
+            return downloads
+    return ()
 
 
 def _get_merge_field_value(scan_items: list, value_getter):
@@ -68,14 +103,6 @@ def _get_merge_field_value(scan_items: list, value_getter):
         if value:
             return value
     return ""
-
-
-def _iter_merge_values(values) -> list:
-    if not values:
-        return []
-    if isinstance(values, str):
-        return [values]
-    return values
 
 
 def _get_top_merge_values(scan_items: list, value_getter) -> list:
@@ -98,36 +125,30 @@ def _can_merge_folder(scan_items: list) -> bool:
     ref_downloads = None
 
     for item in scan_items:
-        if len(item.oss_items) > 1:
-            return False
+        for name, version, licenses, downloads in _iter_merge_rows(item):
+            if name:
+                if ref_name is None:
+                    ref_name = name
+                elif name != ref_name:
+                    return False
 
-        name = _normalize_merge_text(_get_item_oss_name(item))
-        if name:
-            if ref_name is None:
-                ref_name = name
-            elif name != ref_name:
-                return False
+            if version:
+                if ref_version is None:
+                    ref_version = version
+                elif version != ref_version:
+                    return False
 
-        version = _normalize_merge_text(_get_item_oss_version(item))
-        if version:
-            if ref_version is None:
-                ref_version = version
-            elif version != ref_version:
-                return False
+            if licenses:
+                if ref_licenses is None:
+                    ref_licenses = licenses
+                elif licenses != ref_licenses:
+                    return False
 
-        licenses = _get_merge_licenses(item)
-        if licenses:
-            if ref_licenses is None:
-                ref_licenses = licenses
-            elif licenses != ref_licenses:
-                return False
-
-        downloads = _get_merge_download_locations(item)
-        if downloads:
-            if ref_downloads is None:
-                ref_downloads = downloads
-            elif downloads != ref_downloads:
-                return False
+            if downloads:
+                if ref_downloads is None:
+                    ref_downloads = downloads
+                elif downloads != ref_downloads:
+                    return False
 
     return True
 
@@ -170,9 +191,9 @@ def merge_results_by_folder(scan_result: list) -> list:
     Merge output rows within the same folder when OSS name, OSS version, license,
     and download location are compatible.
 
-    A field is compatible when non-empty values across rows differ by at most one
-    (empty values are ignored). All eligible rows in the folder must be compatible
-    together; rows are not grouped by key subsets.
+    A field is compatible when all non-empty values across rows are identical
+    (empty values are ignored). Each oss_item is treated as its own row. All eligible
+    rows in the folder must be compatible together; rows are not grouped by key subsets.
     """
     # Build a folder tree first so merge never jumps straight to root ".".
     merge_tree = {"items": [], "children": {}}
