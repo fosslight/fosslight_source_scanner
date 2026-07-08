@@ -18,6 +18,7 @@ from fosslight_util.set_log import init_log
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats_v2, write_output_file
+from fosslight_util.write_excel import get_header_row
 from fosslight_util.correct import correct_with_yaml
 from fosslight_util.parsing_yaml import SUPPORT_OSS_INFO_FILES
 from .run_scancode import run_scan
@@ -43,12 +44,6 @@ from ._merge import (
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
 PRE_MERGE_SHEET_NAME = '.SRC_FL_Source_no_merge'
-SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
-                                   'OSS Version', 'License', 'Download Location',
-                                   'Homepage', 'Copyright Text', 'Exclude', 'Comment']}
-MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
-                                  'OSS Version', 'License', 'Download Location',
-                                  'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
 KB_REFERENCE_HEADER = ['ID', 'Source Path', 'KB Origin URL', 'Evidence']
 ALL_MODE = 'all'
 SCANNER_TYPE = ['kb', 'scancode', 'scanoss', ALL_MODE]
@@ -235,11 +230,6 @@ def create_report_file(
         sheet_list = {}
         scan_item.append_file_items(merged_result, PKG_NAME)
 
-        if selected_scanner == 'scanoss':
-            extended_header = SCANOSS_HEADER
-        else:
-            extended_header = MERGED_HEADER
-
         if need_license:
             if selected_scanner == 'scancode':
                 sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
@@ -266,7 +256,7 @@ def create_report_file(
             logger.info("Success to correct with yaml.")
 
     if merged_result and merge_by_folder:
-        _add_pre_merge_sheet(scan_item, PRE_MERGE_SHEET_NAME, extended_header[SRC_SHEET_NAME], PKG_NAME)
+        _add_pre_merge_sheet(scan_item, PRE_MERGE_SHEET_NAME, get_header_row(SRC_SHEET_NAME), PKG_NAME)
         _merge_start = time.time()
         scan_item.file_items[PKG_NAME] = merge_results_by_folder(scan_item.file_items[PKG_NAME])
         logger.debug(f"[TIMING] merge_results_by_folder: {time.time() - _merge_start:.4f}s")
