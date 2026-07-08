@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import os
-import copy
 from collections import Counter
 
 from fosslight_util.constant import COMMENT_DELIMITER
@@ -169,19 +168,19 @@ def _get_merged_comments(scan_items: list) -> str:
 
 
 def _create_merged_item(scan_items: list, merge_path: str) -> SourceItem:
-    representative_item = scan_items[0]
-    merged_item = copy.copy(representative_item)
-    merged_item.source_name_or_path = f"{merge_path} ({len(scan_items)})"
+    merged_path = f"{merge_path} ({len(scan_items)})"
+    merged_item = SourceItem(merged_path)
     merged_item.oss_name = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(_get_item_oss_name(item)))
     merged_item.oss_version = _get_merge_field_value(scan_items, lambda item: _normalize_merge_text(_get_item_oss_version(item)))
-    merged_item._licenses = []
     merged_licenses = _get_merge_field_value(scan_items, _get_merge_licenses)
     merged_item.licenses = list(merged_licenses) if merged_licenses else []
     merged_downloads = _get_merge_field_value(scan_items, _get_merge_download_locations)
     merged_item.download_location = list(merged_downloads) if merged_downloads else []
     merged_copyrights = _get_top_merge_values(scan_items, lambda item: item.copyright)
     merged_item.copyright = merged_copyrights if merged_copyrights else []
-    merged_item._comment = _get_merged_comments(scan_items)
+    merged_comments = _get_merged_comments(scan_items)
+    if merged_comments:
+        merged_item.comment = merged_comments
     merged_item.set_oss_item()
     return merged_item
 
