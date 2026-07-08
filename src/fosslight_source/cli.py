@@ -18,6 +18,7 @@ from fosslight_util.set_log import init_log
 from ._help import print_version, print_help_msg_source_scanner
 from ._license_matched import get_license_list_to_print
 from fosslight_util.output_format import check_output_formats_v2, write_output_file
+from fosslight_util.write_excel import get_header_row
 from fosslight_util.correct import correct_with_yaml
 from fosslight_util.parsing_yaml import SUPPORT_OSS_INFO_FILES
 from .run_scancode import run_scan
@@ -35,15 +36,14 @@ from fosslight_util.oss_item import ScannerItem
 from typing import Optional, Tuple
 from ._scan_item import is_manifest_file
 import shutil
+from ._merge import (
+    _add_pre_merge_sheet,
+    merge_results_by_folder
+)
 
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
-SCANOSS_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
-                                   'OSS Version', 'License', 'Download Location',
-                                   'Homepage', 'Copyright Text', 'Exclude', 'Comment']}
-MERGED_HEADER = {SRC_SHEET_NAME: ['ID', 'Source Path', 'OSS Name',
-                                  'OSS Version', 'License', 'Download Location',
-                                  'Homepage', 'Copyright Text', 'Exclude', 'Comment', 'license_reference']}
+PRE_MERGE_SHEET_NAME = '.SRC_FL_Source_no_merge'
 KB_REFERENCE_HEADER = ['ID', 'Source Path', 'KB Origin URL', 'Evidence']
 ALL_MODE = 'all'
 SCANNER_TYPE = ['kb', 'scancode', 'scanoss', ALL_MODE]
@@ -88,6 +88,7 @@ def main() -> None:
     parser.add_argument('--hide_progress', action='store_true', required=False)
     parser.add_argument('--kb_url', type=str, required=False, default="")
     parser.add_argument('--kb_token', type=str, required=False, default="")
+    parser.add_argument('--no_merge', action='store_true', required=False)
 
     args = parser.parse_args()
 
@@ -118,16 +119,17 @@ def main() -> None:
     hide_progress = args.hide_progress
     kb_url = args.kb_url
     kb_token = args.kb_token
+    merge_by_folder = not args.no_merge
 
     time_out = args.timeout
     core = args.cores
 
     if os.path.isdir(path_to_scan):
-        result = []
         result = run_scanners(path_to_scan, output_file_name, write_json_file, core, True,
                               print_matched_text, formats, time_out, correct_mode, correct_filepath,
                               selected_scanner, path_to_exclude, hide_progress=hide_progress,
-                              kb_url=kb_url, kb_token=kb_token)
+                              kb_url=kb_url, kb_token=kb_token,
+                              merge_by_folder=merge_by_folder)
 
         _result_log["Scan Result"] = result[1]
 
@@ -148,7 +150,7 @@ def create_report_file(
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
     formats: list = [], api_limit_exceed: bool = False, files_count: int = 0, final_output_path: str = "",
-    run_kb_msg: str = ""
+    run_kb_msg: str = "", merge_by_folder: bool = True
 ) -> 'ScannerItem':
     """
     Create report files for given scanned result.
@@ -158,7 +160,6 @@ def create_report_file(
     :param license_list: matched text (only for scancode).
     :param need_license: if requested, output matched text (only for scancode).
     """
-    extended_header = {}
     sheet_list = {}
     _json_ext = ".json"
 
@@ -228,11 +229,6 @@ def create_report_file(
         sheet_list = {}
         scan_item.append_file_items(merged_result, PKG_NAME)
 
-        if selected_scanner == 'scanoss':
-            extended_header = SCANOSS_HEADER
-        else:
-            extended_header = MERGED_HEADER
-
         if need_license:
             if selected_scanner == 'scancode':
                 sheet_list["scancode_reference"] = get_license_list_to_print(license_list)
@@ -258,12 +254,21 @@ def create_report_file(
             scan_item = correct_item
             logger.info("Success to correct with yaml.")
 
+    if merged_result and merge_by_folder:
+        _add_pre_merge_sheet(scan_item, PRE_MERGE_SHEET_NAME, get_header_row(SRC_SHEET_NAME), PKG_NAME)
+        _merge_start = time.time()
+        scan_item.file_items[PKG_NAME] = merge_results_by_folder(scan_item.file_items[PKG_NAME])
+        logger.debug(f"[TIMING] merge_results_by_folder: {time.time() - _merge_start:.4f}s")
+
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
     for combined_path_and_file, output_extension, output_format in zip(combined_paths_and_files, output_extensions, formats):
         # if need_license and output_extension == _json_ext and "scanoss_reference" in sheet_list:
         #     del sheet_list["scanoss_reference"]
-        results.append(write_output_file(combined_path_and_file, output_extension, scan_item, extended_header, "", output_format))
+        result = write_output_file(
+            combined_path_and_file, output_extension, scan_item, hide_header="", format=output_format
+        )
+        results.append(result)
     for success, msg, result_file in results:
         final_result_file = result_file.replace(output_path, final_output_path)
         if success:
@@ -492,7 +497,8 @@ def run_scanners(
     formats: list = [], time_out: int = 120,
     correct_mode: bool = True, correct_filepath: str = "",
     selected_scanner: str = ALL_MODE, path_to_exclude: list = [],
-    all_exclude_mode: tuple = (), hide_progress: bool = False, kb_url: str = "", kb_token: str = ""
+    all_exclude_mode: tuple = (), hide_progress: bool = False,
+    kb_url: str = "", kb_token: str = "", merge_by_folder: bool = True
 ) -> Tuple[bool, str, 'ScannerItem', list, list]:
     """
     Run Scancode and scanoss.py for the given path.
@@ -545,6 +551,11 @@ def run_scanners(
             print_matched_text = False
 
         if success:
+            has_sbom_format = any(f.startswith('spdx') or f.startswith('cyclonedx') for f in formats) if formats else False
+            if has_sbom_format and merge_by_folder:
+                logger.info("SPDX/CycloneDX format does not support merge. Merging is not performed.")
+                merge_by_folder = False
+
             if all_exclude_mode and len(all_exclude_mode) == 4:
                 (excluded_path_with_default_exclusion,
                  excluded_path_without_dot,
@@ -598,7 +609,8 @@ def run_scanners(
                 scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                                print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                                correct_filepath, path_to_scan, excluded_path_without_dot, formats,
-                                               api_limit_exceed, cnt_file_except_skipped, final_output_path, run_kb_msg)
+                                               api_limit_exceed, cnt_file_except_skipped, final_output_path, run_kb_msg,
+                                               merge_by_folder)
             else:
                 print_help_msg_source_scanner()
                 result_log[RESULT_KEY] = "Unsupported scanner"
