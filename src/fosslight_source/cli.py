@@ -576,6 +576,7 @@ def run_scanners(
 
             if not selected_scanner:
                 selected_scanner = ALL_MODE
+
             if selected_scanner in ['scancode', ALL_MODE]:
                 success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(
                     path_to_scan, output_file_name, write_json_file, num_cores, True,
@@ -584,18 +585,21 @@ def run_scanners(
                     excluded_files, hide_progress,
                 )
             excluded_files = set(excluded_files) if excluded_files else set()
-            if selected_scanner in ['scanoss', ALL_MODE]:
+
+            run_kb = True if selected_scanner in ['kb', ALL_MODE] else False
+            run_kb_msg = ""
+            if run_kb:
+                if not check_kb_server_reachable(kb_url, kb_token):
+                    run_kb = False
+                    run_kb_msg = f"KB({kb_url}) Unreachable"
+
+            run_scanoss = (selected_scanner == 'scanoss') or (selected_scanner == ALL_MODE and not run_kb)
+            if run_scanoss:
                 scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_path, formats, True, num_cores,
                                                                   excluded_path_with_default_exclusion, excluded_files,
                                                                   write_json_file, hide_progress)
 
-            run_kb_msg = ""
             if selected_scanner in SCANNER_TYPE:
-                run_kb = True if selected_scanner in ['kb', ALL_MODE] else False
-                if run_kb:
-                    if not check_kb_server_reachable(kb_url, kb_token):
-                        run_kb = False
-                        run_kb_msg = f"KB({kb_url}) Unreachable"
 
                 spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
                 merged_result, kb_status_message, kb_requested_count, kb_returned_count = merge_results(
