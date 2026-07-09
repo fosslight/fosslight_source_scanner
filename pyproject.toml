@@ -29,7 +29,7 @@ dependencies = [
     "pyparsing",
     "scanoss>=1.19.0",
     "XlsxWriter",
-    "fosslight_util>=2.1.64",
+    "fosslight_util>=2.2.2",
     "PyYAML",
     "wheel>=0.38.1",
     "intbitset",
