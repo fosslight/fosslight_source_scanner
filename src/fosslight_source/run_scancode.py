@@ -10,8 +10,7 @@ import logging
 from scancode import cli
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
-from fosslight_util.cover import dump_result_log
-from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
+from fosslight_util.time import current_timestamp_utc, timestamp_for_filename
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.output_format import check_output_formats_v2
@@ -292,13 +291,6 @@ def run_scan(
     scan_result_msg = str(success) if msg == "" else f"{success}, {msg}"
     _result_log["Scan Result"] = scan_result_msg
     _result_log["Output Directory"] = output_path
-    _finish_time = current_timestamp_utc()
-    if _start_time:
-        _result_log["Running time"] = format_running_time(_start_time, _finish_time)
-    try:
-        logger.info(dump_result_log(_result_log))
-    except Exception as ex:
-        logger.warning(f"Failed to print result log. {ex}")
 
     if not success:
         logger.error(f"Failed to run: {scan_result_msg}")
