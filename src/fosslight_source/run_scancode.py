@@ -132,7 +132,7 @@ def _default_scancode_coarse_ignore_patterns(
 
 
 def _is_covered_by_coarse_ignore(rel_path: str, coarse_patterns: Iterable[str]) -> bool:
-    excludes = {pattern: "" for pattern in coarse_patterns}
+    excludes = {pattern: "exclude" for pattern in coarse_patterns}
     return not is_included(rel_path, includes={}, excludes=excludes)
 
 
@@ -275,18 +275,30 @@ def run_scan(
                 pretty_params["output_file"] = output_file_name
                 abs_path_to_scan = os.path.abspath(path_to_scan)
                 binary_paths = []
-                for root, _, files in os.walk(path_to_scan):
+                coarse_patterns = _default_scancode_coarse_ignore_patterns(path_to_exclude, abs_path_to_scan)
+
+                for root, dirs, files in os.walk(path_to_scan):
+                    dirs[:] = [
+                        d for d in dirs
+                        if not d.startswith('.') and not _is_covered_by_coarse_ignore(
+                            os.path.relpath(os.path.join(root, d), abs_path_to_scan).replace("\\", "/") + "/a",
+                            coarse_patterns
+                        )
+                    ]
                     for name in files:
+                        if name.startswith('.'):
+                            continue
                         full_path = os.path.join(root, name)
+                        rel_path = os.path.relpath(full_path, abs_path_to_scan).replace("\\", "/")
+                        if _is_covered_by_coarse_ignore(rel_path, coarse_patterns):
+                            continue
                         try:
                             if not check_binary(full_path, True):
                                 continue
                         except Exception:
                             continue
-                        rel_path = os.path.relpath(full_path, abs_path_to_scan)
-                        rel_norm = os.path.normpath(rel_path).replace("\\", "/")
-                        binary_paths.append(rel_norm)
-                        logger.debug(f"Excluded binary from scancode: {rel_norm}")
+                        binary_paths.append(rel_path)
+                        logger.debug(f"Excluded binary from scancode: {rel_path}")
 
                 ignore_tuple = _build_scancode_ignore_patterns(
                     path_to_exclude, abs_path_to_scan, binary_paths
