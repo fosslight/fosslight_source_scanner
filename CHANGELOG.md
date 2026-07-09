@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.3.3 (09/07/2026)
+## Changes
+## 🚀 Features
+
+- Add folder summary for source report @JustinWonjaePark (#278)
+
+## 🔧 Maintenance
+
+- Unify running time formatting in reports and logs @bjk7119 (#286)
+- Migrate to REUSE.toml and update GitHub Action @woocheol-lge (#287)
+
+---
+
 ## v2.3.2 (30/06/2026)
 ## Changes
 ## 🔧 Maintenance
@@ -298,11 +311,3 @@
 ## 🔧 Maintenance
 
 - Fix scancode version for Mac @JustinWonjaePark (#213)
-
----
-
-## v2.1.11 (21/07/2025)
-## Changes
-## 🔧 Maintenance
-
-- Remove copyright info for license text file of GPL family @JustinWonjaePark (#212)
