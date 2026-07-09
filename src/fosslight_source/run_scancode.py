@@ -63,6 +63,43 @@ def _apply_scancode_unset_workaround(kwargs: dict) -> None:
         logger.debug("scancode UNSET workaround skipped: %s", ex)
 
 
+_WILDCARD_EXTENSIONS = {
+    "png", "mp3", "ogg", "comp", "bin", "o", "db", "tflite",
+    "ttf", "pyc", "exe", "dll", "jpg", "gif"
+}
+
+
+def _normalize_custom_pattern(pattern: str, abs_path_to_scan: str) -> set:
+    pat = pattern.replace('\\', '/').strip()
+    if not pat:
+        return set()
+
+    patterns_to_add = {pat}
+
+    if pat.endswith("/**"):
+        base = pat[:-3].rstrip("/")
+        if base:
+            patterns_to_add.add(base)
+    elif pat.endswith("/*"):
+        base = pat[:-2].rstrip("/")
+        if base:
+            patterns_to_add.add(base)
+            patterns_to_add.add(f"{base}/**")
+    elif pat.endswith("/"):
+        base = pat.rstrip("/")
+        if base:
+            patterns_to_add.add(base)
+            patterns_to_add.add(f"{base}/**")
+            patterns_to_add.add(f"{base}/*")
+    else:
+        full_path = os.path.join(abs_path_to_scan, pat)
+        if os.path.isdir(full_path):
+            patterns_to_add.add(f"{pat}/**")
+            patterns_to_add.add(f"{pat}/*")
+
+    return patterns_to_add
+
+
 def _directory_ignore_pattern(dir_name: str) -> str:
     """Path-based glob for a directory name (avoids matching the scan root itself)."""
     normalized = dir_name.strip().strip("/").replace("\\", "/")
@@ -71,7 +108,10 @@ def _directory_ignore_pattern(dir_name: str) -> str:
     return f"**/{normalized}/**"
 
 
-def _default_scancode_coarse_ignore_patterns() -> frozenset:
+def _default_scancode_coarse_ignore_patterns(
+    path_to_exclude: list = [],
+    abs_path_to_scan: str = ""
+) -> frozenset:
     """
     Coarse ignore patterns aligned with fosslight_util.get_excluded_paths() rules.
     Directory names use path-based globs (e.g. **/tests/**) so they do not match
@@ -84,6 +124,10 @@ def _default_scancode_coarse_ignore_patterns() -> frozenset:
         patterns.add(f"*.{ext}")
     for name in EXCLUDE_FILENAME:
         patterns.add(name)
+
+    for pattern in path_to_exclude or []:
+        patterns.update(_normalize_custom_pattern(pattern, abs_path_to_scan))
+
     return frozenset(patterns)
 
 
@@ -127,10 +171,17 @@ def _add_path_to_exclude_pattern(
         else:
             patterns.add(exclude_path_normalized)
     elif os.path.isfile(full_exclude_path):
-        if not _is_covered_by_coarse_ignore(exclude_path_normalized, coarse_patterns):
+        ext = os.path.splitext(exclude_path_normalized)[1].lstrip('.').lower()
+        if ext in _WILDCARD_EXTENSIONS:
+            patterns.add(f"*.{ext}")
+        elif not _is_covered_by_coarse_ignore(exclude_path_normalized, coarse_patterns):
             patterns.add(f"**/{exclude_path_normalized}")
     else:
-        patterns.add(exclude_path_normalized)
+        ext = os.path.splitext(exclude_path_normalized)[1].lstrip('.').lower()
+        if ext in _WILDCARD_EXTENSIONS:
+            patterns.add(f"*.{ext}")
+        else:
+            patterns.add(exclude_path_normalized)
 
 
 def _build_scancode_ignore_patterns(
@@ -138,7 +189,7 @@ def _build_scancode_ignore_patterns(
     abs_path_to_scan: str,
     binary_paths: list,
 ) -> tuple:
-    coarse_patterns = _default_scancode_coarse_ignore_patterns()
+    coarse_patterns = _default_scancode_coarse_ignore_patterns(path_to_exclude, abs_path_to_scan)
     patterns = set(coarse_patterns)
 
     for path in path_to_exclude or []:
@@ -149,7 +200,11 @@ def _build_scancode_ignore_patterns(
         _add_path_to_exclude_pattern(patterns, exclude_path, abs_path_to_scan, coarse_patterns)
 
     for rel_path in binary_paths:
-        patterns.add(f"**/{rel_path}")
+        ext = os.path.splitext(rel_path)[1].lstrip('.').lower()
+        if ext in _WILDCARD_EXTENSIONS:
+            patterns.add(f"*.{ext}")
+        else:
+            patterns.add(f"**/{rel_path}")
 
     return tuple(sorted(patterns))
 
@@ -199,8 +254,13 @@ def run_scan(
             output_json_file = ""
 
         if not called_by_cli:
-            logger, _result_log = init_log(os.path.join(output_path, f"fosslight_log_src_{_start_time}.txt"),
-                                           True, logging.INFO, logging.DEBUG, _PKG_NAME, path_to_scan, path_to_exclude)
+            log_file_path = os.path.join(
+                output_path, f"fosslight_log_src_{_start_time}.txt"
+            )
+            logger, _result_log = init_log(
+                log_file_path, True, logging.INFO, logging.DEBUG,
+                _PKG_NAME, path_to_scan, path_to_exclude
+            )
 
             logger.info(f"Tool Info : {_result_log['Tool Info']}")
 
