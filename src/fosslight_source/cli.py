@@ -598,7 +598,7 @@ def run_scanners(
                         run_kb_msg = f"KB({kb_url}) Unreachable"
 
                 spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
-                merged_result, kb_status_message, kb_requested_count, kb_returned_count = merge_results(
+                merged_result, kb_status_message, kb_requested_count, _ = merge_results(
                     scancode_result, scanoss_result, spdx_downloads,
                     path_to_scan, run_kb, manifest_licenses, excluded_files,
                     hide_progress, kb_url, kb_token,
@@ -606,10 +606,7 @@ def run_scanners(
                 if kb_status_message:
                     run_kb_msg = f"KB({kb_url}) {kb_status_message}"
                 elif run_kb and kb_requested_count > 0:
-                    run_kb_msg = (
-                        f"KB({kb_url}) response : {kb_returned_count}/"
-                        f" requested: {kb_requested_count}"
-                    )
+                    run_kb_msg = f"KB({kb_url}) : Completed"
                 mark_oss_info_correction_files_as_excluded(merged_result)
                 scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                                print_matched_text, output_path, output_files, output_extensions, correct_mode,
