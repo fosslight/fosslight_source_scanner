@@ -35,6 +35,7 @@ dependencies = [
     "intbitset",
     "fosslight_binary>=5.1.22",
     "scancode-toolkit>=32.0.2",
+    "lxml>=6.0.1",
     # cryptography 49.x does not provide macOS x86_64 wheels, causing source builds to require OpenSSL/pkg-config.
     "cryptography<49; platform_system == 'Darwin' and platform_machine == 'x86_64'",
     "fingerprints==1.2.3",
