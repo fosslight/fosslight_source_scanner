@@ -64,10 +64,10 @@ def _apply_scancode_unset_workaround(kwargs: dict) -> None:
 
 _WILDCARD_EXTENSIONS = {
     "png", "mp3", "wav", "comp", "bin", "o", "db", "tflite",
-    "ttf", "pyc", "exe", "dll", "jpg", "jpeg", "gif",
+    "ttf", "exe", "dll", "jpg", "jpeg", "gif",
     "zip", "tar", "tgz", "gz",
     "bmp", "webp", "ico",
-}
+} | {ext.lower() for ext in EXCLUDE_FILE_EXTENSION}
 _SKIP_DIR_NAMES = frozenset(name.lower() for name in PACKAGE_DIRECTORY + EXCLUDE_DIRECTORY)
 _SKIP_EXTS = frozenset(ext.lower() for ext in EXCLUDE_FILE_EXTENSION)
 
