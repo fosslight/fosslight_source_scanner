@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.3.4 (13/07/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Require lxml>=6.0.1 for Python 3.14 wheel support @soimkim (#290)
+
+## 🔧 Maintenance
+
+- Optimize scancode ignore pattern size using wildcards @JustinWonjaePark (#288)
+- Hide KB response counts in Scanner Info and show Completed status. @soimkim (#291)
+
+---
+
 ## v2.3.3 (09/07/2026)
 ## Changes
 ## 🚀 Features
@@ -299,15 +312,3 @@
 ## 🔧 Maintenance
 
 - Add is_manifest_file field @dd-jy (#215)
-
----
-
-## v2.1.12 (21/08/2025)
-## Changes
-## 🚀 Features
-
-- Exclude package dirs with directory name @dd-jy (#214)
-
-## 🔧 Maintenance
-
-- Fix scancode version for Mac @JustinWonjaePark (#213)
