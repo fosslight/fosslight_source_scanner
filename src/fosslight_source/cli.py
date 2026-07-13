@@ -572,7 +572,7 @@ def run_scanners(
                  excluded_path_without_dot,
                  excluded_files,
                  cnt_file_except_skipped) = get_excluded_paths(path_to_scan, path_to_exclude_with_filename)
-                logger.debug(f"Skipped paths: {excluded_path_with_default_exclusion}")
+                logger.debug(f"Skipped paths count: {len(excluded_path_with_default_exclusion)}")
 
             if not selected_scanner:
                 selected_scanner = ALL_MODE
@@ -580,8 +580,8 @@ def run_scanners(
                 success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(
                     path_to_scan, output_file_name, write_json_file, num_cores, True,
                     print_matched_text, formats, called_by_cli, time_out, correct_mode,
-                    correct_filepath, excluded_path_with_default_exclusion,
-                    excluded_files, hide_progress,
+                    correct_filepath, path_to_exclude,
+                    hide_progress=hide_progress,
                 )
             excluded_files = set(excluded_files) if excluded_files else set()
             if selected_scanner in ['scanoss', ALL_MODE]:
