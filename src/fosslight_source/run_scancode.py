@@ -16,7 +16,6 @@ from fosslight_util.time import current_timestamp_utc, timestamp_for_filename
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.output_format import check_output_formats_v2
-from fosslight_binary.binary_analysis import check_binary
 from fosslight_util.exclude import (
     EXCLUDE_DIRECTORY,
     EXCLUDE_FILE_EXTENSION,
@@ -297,12 +296,6 @@ def run_scan(
                                 success = True
                             result_list = sorted(
                                 result_list, key=lambda row: (''.join(row.licenses)))
-
-                            for scan_item in result_list:
-                                if os.path.isdir(scan_item.source_name_or_path):
-                                    continue
-                                if check_binary(os.path.join(path_to_scan, scan_item.source_name_or_path), True):
-                                    scan_item.exclude = True
             except Exception as ex:
                 success = False
                 msg = str(ex)

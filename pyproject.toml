@@ -33,7 +33,6 @@ dependencies = [
     "PyYAML",
     "wheel>=0.38.1",
     "intbitset",
-    "fosslight_binary>=5.1.22",
     "scancode-toolkit>=32.0.2",
     "lxml>=6.0.1",
     # cryptography 49.x does not provide macOS x86_64 wheels, causing source builds to require OpenSSL/pkg-config.
