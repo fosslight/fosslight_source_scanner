@@ -35,6 +35,8 @@ dependencies = [
     "intbitset",
     "fosslight_binary>=5.1.22",
     "scancode-toolkit>=32.0.2",
+    # Optional scancode pre-scan plugin (not on PyPI): enables --ignore-binaries
+    "scancode-ignore-binaries @ git+https://github.com/aboutcode-org/scancode-plugins.git@main#subdirectory=misc/scancode-ignore-binaries",
     "lxml>=6.0.1",
     # cryptography 49.x does not provide macOS x86_64 wheels, causing source builds to require OpenSSL/pkg-config.
     "cryptography<49; platform_system == 'Darwin' and platform_machine == 'x86_64'",
