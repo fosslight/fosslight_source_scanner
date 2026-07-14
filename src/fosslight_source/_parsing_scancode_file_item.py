@@ -73,7 +73,9 @@ def get_error_from_header(header_item: list) -> Tuple[bool, str]:
     return has_error, str_error
 
 
-def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = False) -> Tuple[bool, list, list, dict]:
+def parsing_scancode_32_earlier(
+    scancode_file_list: list, has_error: bool = False, ui_mode: bool = False
+) -> Tuple[bool, list, list, dict]:
     rc = True
     msg = []
     scancode_file_item = []
@@ -119,7 +121,9 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                     # Set the license value
                     license_detected = []
                     if licenses is None or licenses == "":
-                        continue
+                        if not ui_mode:
+                            continue
+                        licenses = []
 
                     license_expression_list = file.get("license_expressions", {})
                     if len(license_expression_list) > 0:
@@ -192,6 +196,9 @@ def parsing_scancode_32_earlier(scancode_file_list: list, has_error: bool = Fals
                             result_item.comment = ','.join(license_expression_list)
 
                         scancode_file_item.append(result_item)
+                    elif ui_mode:
+                        result_item.copyright = copyright_value_list
+                        scancode_file_item.append(result_item)
             except Exception as ex:
                 msg.append(f"Error Parsing item: {ex}")
                 rc = False
@@ -223,7 +230,7 @@ def get_license_expression_spdx(license_expression: str) -> str:
 
 
 def parsing_scancode_32_later(
-    scancode_file_list: list, has_error: bool = False
+    scancode_file_list: list, has_error: bool = False, ui_mode: bool = False
 ) -> Tuple[bool, list, list, dict]:
     rc = True
     msg = []
@@ -258,9 +265,9 @@ def parsing_scancode_32_later(
                         copyright_value_list.append(copyright_data)
                 license_detected = []
                 licenses = file.get("license_detections", [])
-                if not licenses:
+                if not licenses and not ui_mode:
                     continue
-                for lic in licenses:
+                for lic in licenses or []:
                     matched_lic_list = lic.get("matches", [])
                     for matched_lic in matched_lic_list:
                         found_lic_list = matched_lic.get("license_expression", "")
@@ -322,7 +329,8 @@ def parsing_scancode_32_later(
 
 
 def parsing_file_item(
-    scancode_file_list: list, has_error: bool, need_matched_license: bool = False
+    scancode_file_list: list, has_error: bool, need_matched_license: bool = False,
+    ui_mode: bool = False
 ) -> Tuple[bool, list, list, dict]:
 
     rc = True
@@ -330,9 +338,13 @@ def parsing_file_item(
 
     first_item = next(iter(scancode_file_list or []), {})
     if "licenses" in first_item:
-        rc, scancode_file_item, msg, license_list = parsing_scancode_32_earlier(scancode_file_list, has_error)
+        rc, scancode_file_item, msg, license_list = parsing_scancode_32_earlier(
+            scancode_file_list, has_error, ui_mode
+        )
     else:
-        rc, scancode_file_item, msg, license_list = parsing_scancode_32_later(scancode_file_list, has_error)
+        rc, scancode_file_item, msg, license_list = parsing_scancode_32_later(
+            scancode_file_list, has_error, ui_mode
+        )
     if not need_matched_license:
         license_list = {}
     return rc, scancode_file_item, msg, license_list

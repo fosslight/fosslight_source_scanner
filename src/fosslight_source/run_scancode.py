@@ -398,7 +398,8 @@ def run_scan(
                             msg = "Failed to analyze :" + error_msg
                     if "files" in results:
                         rc, result_list, parsing_msg, license_list = parsing_file_item(results["files"],
-                                                                                       has_error, need_license)
+                                                                                       has_error, need_license,
+                                                                                       ui_mode=ui_mode)
                         if parsing_msg:
                             _result_log["Parsing Log"] = parsing_msg
                         if rc:
