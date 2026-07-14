@@ -9,8 +9,6 @@ import warnings
 import logging
 from typing import Tuple
 
-# Ensures scancode-ignore-binaries is installed (provides --ignore-binaries).
-import scanignobin  # noqa: F401
 from scancode import cli
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
