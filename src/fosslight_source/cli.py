@@ -90,6 +90,7 @@ def main() -> None:
     parser.add_argument('--kb_url', type=str, required=False, default="")
     parser.add_argument('--kb_token', type=str, required=False, default="")
     parser.add_argument('--no_merge', action='store_true', required=False)
+    parser.add_argument('--ui', action='store_true', required=False)
 
     args = parser.parse_args()
 
@@ -121,6 +122,7 @@ def main() -> None:
     kb_url = args.kb_url
     kb_token = args.kb_token
     merge_by_folder = not args.no_merge
+    ui_mode = args.ui
 
     time_out = args.timeout
     core = args.cores
@@ -130,7 +132,7 @@ def main() -> None:
                               print_matched_text, formats, time_out, correct_mode, correct_filepath,
                               selected_scanner, path_to_exclude, hide_progress=hide_progress,
                               kb_url=kb_url, kb_token=kb_token,
-                              merge_by_folder=merge_by_folder)
+                              merge_by_folder=merge_by_folder, ui_mode=ui_mode)
 
         _result_log["Scan Result"] = result[1]
         try:
@@ -521,7 +523,8 @@ def run_scanners(
     correct_mode: bool = True, correct_filepath: str = "",
     selected_scanner: str = ALL_MODE, path_to_exclude: list = [],
     all_exclude_mode: tuple = (), hide_progress: bool = False,
-    kb_url: str = "", kb_token: str = "", merge_by_folder: bool = True
+    kb_url: str = "", kb_token: str = "", merge_by_folder: bool = True,
+    ui_mode: bool = False
 ) -> Tuple[bool, str, 'ScannerItem', list, list]:
     """
     Run Scancode and scanoss.py for the given path.
@@ -601,6 +604,7 @@ def run_scanners(
                     print_matched_text, formats, called_by_cli, time_out, correct_mode,
                     correct_filepath, path_to_exclude,
                     hide_progress=hide_progress,
+                    ui_mode=ui_mode,
                 )
             excluded_files = set(excluded_files) if excluded_files else set()
             if selected_scanner in ['scanoss', ALL_MODE]:
