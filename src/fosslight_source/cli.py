@@ -395,6 +395,11 @@ def merge_results(
 
     """
     Merge scanner results and spdx parsing result.
+
+    ScanOSS items for files already present in scancode_result (same path) do not
+    replace the ScanCode license; only OSS name, version, and download location
+    from ScanOSS are applied. ScanOSS-only files are appended in full.
+
     :param scancode_result: list of scancode results in SourceItem.
     :param scanoss_result: list of scanoss results in SourceItem.
     :param spdx_downloads: dictionary of spdx parsed results.
@@ -408,7 +413,21 @@ def merge_results(
     if excluded_files is None:
         excluded_files = set()
 
-    scancode_result.extend([item for item in scanoss_result if item not in scancode_result])
+    # Merge ScanOSS into ScanCode results.
+    # When ScanCode already detected a license for the same file, keep that license
+    # and only load OSS name, version, and download location from ScanOSS.
+    # Files found only by ScanOSS are appended as-is (including ScanOSS licenses).
+    for scanoss_item in scanoss_result:
+        if scanoss_item in scancode_result:
+            scancode_item = scancode_result[scancode_result.index(scanoss_item)]
+            if scanoss_item.oss_name:
+                scancode_item.oss_name = scanoss_item.oss_name
+            if scanoss_item.oss_version:
+                scancode_item.oss_version = scanoss_item.oss_version
+            if scanoss_item.download_location:
+                scancode_item.download_location = scanoss_item.download_location
+        else:
+            scancode_result.append(scanoss_item)
 
     # If download loc. in SPDX form found, overwrite the scanner result.
     # If scanner result doesn't exist, create a new row.
