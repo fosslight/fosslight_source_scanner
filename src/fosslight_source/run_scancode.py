@@ -375,7 +375,7 @@ def run_scan(
                     "processes": num_cores,
                     "pretty_params": pretty_params,
                     "output_json_pp": output_json_file,
-                    # UI mode needs all scanned files; omit only_findings for that case.
+                    # Non-UI: only files with findings (license/copyright). UI: all files.
                     "only_findings": not ui_mode,
                     "license_text": True,
                     "url": True,
@@ -397,9 +397,9 @@ def run_scan(
                             _result_log["Error_files"] = error_msg
                             msg = "Failed to analyze :" + error_msg
                     if "files" in results:
-                        rc, result_list, parsing_msg, license_list = parsing_file_item(results["files"],
-                                                                                       has_error, need_license,
-                                                                                       ui_mode=ui_mode)
+                        rc, result_list, parsing_msg, license_list = parsing_file_item(
+                            results["files"], has_error, need_license, ui_mode=ui_mode
+                        )
                         if parsing_msg:
                             _result_log["Parsing Log"] = parsing_msg
                         if rc:

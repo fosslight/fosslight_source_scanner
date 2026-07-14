@@ -120,10 +120,11 @@ def parsing_scancode_32_earlier(
 
                     # Set the license value
                     license_detected = []
-                    if licenses is None or licenses == "":
-                        if not ui_mode:
-                            continue
+                    if not licenses:
                         licenses = []
+                    # Keep license and/or copyright findings; UI keeps finding-less files too.
+                    if not licenses and not copyright_value_list and not ui_mode:
+                        continue
 
                     license_expression_list = file.get("license_expressions", {})
                     if len(license_expression_list) > 0:
@@ -196,7 +197,7 @@ def parsing_scancode_32_earlier(
                             result_item.comment = ','.join(license_expression_list)
 
                         scancode_file_item.append(result_item)
-                    elif ui_mode:
+                    elif copyright_value_list or ui_mode:
                         result_item.copyright = copyright_value_list
                         scancode_file_item.append(result_item)
             except Exception as ex:
@@ -265,7 +266,8 @@ def parsing_scancode_32_later(
                         copyright_value_list.append(copyright_data)
                 license_detected = []
                 licenses = file.get("license_detections", [])
-                if not licenses and not ui_mode:
+                # Keep license and/or copyright findings; UI keeps finding-less files too.
+                if not licenses and not copyright_value_list and not ui_mode:
                     continue
                 for lic in licenses or []:
                     matched_lic_list = lic.get("matches", [])
