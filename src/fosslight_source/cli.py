@@ -392,7 +392,8 @@ def _collect_kb_file_hashes(
 def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
-    excluded_files: set = None, hide_progress: bool = False, kb_url: str = "", kb_token: str = ""
+    excluded_files: set = None, hide_progress: bool = False, kb_url: str = "", kb_token: str = "",
+    ui_mode: bool = False
 ) -> tuple[list, Optional[str], int, int]:
 
     """
@@ -402,6 +403,9 @@ def merge_results(
     replace the ScanCode license; only OSS name, version, and download location
     from ScanOSS are applied. ScanOSS-only files are appended in full.
 
+    When ui_mode is False, items with both empty download location and empty
+    license are removed after merging.
+
     :param scancode_result: list of scancode results in SourceItem.
     :param scanoss_result: list of scanoss results in SourceItem.
     :param spdx_downloads: dictionary of spdx parsed results.
@@ -410,6 +414,7 @@ def merge_results(
     :param excluded_files: set of relative paths to exclude from KB-only file discovery.
     :param kb_url: KB API base URL.
     :param kb_token: KB API bearer token.
+    :param ui_mode: if False, drop items with no download location and no license.
     :return: (merged_result, kb failure message, requested file_hash count, returned match count).
     """
     if excluded_files is None:
@@ -486,7 +491,26 @@ def merge_results(
             if extra_item.download_location:
                 scancode_result.append(extra_item)
 
+    if not ui_mode:
+        scancode_result[:] = [
+            item for item in scancode_result
+            if not _has_empty_download_and_license(item)
+        ]
+
     return scancode_result, kb_status_message, kb_requested_count, kb_returned_count
+
+
+def _has_empty_download_and_license(item: SourceItem) -> bool:
+    downloads = item.download_location
+    if isinstance(downloads, str):
+        has_download = bool(downloads.strip())
+    else:
+        has_download = bool(downloads) and any(bool(d and str(d).strip()) for d in downloads)
+
+    licenses = item.licenses
+    has_license = bool(licenses) and any(bool(lic and str(lic).strip()) for lic in licenses)
+
+    return (not has_download) and (not has_license)
 
 
 def _finalize_temp_output(
@@ -625,6 +649,7 @@ def run_scanners(
                     scancode_result, scanoss_result, spdx_downloads,
                     path_to_scan, run_kb, manifest_licenses, excluded_files,
                     hide_progress, kb_url, kb_token,
+                    ui_mode=ui_mode,
                 )
                 if kb_status_message:
                     run_kb_msg = f"KB({kb_url}) {kb_status_message}"
