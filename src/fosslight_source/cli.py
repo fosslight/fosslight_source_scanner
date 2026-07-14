@@ -450,19 +450,16 @@ def merge_results(
     if manifest_licenses:
         for file_name, licenses in manifest_licenses.items():
             valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
-            if not valid_licenses:
+            # Non-UI: skip manifests with no extracted licenses.
+            # UI: keep/create the row and mark is_manifest_file even without licenses.
+            if not valid_licenses and not ui_mode:
                 continue
-            if file_name in scancode_result:
-                merged_result_item = scancode_result[scancode_result.index(file_name)]
+            item = _get_or_append_source_item(scancode_result, file_name)
+            item.is_manifest_file = True
+            if valid_licenses:
                 # overwrite existing detected licenses with manifest-provided licenses
-                merged_result_item.licenses = []  # clear existing licenses (setter clears when value falsy)
-                merged_result_item.licenses = valid_licenses
-                merged_result_item.is_manifest_file = True
-            else:
-                new_result_item = SourceItem(file_name)
-                new_result_item.licenses = valid_licenses
-                new_result_item.is_manifest_file = True
-                scancode_result.append(new_result_item)
+                item.licenses = []  # clear existing licenses (setter clears when value falsy)
+                item.licenses = valid_licenses
 
     kb_origin_urls: dict[str, str] = {}
     kb_status_message: Optional[str] = None
@@ -498,6 +495,14 @@ def merge_results(
         ]
 
     return scancode_result, kb_status_message, kb_requested_count, kb_returned_count
+
+
+def _get_or_append_source_item(scancode_result: list, file_name: str) -> SourceItem:
+    if file_name in scancode_result:
+        return scancode_result[scancode_result.index(file_name)]
+    item = SourceItem(file_name)
+    scancode_result.append(item)
+    return item
 
 
 def _has_empty_download_and_license(item: SourceItem) -> bool:
@@ -701,7 +706,7 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> dict:
 
     - Traverse files with exclusions applied
     - spdx_downloads: {rel_path: [download_urls]}
-    - manifest_licenses: {rel_path: [license_names]}
+    - manifest_licenses: {rel_path: [license_names]} (empty list if extraction failed)
 
     :return: (spdx_downloads, manifest_licenses)
     """
@@ -721,9 +726,7 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> dict:
                 spdx_downloads[rel_path_file] = downloads
 
             if is_manifest_file(file_path):
-                licenses = get_manifest_licenses(file_path)
-                if licenses:
-                    manifest_licenses[rel_path_file] = licenses
+                manifest_licenses[rel_path_file] = get_manifest_licenses(file_path) or []
 
     return spdx_downloads, manifest_licenses
 
