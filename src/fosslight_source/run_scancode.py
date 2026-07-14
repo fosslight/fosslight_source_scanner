@@ -273,7 +273,8 @@ def run_scan(
     formats: list = [], called_by_cli: bool = False,
     time_out: int = 120, correct_mode: bool = True,
     correct_filepath: str = "", path_to_exclude: list = [],
-    excluded_files: list = [], hide_progress: bool = False
+    excluded_files: list = [], hide_progress: bool = False,
+    ui_mode: bool = False
 ) -> Tuple[bool, str, list, list]:
     if not called_by_cli:
         global logger
@@ -374,7 +375,8 @@ def run_scan(
                     "processes": num_cores,
                     "pretty_params": pretty_params,
                     "output_json_pp": output_json_file,
-                    "only_findings": True,
+                    # UI mode needs all scanned files; omit only_findings for that case.
+                    "only_findings": not ui_mode,
                     "license_text": True,
                     "url": True,
                     "timeout": time_out,
@@ -396,7 +398,8 @@ def run_scan(
                             msg = "Failed to analyze :" + error_msg
                     if "files" in results:
                         rc, result_list, parsing_msg, license_list = parsing_file_item(results["files"],
-                                                                                       has_error, need_license)
+                                                                                       has_error, need_license,
+                                                                                       ui_mode=ui_mode)
                         if parsing_msg:
                             _result_log["Parsing Log"] = parsing_msg
                         if rc:
