@@ -37,7 +37,7 @@ _HELP_MESSAGE_SOURCE_SCANNER = f"""
     ────────────────────────────────────────────────────────────────────
     -s <mode>              Choose mode: scancode, scanoss, kb, or all(default)
     -c <number>            Number of CPU cores/threads to use for scanning
-    -t <seconds>           Timeout in seconds for ScanCode scanning
+    -t <seconds>           Timeout in seconds for ScanCode and SCANOSS scanning
     -j                     Generate raw scanner results in JSON format
     --no_merge             Keep source paths file-based without folder merge
     --no_correction        Skip OSS information correction with sbom-info.yaml

@@ -639,7 +639,7 @@ def run_scanners(
             if selected_scanner in ['scanoss', ALL_MODE]:
                 scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_path, formats, True, num_cores,
                                                                   excluded_path_with_default_exclusion, excluded_files,
-                                                                  write_json_file, hide_progress)
+                                                                  write_json_file, hide_progress, timeout=time_out)
 
             run_kb_msg = ""
             if selected_scanner in SCANNER_TYPE:

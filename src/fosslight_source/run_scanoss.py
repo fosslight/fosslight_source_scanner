@@ -31,7 +31,8 @@ def get_scanoss_extra_info(scanned_result: dict) -> list:
 def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
                    called_by_cli: bool = False, num_threads: int = -1,
                    path_to_exclude: list = [], excluded_files: set = None,
-                   write_json_file: bool = False, hide_progress: bool = False) -> Tuple[list, bool]:
+                   write_json_file: bool = False, hide_progress: bool = False,
+                   timeout: int = 120) -> Tuple[list, bool]:
     """
     Run scanoss.py for the given path.
 
@@ -40,6 +41,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     :param format: Output file format (not being used except when calling check_output_format).
     :param called_by_cli: if not called by cli, initialize logger.
     :param write_json_file: if requested, keep the raw files.
+    :param timeout: timeout in seconds for SCANOSS API request.
     :return scanoss_file_list: list of ScanItem (scanned result by files).
     """
 
@@ -66,7 +68,8 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             scan_output=output_json_file,
             scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10,
-            scanoss_settings=scanoss_settings
+            scanoss_settings=scanoss_settings,
+            timeout=timeout
         )
         output_buffer = io.StringIO()
         with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
