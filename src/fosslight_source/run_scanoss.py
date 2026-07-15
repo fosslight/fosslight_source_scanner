@@ -46,13 +46,13 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     """
 
     scanoss_file_list = []
-    api_limit_exceed = False
+    scanoss_skipped = False
     try:
         importlib_metadata.distribution("scanoss")
     except Exception as error:
         logger.warning(f"{error}. Skipping scan with scanoss.")
         logger.warning("Please install scanoss and dataclasses before run fosslight_source with scanoss option.")
-        return scanoss_file_list, api_limit_exceed
+        return scanoss_file_list, scanoss_skipped
 
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
     output_wfp_file = os.path.join(output_path, SCANOSS_RESULT_FILE)
@@ -76,6 +76,13 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             scanner.scan_folder_with_options(scan_dir=path_to_scan)
         captured_output = output_buffer.getvalue()
         api_limit_exceed = "due to service limits being exceeded" in captured_output
+        timeout_occurred = "The SCANOSS API request timed out" in captured_output
+        if timeout_occurred or api_limit_exceed:
+            scanoss_skipped = True
+            if timeout_occurred:
+                logger.debug("SCANOSS skipped (Timeout)")
+            elif api_limit_exceed:
+                logger.debug("SCANOSS skipped (API Limit Exceeded)")
 
         if os.path.isfile(output_json_file):
             logger.debug("|---SCANOSS Parsing")
@@ -100,4 +107,4 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
 
     logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
 
-    return scanoss_file_list, api_limit_exceed
+    return scanoss_file_list, scanoss_skipped
