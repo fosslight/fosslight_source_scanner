@@ -31,7 +31,8 @@ def get_scanoss_extra_info(scanned_result: dict) -> list:
 def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
                    called_by_cli: bool = False, num_threads: int = -1,
                    path_to_exclude: list = [], excluded_files: set = None,
-                   write_json_file: bool = False, hide_progress: bool = False) -> Tuple[list, bool]:
+                   write_json_file: bool = False, hide_progress: bool = False,
+                   timeout: int = 120) -> Tuple[list, bool]:
     """
     Run scanoss.py for the given path.
 
@@ -40,17 +41,18 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     :param format: Output file format (not being used except when calling check_output_format).
     :param called_by_cli: if not called by cli, initialize logger.
     :param write_json_file: if requested, keep the raw files.
+    :param timeout: timeout in seconds for SCANOSS API request.
     :return scanoss_file_list: list of ScanItem (scanned result by files).
     """
 
     scanoss_file_list = []
-    api_limit_exceed = False
+    scanoss_skipped = False
     try:
         importlib_metadata.distribution("scanoss")
     except Exception as error:
         logger.warning(f"{error}. Skipping scan with scanoss.")
         logger.warning("Please install scanoss and dataclasses before run fosslight_source with scanoss option.")
-        return scanoss_file_list, api_limit_exceed
+        return scanoss_file_list, scanoss_skipped
 
     output_json_file = os.path.join(output_path, SCANOSS_OUTPUT_FILE)
     output_wfp_file = os.path.join(output_path, SCANOSS_RESULT_FILE)
@@ -66,13 +68,21 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             scan_output=output_json_file,
             scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10,
-            scanoss_settings=scanoss_settings
+            scanoss_settings=scanoss_settings,
+            timeout=timeout
         )
         output_buffer = io.StringIO()
         with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
             scanner.scan_folder_with_options(scan_dir=path_to_scan)
         captured_output = output_buffer.getvalue()
         api_limit_exceed = "due to service limits being exceeded" in captured_output
+        timeout_occurred = "The SCANOSS API request timed out" in captured_output
+        if timeout_occurred or api_limit_exceed:
+            scanoss_skipped = True
+            if timeout_occurred:
+                logger.debug("SCANOSS skipped (Timeout)")
+            elif api_limit_exceed:
+                logger.debug("SCANOSS skipped (API Limit Exceeded)")
 
         if os.path.isfile(output_json_file):
             logger.debug("|---SCANOSS Parsing")
@@ -97,4 +107,4 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
 
     logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
 
-    return scanoss_file_list, api_limit_exceed
+    return scanoss_file_list, scanoss_skipped

@@ -151,7 +151,7 @@ def create_report_file(
     output_path: str = "", output_files: list = [],
     output_extensions: list = [], correct_mode: bool = True,
     correct_filepath: str = "", path_to_scan: str = "", path_to_exclude: list = [],
-    formats: list = [], api_limit_exceed: bool = False, files_count: int = 0, final_output_path: str = "",
+    formats: list = [], scanoss_skipped: bool = False, files_count: int = 0, final_output_path: str = "",
     run_kb_msg: str = "", merge_by_folder: bool = True
 ) -> 'ScannerItem':
     """
@@ -218,8 +218,12 @@ def create_report_file(
         else:
             scan_item.set_cover_comment("(No OSS detected.)")
 
-    if api_limit_exceed:
-        scan_item.set_cover_comment("SCANOSS skipped (API limits)")
+    if scanoss_skipped:
+        is_kb_success = run_kb_msg != "" and "Completed" in run_kb_msg
+        if is_kb_success:
+            scan_item.set_cover_comment("SCANOSS replaced with KB")
+        else:
+            scan_item.set_cover_comment("SCANOSS skipped")
 
     if run_kb_msg:
         scan_item.set_cover_comment(run_kb_msg)
@@ -583,7 +587,7 @@ def run_scanners(
     spdx_downloads = {}
     result_log = {}
     scan_item = []
-    api_limit_exceed = False
+    scanoss_skipped = False
     kb_url, kb_token = resolve_kb_config(kb_url, kb_token)
 
     success, msg, output_path, output_files, output_extensions, formats = check_output_formats_v2(output_file_name, formats)
@@ -637,9 +641,11 @@ def run_scanners(
                 )
             excluded_files = set(excluded_files) if excluded_files else set()
             if selected_scanner in ['scanoss', ALL_MODE]:
-                scanoss_result, api_limit_exceed = run_scanoss_py(path_to_scan, output_path, formats, True, num_cores,
-                                                                  excluded_path_with_default_exclusion, excluded_files,
-                                                                  write_json_file, hide_progress)
+                scanoss_result, scanoss_skipped = run_scanoss_py(
+                    path_to_scan, output_path, formats, True, num_cores,
+                    excluded_path_with_default_exclusion, excluded_files,
+                    write_json_file, hide_progress, timeout=time_out
+                )
 
             run_kb_msg = ""
             if selected_scanner in SCANNER_TYPE:
@@ -664,7 +670,7 @@ def run_scanners(
                 scan_item = create_report_file(start_time, merged_result, license_list, scanoss_result, selected_scanner,
                                                print_matched_text, output_path, output_files, output_extensions, correct_mode,
                                                correct_filepath, path_to_scan, excluded_path_without_dot, formats,
-                                               api_limit_exceed, cnt_file_except_skipped, final_output_path, run_kb_msg,
+                                               scanoss_skipped, cnt_file_except_skipped, final_output_path, run_kb_msg,
                                                merge_by_folder)
             else:
                 print_help_msg_source_scanner()
