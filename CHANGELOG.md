@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.3.5 (15/07/2026)
+## Changes
+## 🚀 Features
+
+- Skip binaries via scancode-ignore-binaries @soimkim (#296)
+
+## 🔧 Maintenance
+
+- feat: support and log timeout for SCANOSS scannerFeat/set scanoss timeout @JustinWonjaePark (#297)
+- Mark manifest files in UI mode without requiring licenses @soimkim (#295)
+- Keep copyright findings without full-file ScanCode output @soimkim (#294)
+- Skip ScanCode only-findings when --ui is set @soimkim (#293)
+- Keep ScanOSS OSS identity when ScanCode has license @soimkim (#292)
+
+---
+
 ## v2.3.4 (13/07/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -304,11 +320,3 @@
 ## 🐛 Hotfixes
 
 - Fix a click version to fix non-boolean flag error @soimkim (#217)
-
----
-
-## v2.1.13 (10/09/2025)
-## Changes
-## 🔧 Maintenance
-
-- Add is_manifest_file field @dd-jy (#215)
