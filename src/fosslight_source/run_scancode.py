@@ -7,6 +7,8 @@ import os
 import multiprocessing
 import warnings
 import logging
+from typing import Tuple
+
 from scancode import cli
 import fosslight_util.constant as constant
 from fosslight_util.set_log import init_log
@@ -14,15 +16,12 @@ from fosslight_util.time import current_timestamp_utc, timestamp_for_filename
 from ._parsing_scancode_file_item import parsing_file_item
 from ._parsing_scancode_file_item import get_error_from_header
 from fosslight_util.output_format import check_output_formats_v2
-from fosslight_binary.binary_analysis import check_binary
 from fosslight_util.exclude import (
     EXCLUDE_DIRECTORY,
     EXCLUDE_FILE_EXTENSION,
     EXCLUDE_FILENAME,
     PACKAGE_DIRECTORY,
 )
-from commoncode.fileset import is_included
-from typing import Callable, Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -68,8 +67,6 @@ _WILDCARD_EXTENSIONS = {
     "zip", "tar", "tgz", "gz",
     "bmp", "webp", "ico",
 } | {ext.lower() for ext in EXCLUDE_FILE_EXTENSION}
-_SKIP_DIR_NAMES = frozenset(name.lower() for name in PACKAGE_DIRECTORY + EXCLUDE_DIRECTORY)
-_SKIP_EXTS = frozenset(ext.lower() for ext in EXCLUDE_FILE_EXTENSION)
 
 
 def _normalize_custom_pattern(pattern: str, abs_path_to_scan: str) -> set:
@@ -160,14 +157,15 @@ def _directory_ignore_pattern(dir_name: str) -> str:
     return f"**/{normalized}/**"
 
 
-def _default_scancode_coarse_ignore_patterns(
+def _default_scancode_ignore_patterns(
     path_to_exclude: list = None,
     abs_path_to_scan: str = ""
-) -> frozenset:
+) -> tuple:
     """
     Coarse ignore patterns aligned with fosslight_util.get_excluded_paths() rules.
     Directory names use path-based globs (e.g. **/tests/**) so they do not match
     the scan root directory name itself.
+    Binary files are excluded separately via scancode --ignore-binaries.
     """
     patterns = {".*"}
     for name in PACKAGE_DIRECTORY + EXCLUDE_DIRECTORY:
@@ -182,87 +180,6 @@ def _default_scancode_coarse_ignore_patterns(
             pattern = os.path.relpath(pattern, abs_path_to_scan)
         patterns.update(_expand_custom_exclude_pattern(pattern, abs_path_to_scan))
 
-    return frozenset(patterns)
-
-
-def _to_excludes_dict(patterns) -> dict:
-    return {pattern: "exclude" for pattern in patterns}
-
-
-def _is_path_covered(rel_path: str, excludes: dict) -> bool:
-    return not is_included(rel_path, includes={}, excludes=excludes)
-
-
-def _add_ignore_pattern(
-    patterns: set,
-    excludes: dict,
-    pattern: str,
-    *,
-    sample_path: str = None,
-) -> bool:
-    if pattern in patterns:
-        return False
-    if sample_path and _is_path_covered(sample_path, excludes):
-        return False
-    patterns.add(pattern)
-    excludes[pattern] = "exclude"
-    return True
-
-
-def _make_pre_scan_skip_filter(
-    coarse_patterns: frozenset,
-) -> Tuple[dict, Callable[[str, str], bool], Callable[[str, str], bool]]:
-    excludes = _to_excludes_dict(coarse_patterns)
-
-    def should_skip_dir(dir_name: str, rel_dir: str) -> bool:
-        if dir_name.startswith('.'):
-            return True
-        if dir_name.lower() in _SKIP_DIR_NAMES:
-            return True
-        return _is_path_covered(f"{rel_dir}/_", excludes)
-
-    def should_skip_file(file_name: str, rel_path: str) -> bool:
-        if file_name.startswith('.'):
-            return True
-        ext = os.path.splitext(file_name)[1].lstrip('.').lower()
-        if ext in _SKIP_EXTS:
-            return True
-        return _is_path_covered(rel_path, excludes)
-
-    return excludes, should_skip_dir, should_skip_file
-
-
-def _add_binary_ignore_patterns(
-    patterns: set,
-    excludes: dict,
-    binary_paths: list,
-) -> None:
-    extensions = set()
-    no_ext_paths = []
-
-    for rel_path in binary_paths:
-        ext = os.path.splitext(rel_path)[1].lstrip('.').lower()
-        if ext:
-            extensions.add(ext)
-        else:
-            no_ext_paths.append(rel_path)
-
-    for ext in extensions:
-        _add_ignore_pattern(patterns, excludes, f"*.{ext}")
-
-    for rel_path in no_ext_paths:
-        _add_ignore_pattern(
-            patterns, excludes, f"**/{rel_path}", sample_path=rel_path
-        )
-
-
-def _build_scancode_ignore_patterns(
-    coarse_patterns: frozenset,
-    binary_paths: list,
-) -> tuple:
-    patterns = set(coarse_patterns)
-    excludes = _to_excludes_dict(coarse_patterns)
-    _add_binary_ignore_patterns(patterns, excludes, binary_paths)
     return tuple(sorted(patterns))
 
 
@@ -332,37 +249,8 @@ def run_scan(
                 pretty_params["path_to_exclude"] = path_to_exclude
                 pretty_params["output_file"] = output_file_name
                 abs_path_to_scan = os.path.abspath(path_to_scan)
-                binary_paths = []
-                coarse_patterns = _default_scancode_coarse_ignore_patterns(
+                ignore_tuple = _default_scancode_ignore_patterns(
                     path_to_exclude, abs_path_to_scan
-                )
-                _, should_skip_dir, should_skip_file = _make_pre_scan_skip_filter(
-                    coarse_patterns
-                )
-
-                for root, dirs, files in os.walk(path_to_scan):
-                    rel_root = os.path.relpath(root, abs_path_to_scan).replace("\\", "/")
-                    dirs[:] = [
-                        d for d in dirs
-                        if not should_skip_dir(
-                            d, d if rel_root == "." else f"{rel_root}/{d}"
-                        )
-                    ]
-                    for name in files:
-                        rel_path = name if rel_root == "." else f"{rel_root}/{name}"
-                        if should_skip_file(name, rel_path):
-                            continue
-                        full_path = os.path.join(root, name)
-                        try:
-                            if not check_binary(full_path, True):
-                                continue
-                        except Exception:
-                            continue
-                        binary_paths.append(rel_path)
-                        logger.debug(f"Excluded binary from scancode: {rel_path}")
-
-                ignore_tuple = _build_scancode_ignore_patterns(
-                    coarse_patterns, binary_paths
                 )
                 logger.debug(f"Scancode ignore patterns: {len(ignore_tuple)}")
 
@@ -382,6 +270,7 @@ def run_scan(
                     "timeout": time_out,
                     "include": (),
                     "ignore": ignore_tuple,
+                    "ignore_binaries": True,
                     "quiet": hide_progress
                 }
                 _apply_scancode_unset_workaround(kwargs)
@@ -407,12 +296,6 @@ def run_scan(
                                 success = True
                             result_list = sorted(
                                 result_list, key=lambda row: (''.join(row.licenses)))
-
-                            for scan_item in result_list:
-                                if os.path.isdir(scan_item.source_name_or_path):
-                                    continue
-                                if check_binary(os.path.join(path_to_scan, scan_item.source_name_or_path), True):
-                                    scan_item.exclude = True
             except Exception as ex:
                 success = False
                 msg = str(ex)
