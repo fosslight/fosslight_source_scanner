@@ -219,13 +219,13 @@ def create_report_file(
             scan_item.set_cover_comment("(No OSS detected.)")
 
     if scanoss_skipped:
-        is_kb_success = run_kb_msg != "" and "Completed" in run_kb_msg
+        is_kb_success = run_kb_msg != "" and run_kb_msg.endswith("Completed")
         if is_kb_success:
             scan_item.set_cover_comment("SCANOSS replaced with KB")
         else:
             scan_item.set_cover_comment("SCANOSS skipped")
 
-    if run_kb_msg:
+    if run_kb_msg and not run_kb_msg.endswith("Completed"):
         scan_item.set_cover_comment(run_kb_msg)
     display_mode = selected_scanner
     if selected_scanner == ALL_MODE:
