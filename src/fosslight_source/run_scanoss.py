@@ -80,6 +80,11 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
 
     captured_output = output_buffer.getvalue()
     if captured_output:
+        for line in captured_output.splitlines():
+            line_strip = line.strip()
+            if line_strip.startswith("ERROR:") or "rejected" in line_strip:
+                logger.debug(f"[SCANOSS] {line_strip}")
+
         api_limit_patterns = [
             "due to service limits being exceeded",
             "service limits/rate limit being exceeded",
