@@ -59,6 +59,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     if os.path.exists(output_json_file):
         os.remove(output_json_file)
 
+    output_buffer = io.StringIO()
     try:
         logger.debug(f"|---Running SCANOSS on {path_to_scan}")
         scanoss_settings = ScanossSettings()
@@ -69,22 +70,42 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10,
             scanoss_settings=scanoss_settings,
-            timeout=timeout
+            timeout=timeout,
+            retry=0
         )
-        output_buffer = io.StringIO()
         with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
             scanner.scan_folder_with_options(scan_dir=path_to_scan)
-        captured_output = output_buffer.getvalue()
-        api_limit_exceed = "due to service limits being exceeded" in captured_output
-        timeout_occurred = "The SCANOSS API request timed out" in captured_output
+    except Exception as error:
+        logger.debug(f"SCANOSS execution failed: {error}")
+
+    captured_output = output_buffer.getvalue()
+    if captured_output:
+        api_limit_patterns = [
+            "due to service limits being exceeded",
+            "service limits/rate limit being exceeded",
+            "Rate limit exceeded",
+            "HTTP 429"
+        ]
+        timeout_patterns = [
+            "The SCANOSS API request timed out",
+            "Service unavailable (HTTP 503)",
+            "The SCANOSS API is currently unavailable",
+            "ConnectionError communicating with",
+            "The SCANOSS API request failed",
+            "Connection aborted",
+            "RemoteDisconnected"
+        ]
+        api_limit_exceed = any(p in captured_output for p in api_limit_patterns)
+        timeout_occurred = any(p in captured_output for p in timeout_patterns)
         if timeout_occurred or api_limit_exceed:
             scanoss_skipped = True
-            if timeout_occurred:
-                logger.debug("SCANOSS skipped (Timeout)")
-            elif api_limit_exceed:
+            if api_limit_exceed:
                 logger.debug("SCANOSS skipped (API Limit Exceeded)")
+            elif timeout_occurred:
+                logger.debug("SCANOSS skipped (Timeout)")
 
-        if os.path.isfile(output_json_file):
+    if os.path.isfile(output_json_file):
+        try:
             logger.debug("|---SCANOSS Parsing")
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
@@ -96,8 +117,8 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             with open(output_json_file, "r") as st_json:
                 st_python = json.load(st_json)
                 scanoss_file_list = parsing_scan_result(st_python, excluded_files)
-    except Exception as error:
-        logger.debug(f"SCANOSS Parsing {path_to_scan}: {error}")
+        except Exception as error:
+            logger.debug(f"SCANOSS Parsing {path_to_scan}: {error}")
 
     if not write_json_file:
         if os.path.isfile(output_json_file):
