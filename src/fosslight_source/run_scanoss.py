@@ -73,6 +73,35 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             timeout=timeout,
             retry=0
         )
+
+        # Check API connectivity & API Limit using dummy WFP POST
+        try:
+            logger.debug(f"|---Checking SCANOSS API connectivity to {scanner.scanoss_api.url}")
+            dummy_wfp = "file=72214db4e1e543018d1bafe86ea3b444,21,dummy.txt\nfh2=b200cd2eff5d535886e598b3a833aab5\n"
+            ping_response = scanner.scanoss_api.session.post(
+                scanner.scanoss_api.url,
+                files={'file': ('dummy.wfp', dummy_wfp)},
+                headers=scanner.scanoss_api.headers,
+                timeout=5
+            )
+            if ping_response.status_code != 200:
+                response_text = ping_response.text.lower()
+                is_limit = ping_response.status_code in [429, 503]
+                is_limit = is_limit or "rate limit" in response_text
+                is_limit = is_limit or "limits being exceeded" in response_text
+                if is_limit:
+                    logger.debug(f"[SCANOSS] API Limit Exceeded: HTTP {ping_response.status_code}")
+                elif ping_response.status_code in [401, 403]:
+                    logger.debug(f"[SCANOSS] Authentication Failed: HTTP {ping_response.status_code}")
+                else:
+                    logger.debug(f"[SCANOSS] API is not ready: HTTP {ping_response.status_code}")
+                scanoss_skipped = True
+                return scanoss_file_list, scanoss_skipped
+        except Exception as ping_error:
+            logger.debug(f"[SCANOSS] Connection failed to {scanner.scanoss_api.url}: {ping_error}")
+            scanoss_skipped = True
+            return scanoss_file_list, scanoss_skipped
+
         with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
             scanner.scan_folder_with_options(scan_dir=path_to_scan)
     except Exception as error:
