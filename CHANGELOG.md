@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.6 (24/07/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Gracefully handle SCANOSS errors and hide KB completed message @JustinWonjaePark (#299)
+
+---
+
 ## v2.3.5 (15/07/2026)
 ## Changes
 ## 🚀 Features
@@ -312,11 +320,3 @@
 ## 🐛 Hotfixes
 
 - Fix pkg dir exclude bug for windows @dd-jy (#218)
-
----
-
-## v2.1.14 (24/09/2025)
-## Changes
-## 🐛 Hotfixes
-
-- Fix a click version to fix non-boolean flag error @soimkim (#217)
