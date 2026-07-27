@@ -18,6 +18,7 @@ _notice_filename = ['licen[cs]e[s]?', 'notice[s]?', 'legal', 'copyright[s]?', 'c
 _manifest_filename = [
     r'.*\.pom$',
     r'package\.json$',
+    r'composer\.json$',
     r'setup\.py$',
     r'setup\.cfg$',
     r'pyproject\.toml$',

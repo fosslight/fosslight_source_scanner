@@ -74,6 +74,43 @@ def get_licenses_from_package_json(file_path: str) -> list[str]:
     return unique
 
 
+def get_licenses_from_composer_json(file_path: str) -> list[str]:
+    """Extract licenses from Composer ``composer.json`` ``license`` field.
+
+    Composer schema allows a string or an array of strings
+    (SPDX identifiers / expressions).
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except Exception as ex:
+        logger.info(f"Failed to read composer.json {file_path}: {ex}")
+        return []
+
+    if not isinstance(data, dict):
+        return []
+
+    licenses: list[str] = []
+    license_field = data.get('license')
+
+    def append_license_value(value) -> None:
+        if isinstance(value, str):
+            token = value.strip()
+            if token:
+                licenses.extend(_split_spdx_expression(token))
+        elif isinstance(value, list):
+            for item in value:
+                append_license_value(item)
+
+    append_license_value(license_field)
+
+    unique: list[str] = []
+    for lic in licenses:
+        if lic not in unique:
+            unique.append(lic)
+    return unique
+
+
 def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
     try:
         import configparser
@@ -322,6 +359,12 @@ def get_manifest_licenses(file_path: str) -> list[str]:
             return get_licenses_from_package_json(file_path)
         except Exception as ex:
             logger.info(f"Failed to extract license from package.json {file_path}: {ex}")
+            return []
+    elif os.path.basename(file_path).lower() == 'composer.json':
+        try:
+            return get_licenses_from_composer_json(file_path)
+        except Exception as ex:
+            logger.info(f"Failed to extract license from composer.json {file_path}: {ex}")
             return []
     elif os.path.basename(file_path).lower() == 'setup.cfg':
         try:
