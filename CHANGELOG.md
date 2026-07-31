@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.7 (31/07/2026)
+## Changes
+## 🚀 Features
+
+- Extract licenses from composer.json @soimkim (#300)
+
+---
+
 ## v2.3.6 (24/07/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -312,11 +320,3 @@
 ## v2.1.16 (12/12/2025)
 ## Changes
 - Double-Check pom file license with license tag @dd-jy (#219)
-
----
-
-## v2.1.15 (01/12/2025)
-## Changes
-## 🐛 Hotfixes
-
-- Fix pkg dir exclude bug for windows @dd-jy (#218)
