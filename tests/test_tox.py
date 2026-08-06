@@ -17,7 +17,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 # Import after sys.path modification to access our custom GPL license functions
 # flake8: noqa E402
 from fosslight_source._parsing_scancode_file_item import (
-    is_gpl_family_license, should_remove_copyright_for_gpl_license_text
+    is_gpl_family_license, parsing_scancode_32_earlier, parsing_scancode_32_later,
+    should_remove_copyright_for_gpl_license_text
 )
 
 remove_directories = ["test_scan", "test_scan2", "test_scan3"]
@@ -135,6 +136,47 @@ def test_should_remove_copyright_for_gpl_license_text():
         "Should NOT remove copyright for empty license list"
     assert not should_remove_copyright_for_gpl_license_text([], False), \
         "Should NOT remove copyright for empty license list"
+
+
+@pytest.mark.parametrize(
+    ("declared_identifier", "expected_license"),
+    [
+        ("UNLICENSED", "UNLICENSED"),
+        ("LicenseRef-MIT-like", "MIT-like"),
+    ],
+)
+def test_unknown_spdx_uses_declared_identifier(declared_identifier, expected_license):
+    scancode_file_list = [{
+        "path": "example.sol",
+        "type": "file",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "unknown-spdx",
+                "matched_text": f"// SPDX-License-Identifier: {declared_identifier}",
+            }],
+        }],
+    }]
+
+    success, results, _messages, _license_list = parsing_scancode_32_later(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == [expected_license]
+
+
+def test_legacy_unknown_spdx_uses_declared_identifier():
+    scancode_file_list = [{
+        "path": "example.sol",
+        "type": "file",
+        "licenses": [{
+            "key": "unknown-spdx",
+            "matched_text": "// SPDX-License-Identifier: LicenseRef-MIT-like",
+        }],
+    }]
+
+    success, results, _messages, _license_list = parsing_scancode_32_earlier(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["MIT-like"]
 
 
 def test_run():

@@ -153,13 +153,14 @@ def parsing_scancode_32_earlier(
 
                         if license_value != "":
                             if key == KEYWORD_SCANCODE_UNKNOWN:
-                                try:
-                                    matched_txt = lic_item.get("matched_text", "").lower()
-                                    matched = regex.search(matched_txt)
-                                    if matched:
-                                        license_value = str(matched.group())
-                                except Exception:
-                                    pass
+                                matched = re.search(
+                                    r'SPDX-License-Identifier\s*:\s*(\S+)',
+                                    lic_item.get("matched_text", ""), re.IGNORECASE
+                                )
+                                if matched:
+                                    license_value = re.sub(
+                                        r'^LicenseRef-', '', matched.group(1), flags=re.IGNORECASE
+                                    )
 
                             for word in replace_word:
                                 if word in license_value:
@@ -282,12 +283,14 @@ def parsing_scancode_32_later(
                                     if found_lic in REMOVE_LICENSE:
                                         continue
                                     elif found_lic == KEYWORD_SCANCODE_UNKNOWN:
-                                        try:
-                                            matched = regex.search(matched_txt.lower())
-                                            if matched:
-                                                found_lic = str(matched.group())
-                                        except Exception:
-                                            pass
+                                        matched = re.search(
+                                            r'SPDX-License-Identifier\s*:\s*(\S+)',
+                                            matched_txt, re.IGNORECASE
+                                        )
+                                        if matched:
+                                            found_lic = re.sub(
+                                                r'^LicenseRef-', '', matched.group(1), flags=re.IGNORECASE
+                                            )
                                     license_expression_spdx = get_license_expression_spdx(found_lic)
                                     found_lic = license_expression_spdx if license_expression_spdx else found_lic
                                     for word in replace_word:
