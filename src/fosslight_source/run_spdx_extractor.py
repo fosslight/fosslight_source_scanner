@@ -12,15 +12,17 @@ import mmap
 logger = logging.getLogger(constant.LOGGER_NAME)
 
 
-def get_spdx_downloads(file_path: str) -> list[str]:
-    results = []
-    find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
+def get_spdx_metadata(file_path: str) -> tuple[list[str], list[str]]:
+    downloads = []
+    licenses = []
+    download_pattern = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
+    license_pattern = re.compile(rb"SPDX-License-Identifier\s*:\s*([^\r\n]+)", re.IGNORECASE)
     try:
         if os.path.getsize(file_path) > 0:
-            with open(file_path, "r") as f:
+            with open(file_path, "rb") as f:
                 with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as mmap_obj:
-                    for word in find_word.findall(mmap_obj):
-                        results.append(word.decode('utf-8'))
+                    downloads = [word.decode('utf-8').strip() for word in download_pattern.findall(mmap_obj)]
+                    licenses = [word.decode('utf-8').strip() for word in license_pattern.findall(mmap_obj)]
     except Exception as ex:
-        logger.warning(f"Failed to extract SPDX download location. {file_path}, {ex}")
-    return results
+        logger.warning(f"Failed to extract SPDX metadata. {file_path}, {ex}")
+    return downloads, licenses

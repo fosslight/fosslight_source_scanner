@@ -27,7 +27,7 @@ from .run_scanoss import get_scanoss_extra_info
 import yaml
 import tqdm
 import argparse
-from .run_spdx_extractor import get_spdx_downloads
+from .run_spdx_extractor import get_spdx_metadata
 from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, resolve_kb_config, is_notice_file
 from ._kb_client import fetch_origin_urls_via_scan_job
@@ -394,7 +394,7 @@ def _collect_kb_file_hashes(
 
 
 def merge_results(
-    scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
+    scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {}, spdx_licenses: dict = {},
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
     excluded_files: set = None, hide_progress: bool = False, kb_url: str = "", kb_token: str = "",
     ui_mode: bool = False
@@ -451,6 +451,14 @@ def merge_results(
                 new_result_item = SourceItem(file_name)
                 new_result_item.download_location = download_location
                 scancode_result.append(new_result_item)
+    if spdx_licenses:
+        for file_name, licenses in spdx_licenses.items():
+            valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
+            if not valid_licenses:
+                continue
+            item = _get_or_append_source_item(scancode_result, file_name)
+            item.licenses = []
+            item.licenses = valid_licenses
     if manifest_licenses:
         for file_name, licenses in manifest_licenses.items():
             valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
@@ -655,9 +663,9 @@ def run_scanners(
                         run_kb = False
                         run_kb_msg = f"KB({kb_url}) Unreachable"
 
-                spdx_downloads, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
+                spdx_downloads, spdx_licenses, manifest_licenses = metadata_collector(path_to_scan, excluded_files)
                 merged_result, kb_status_message, kb_requested_count, _ = merge_results(
-                    scancode_result, scanoss_result, spdx_downloads,
+                    scancode_result, scanoss_result, spdx_downloads, spdx_licenses,
                     path_to_scan, run_kb, manifest_licenses, excluded_files,
                     hide_progress, kb_url, kb_token,
                     ui_mode=ui_mode,
@@ -712,12 +720,14 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> dict:
 
     - Traverse files with exclusions applied
     - spdx_downloads: {rel_path: [download_urls]}
+    - spdx_licenses: {rel_path: [license_expressions]}
     - manifest_licenses: {rel_path: [license_names]} (empty list if extraction failed)
 
-    :return: (spdx_downloads, manifest_licenses)
+    :return: (spdx_downloads, spdx_licenses, manifest_licenses)
     """
     abs_path_to_scan = os.path.abspath(path_to_scan)
     spdx_downloads = {}
+    spdx_licenses = {}
     manifest_licenses = {}
 
     for root, dirs, files in os.walk(path_to_scan):
@@ -727,14 +737,16 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> dict:
             if rel_path_file in excluded_files:
                 continue
 
-            downloads = get_spdx_downloads(file_path)
+            downloads, licenses = get_spdx_metadata(file_path)
             if downloads:
                 spdx_downloads[rel_path_file] = downloads
+            if licenses:
+                spdx_licenses[rel_path_file] = licenses
 
             if is_manifest_file(file_path):
                 manifest_licenses[rel_path_file] = get_manifest_licenses(file_path) or []
 
-    return spdx_downloads, manifest_licenses
+    return spdx_downloads, spdx_licenses, manifest_licenses
 
 
 if __name__ == '__main__':
