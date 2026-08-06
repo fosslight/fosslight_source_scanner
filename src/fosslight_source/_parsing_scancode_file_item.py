@@ -15,7 +15,6 @@ from typing import Tuple
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 REMOVE_LICENSE = ["warranty-disclaimer"]
-regex = re.compile(r'licenseref-([a-z0-9\.\-]+)', re.IGNORECASE)
 find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
@@ -224,7 +223,7 @@ def get_license_expression_spdx(license_expression: str) -> str:
         result = build_spdx_license_expression(license_expression.strip())
         if result is None:
             return ""
-        if regex.match(result):
+        if isinstance(result, str) and result.lower().startswith("licenseref-"):
             return ""
         return result
     except Exception:
