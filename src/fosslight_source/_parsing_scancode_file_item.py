@@ -731,12 +731,14 @@ def parsing_scancode_32_later(
                         or "licenseref-scancode-unknown-spdx" in detected_expression_spdx.lower()
                     ):
                         # Prefer non-SPDX expression so unknown-spdx tokens map cleanly.
+                        # Comment only for dual-license style expressions that include OR.
                         source_expression = detected_expression or detected_expression_spdx
-                        result_item.comment = build_comment_from_detected_expression(
-                            source_expression,
-                            all_matches,
-                            matched_texts_with_other_licenses,
-                        )
+                        if source_expression and "OR" in source_expression.upper():
+                            result_item.comment = build_comment_from_detected_expression(
+                                source_expression,
+                                all_matches,
+                                matched_texts_with_other_licenses,
+                            )
                     else:
                         license_expression = detected_expression_spdx or detected_expression
                         if license_expression and "OR" in license_expression:

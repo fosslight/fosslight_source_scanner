@@ -173,7 +173,7 @@ def test_licenseref_tokens_stripped_from_unknown_spdx_and_expression():
 
     assert success is True
     assert results[0].licenses == ["NEW", "TEST"]
-    assert results[0].comment == "NEW AND TEST"
+    assert not results[0].comment
 
 
 def test_legacy_unknown_spdx_uses_declared_identifier():
