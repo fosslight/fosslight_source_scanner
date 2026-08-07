@@ -1,6 +1,6 @@
 /*
   * SPDX-FileCopyrightText: Copyright 2022 LG Electronics Inc.
-  * SPDX-License-Identifier: Apache-2.0
+  * SPDX-License-Identifier: Apache-2.0 OR MIT
   * DownloadLocation: https://github.com/browserify/acorn-node
  */
 #include <iostream>
