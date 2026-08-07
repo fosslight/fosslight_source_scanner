@@ -420,6 +420,28 @@ def _serialize_license_expr_node(node, is_right_child: bool = False) -> str:
     return rendered
 
 
+def _omit_parens_for_two_license_expression(expression: str) -> str:
+    """
+    Drop parentheses when the expression only connects two licenses.
+
+    Example: ``(Apache-2.0 OR MIT)`` -> ``Apache-2.0 OR MIT``.
+    Keep parentheses when three or more licenses need grouping.
+    """
+    expr = (expression or "").strip()
+    if not expr or "(" not in expr:
+        return expr
+    tokens = _tokenize_license_expression(expr)
+    license_tokens = [
+        token for token in tokens
+        if token not in ("(", ")") and token.upper() not in ("AND", "OR")
+    ]
+    if len(license_tokens) != 2:
+        return expr
+    return " ".join(
+        token for token in tokens if token not in ("(", ")")
+    )
+
+
 def _clean_spdx_declaration(raw: str) -> str:
     """Strip whitespace and trailing comment terminators from a captured declaration."""
     cleaned = (raw or "").strip()
@@ -583,7 +605,9 @@ def build_comment_from_detected_expression(
     transformed = _transform_license_expr_node(
         tree, replacements, [0], suppress_ulr
     )
-    return _serialize_license_expr_node(transformed)
+    return _omit_parens_for_two_license_expression(
+        _serialize_license_expr_node(transformed)
+    )
 
 
 def get_license_expression_spdx(license_expression: str) -> str:
@@ -716,7 +740,9 @@ def parsing_scancode_32_later(
                     else:
                         license_expression = detected_expression_spdx or detected_expression
                         if license_expression and "OR" in license_expression:
-                            result_item.comment = license_expression
+                            result_item.comment = _omit_parens_for_two_license_expression(
+                                license_expression
+                            )
 
                 scancode_file_item.append(result_item)
             except Exception as ex:

@@ -264,3 +264,34 @@ def test_comment_with_parens_preserves_and_after_group():
         {matched_same},
     )
     assert comment == "MIT AND Apache-2.0"
+
+
+def test_two_license_comment_omits_outer_parentheses():
+    from fosslight_source._parsing_scancode_file_item import (
+        _omit_parens_for_two_license_expression,
+    )
+
+    assert _omit_parens_for_two_license_expression("(Apache-2.0 OR MIT)") == "Apache-2.0 OR MIT"
+    assert _omit_parens_for_two_license_expression("((Apache-2.0 OR MIT))") == "Apache-2.0 OR MIT"
+    # three licenses: keep grouping parentheses
+    assert (
+        _omit_parens_for_two_license_expression("GPL-2.0 AND (Apache-2.0 OR MIT)")
+        == "GPL-2.0 AND (Apache-2.0 OR MIT)"
+    )
+
+    scancode_file_list = [{
+        "path": "dual.txt",
+        "type": "file",
+        "detected_license_expression": "(unknown-spdx OR unknown-spdx)",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "unknown-spdx OR unknown-spdx",
+                "matched_text": "# SPDX-License-Identifier: Apache-2.0 OR MIT",
+            }],
+        }],
+        "copyrights": [],
+    }]
+    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+    assert success is True
+    assert results[0].licenses == ["Apache-2.0", "MIT"]
+    assert results[0].comment == "Apache-2.0 OR MIT"
