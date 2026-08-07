@@ -1,0 +1,218 @@
+# Copyright (c) 2026 LG Electronics Inc.
+# SPDX-License-Identifier: Apache-2.0
+"""Tests for unknown-spdx restoration and SPDX declaration cleanup."""
+
+import pytest
+
+from fosslight_source._parsing_scancode_file_item import (
+    _extract_spdx_declared_expression,
+    _declared_licenses_from_matched_text,
+    build_comment_from_detected_expression,
+    parsing_scancode_32_earlier,
+    parsing_scancode_32_later,
+    _matched_texts_with_other_licenses,
+)
+
+
+@pytest.mark.parametrize(
+    ("matched_text", "expected"),
+    [
+        ("// SPDX-License-Identifier: MIT", "MIT"),
+        ("/* SPDX-License-Identifier: MIT */", "MIT"),
+        ("<!-- SPDX-License-Identifier: MIT -->", "MIT"),
+        ("# SPDX-License-Identifier: LicenseRef-MIT-like", "MIT-like"),
+        (
+            "# SPDX-License-Identifier: LicenseRef-Foo AND LicenseRef-Bar",
+            "Foo AND Bar",
+        ),
+        (
+            "/* SPDX-License-Identifier: LicenseRef-Foo OR LicenseRef-Bar */",
+            "Foo OR Bar",
+        ),
+    ],
+)
+def test_extract_spdx_declared_expression(matched_text, expected):
+    assert _extract_spdx_declared_expression(matched_text) == expected
+
+
+def test_declared_licenses_strips_licenseref_per_token():
+    tokens, ops = _declared_licenses_from_matched_text(
+        "# SPDX-License-Identifier: LicenseRef-Foo AND LicenseRef-Bar"
+    )
+    assert tokens == ["Foo", "Bar"]
+    assert ops == ["AND"]
+
+
+@pytest.mark.parametrize(
+    ("matched_text", "expected_license"),
+    [
+        ("// SPDX-License-Identifier: UNLICENSED", "UNLICENSED"),
+        ("// SPDX-License-Identifier: LicenseRef-MIT-like", "MIT-like"),
+        ("/* SPDX-License-Identifier: MIT */", "MIT"),
+        ("<!-- SPDX-License-Identifier: Apache-2.0 -->", "Apache-2.0"),
+    ],
+)
+def test_unknown_spdx_uses_declared_identifier(matched_text, expected_license):
+    scancode_file_list = [{
+        "path": "example.sol",
+        "type": "file",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "unknown-spdx",
+                "matched_text": matched_text,
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _license_list = parsing_scancode_32_later(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == [expected_license]
+
+
+def test_unknown_spdx_in_compound_expression_splits_and_or():
+    scancode_file_list = [{
+        "path": "dual.txt",
+        "type": "file",
+        "detected_license_expression": "gpl-2.0 OR unknown-spdx",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "gpl-2.0 OR unknown-spdx",
+                "matched_text": "# SPDX-License-Identifier: GPL-2.0 or MIT-like",
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["GPL-2.0", "MIT-like"]
+    assert results[0].comment == "GPL-2.0 OR MIT-like"
+
+
+def test_unknown_spdx_comment_preserves_and_or_from_detected_expression():
+    matched_same = "# The code is not licensed under GPL-2.0."
+    scancode_file_list = [{
+        "path": "dual_unknow.py",
+        "type": "file",
+        "detected_license_expression": (
+            "(unknown-spdx OR unknown-spdx) AND unknown-license-reference AND gpl-2.0"
+        ),
+        "license_detections": [{
+            "matches": [
+                {
+                    "license_expression": "unknown-spdx OR unknown-spdx",
+                    "matched_text": "# SPDX-License-Identifier: NEW OR DApache-2.0",
+                },
+                {
+                    "license_expression": "unknown-license-reference",
+                    "matched_text": matched_same,
+                },
+                {
+                    "license_expression": "gpl-2.0",
+                    "matched_text": matched_same,
+                },
+            ],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["NEW", "DApache-2.0", "GPL-2.0"]
+    assert "unknown-license-reference" not in [lic.lower() for lic in results[0].licenses]
+    assert results[0].comment == "NEW OR DApache-2.0 AND GPL-2.0"
+
+
+def test_unknown_license_reference_suppressed_when_same_matched_text_has_other_license():
+    matched_same = "# The code is not licensed under GPL-2.0."
+    scancode_file_list = [{
+        "path": "sample.py",
+        "type": "file",
+        "license_detections": [{
+            "matches": [
+                {
+                    "license_expression": "unknown-license-reference",
+                    "matched_text": matched_same,
+                },
+                {
+                    "license_expression": "gpl-2.0",
+                    "matched_text": matched_same,
+                },
+            ],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["GPL-2.0"]
+
+
+def test_licenseref_tokens_stripped_from_unknown_spdx_and_expression():
+    scancode_file_list = [{
+        "path": "refs.py",
+        "type": "file",
+        "detected_license_expression": "unknown-spdx AND unknown-spdx",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "unknown-spdx AND unknown-spdx",
+                "matched_text": (
+                    "# SPDX-License-Identifier: LicenseRef-NEW AND LicenseRef-TEST"
+                ),
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["NEW", "TEST"]
+    assert results[0].comment == "NEW AND TEST"
+
+
+def test_legacy_unknown_spdx_uses_declared_identifier():
+    scancode_file_list = [{
+        "path": "example.sol",
+        "type": "file",
+        "licenses": [{
+            "key": "unknown-spdx",
+            "matched_text": "/* SPDX-License-Identifier: LicenseRef-MIT-like */",
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode_32_earlier(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["MIT-like"]
+
+
+def test_build_comment_from_detected_expression_helper():
+    matched_same = "# The code is not licensed under GPL-2.0."
+    matches = [
+        {
+            "license_expression": "unknown-spdx OR unknown-spdx",
+            "matched_text": "# SPDX-License-Identifier: NEW OR DApache-2.0",
+        },
+        {
+            "license_expression": "unknown-license-reference",
+            "matched_text": matched_same,
+        },
+        {
+            "license_expression": "gpl-2.0",
+            "matched_text": matched_same,
+        },
+    ]
+    other_texts = _matched_texts_with_other_licenses(matches)
+    comment = build_comment_from_detected_expression(
+        "(unknown-spdx OR unknown-spdx) AND unknown-license-reference AND gpl-2.0",
+        matches,
+        other_texts,
+    )
+    assert comment == "NEW OR DApache-2.0 AND GPL-2.0"
