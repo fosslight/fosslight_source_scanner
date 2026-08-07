@@ -216,3 +216,51 @@ def test_build_comment_from_detected_expression_helper():
         other_texts,
     )
     assert comment == "NEW OR DApache-2.0 AND GPL-2.0"
+
+
+def test_comment_without_parens_uses_operator_before_kept_token():
+    """A OR B AND C is (A OR B) AND C; removing B yields A AND C."""
+    matched_same = "not a license reference text"
+    matches = [
+        {"license_expression": "mit", "matched_text": "MIT"},
+        {"license_expression": "unknown-license-reference", "matched_text": matched_same},
+        {"license_expression": "apache-2.0", "matched_text": matched_same},
+    ]
+    comment = build_comment_from_detected_expression(
+        "mit OR unknown-license-reference AND apache-2.0",
+        matches,
+        {matched_same},
+    )
+    assert comment == "MIT AND Apache-2.0"
+
+
+def test_comment_with_parens_preserves_or_group():
+    """A OR (B AND C) removing B yields A OR C."""
+    matched_same = "not a license reference text"
+    matches = [
+        {"license_expression": "mit", "matched_text": "MIT"},
+        {"license_expression": "unknown-license-reference", "matched_text": matched_same},
+        {"license_expression": "apache-2.0", "matched_text": matched_same},
+    ]
+    comment = build_comment_from_detected_expression(
+        "mit OR (unknown-license-reference AND apache-2.0)",
+        matches,
+        {matched_same},
+    )
+    assert comment == "MIT OR Apache-2.0"
+
+
+def test_comment_with_parens_preserves_and_after_group():
+    """(A OR B) AND C removing B yields A AND C."""
+    matched_same = "not a license reference text"
+    matches = [
+        {"license_expression": "mit", "matched_text": "MIT"},
+        {"license_expression": "unknown-license-reference", "matched_text": matched_same},
+        {"license_expression": "apache-2.0", "matched_text": matched_same},
+    ]
+    comment = build_comment_from_detected_expression(
+        "(mit OR unknown-license-reference) AND apache-2.0",
+        matches,
+        {matched_same},
+    )
+    assert comment == "MIT AND Apache-2.0"

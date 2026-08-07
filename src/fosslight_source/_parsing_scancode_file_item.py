@@ -279,6 +279,147 @@ def join_licenses_with_ops(licenses: list[str], ops: list[str]) -> str:
     return result
 
 
+def _merge_ops_across_skip(ops_between: list[str]) -> str:
+    """
+    When intermediate tokens are skipped and parentheses are not considered,
+    keep the operator immediately before the next kept token (직전 연산자).
+
+    SPDX AND/OR are left-associative with equal precedence, so
+    ``A OR B AND C`` means ``(A OR B) AND C``. Removing B yields ``A AND C``.
+    """
+    normalized = [op.upper() for op in ops_between if op]
+    if not normalized:
+        return "AND"
+    return normalized[-1]
+
+
+def _kept_tokens_with_merged_ops(
+    tokens: list[str], ops: list[str]
+) -> tuple[list[str], list[str]]:
+    """Keep non-empty tokens; use the 직전 operator across skipped positions."""
+    kept_tokens = []
+    kept_ops = []
+    last_kept_idx = None
+    for idx, token in enumerate(tokens):
+        token = (token or "").strip()
+        if not token:
+            continue
+        if last_kept_idx is not None:
+            # ops[i] sits between tokens[i] and tokens[i+1]
+            kept_ops.append(_merge_ops_across_skip(ops[last_kept_idx:idx]))
+        kept_tokens.append(token)
+        last_kept_idx = idx
+    return kept_tokens, kept_ops
+
+
+_LICENSE_EXPR_TOKEN_PATTERN = re.compile(
+    r"\(|\)|(?i:\band\b)|(?i:\bor\b)|[^\s()]+"
+)
+
+
+class _LicenseLeaf:
+    def __init__(self, value: str) -> None:
+        self.value = value
+
+
+class _LicenseBinOp:
+    def __init__(self, op: str, left, right) -> None:
+        self.op = op
+        self.left = left
+        self.right = right
+
+
+def _tokenize_license_expression(expression: str) -> list[str]:
+    return _LICENSE_EXPR_TOKEN_PATTERN.findall(expression or "")
+
+
+def _parse_license_expression_tokens(tokens: list[str]):
+    """
+    Parse SPDX-like license expression.
+
+    AND/OR have equal precedence and are left-associative.
+    Parentheses change grouping.
+    """
+    pos = 0
+
+    def primary():
+        nonlocal pos
+        if pos >= len(tokens):
+            return None
+        if tokens[pos] == "(":
+            pos += 1
+            node = parse_expr()
+            if pos < len(tokens) and tokens[pos] == ")":
+                pos += 1
+            return node
+        token = tokens[pos]
+        pos += 1
+        return _LicenseLeaf(token)
+
+    def parse_expr():
+        nonlocal pos
+        node = primary()
+        while pos < len(tokens) and tokens[pos].upper() in ("AND", "OR"):
+            op = tokens[pos].upper()
+            pos += 1
+            right = primary()
+            if right is None:
+                break
+            node = _LicenseBinOp(op, node, right)
+        return node
+
+    return parse_expr()
+
+
+def _transform_license_expr_node(
+    node,
+    replacements: list[str],
+    repl_idx: list[int],
+    suppress_ulr: bool,
+):
+    if node is None:
+        return None
+    if isinstance(node, _LicenseLeaf):
+        token = node.value
+        token_lower = token.lower()
+        if KEYWORD_UNKNOWN_LICENSE_REFERENCE in token_lower:
+            return None if suppress_ulr else _LicenseLeaf(token)
+        if KEYWORD_SCANCODE_UNKNOWN in token_lower:
+            if repl_idx[0] < len(replacements):
+                replacement = replacements[repl_idx[0]]
+                repl_idx[0] += 1
+                return _parse_license_expression_tokens(
+                    _tokenize_license_expression(replacement)
+                )
+            return None
+        output = _normalize_license_token(token) or token
+        if not output or output.lower() in REMOVE_LICENSE:
+            return None
+        return _LicenseLeaf(output)
+
+    left = _transform_license_expr_node(node.left, replacements, repl_idx, suppress_ulr)
+    right = _transform_license_expr_node(node.right, replacements, repl_idx, suppress_ulr)
+    if left is None:
+        return right
+    if right is None:
+        return left
+    return _LicenseBinOp(node.op, left, right)
+
+
+def _serialize_license_expr_node(node, is_right_child: bool = False) -> str:
+    if node is None:
+        return ""
+    if isinstance(node, _LicenseLeaf):
+        return node.value
+    left = _serialize_license_expr_node(node.left, False)
+    right = _serialize_license_expr_node(node.right, True)
+    rendered = f"{left} {node.op} {right}"
+    # Equal-precedence left-assoc: parenthesize right BinOp groups.
+    if is_right_child and isinstance(node, _LicenseBinOp):
+        return f"({rendered})"
+    return rendered
+
+
 def _clean_spdx_declaration(raw: str) -> str:
     """Strip whitespace and trailing comment terminators from a captured declaration."""
     cleaned = (raw or "").strip()
@@ -306,10 +447,10 @@ def _extract_spdx_declared_expression(matched_txt: str) -> str:
         return ""
     tokens, ops = split_spdx_expression_with_ops(declared)
     cleaned_tokens = [_strip_license_ref_prefix(token) for token in tokens]
-    cleaned_tokens = [token for token in cleaned_tokens if token]
-    if not cleaned_tokens:
+    kept_tokens, kept_ops = _kept_tokens_with_merged_ops(cleaned_tokens, ops)
+    if not kept_tokens:
         return ""
-    return join_licenses_with_ops(cleaned_tokens, ops)
+    return join_licenses_with_ops(kept_tokens, kept_ops)
 
 
 def _normalize_license_token(token: str) -> str:
@@ -405,7 +546,15 @@ def build_comment_from_detected_expression(
     matches: list,
     matched_texts_with_other_licenses: set,
 ) -> str:
-    """Rebuild comment from detected expression, preserving AND/OR operators."""
+    """
+    Rebuild comment from detected expression.
+
+    Preserves AND/OR and parentheses. SPDX AND/OR are left-associative with
+    equal precedence, so without parentheses ``A OR B AND C`` means
+    ``(A OR B) AND C``. Removing ``B`` therefore yields ``A AND C`` (직전 연산자).
+    Explicit parentheses are honored, e.g.
+    ``A OR (B AND C)`` with ``B`` removed becomes ``A OR C``.
+    """
     if not detected_expression:
         return ""
 
@@ -428,40 +577,13 @@ def build_comment_from_detected_expression(
     suppress_ulr = _should_suppress_unknown_license_reference(
         matches, matched_texts_with_other_licenses
     )
-    tokens, ops = split_spdx_expression_with_ops(expr)
-
-    kept_licenses = []
-    kept_ops = []
-    repl_idx = 0
-    for token_idx, token in enumerate(tokens):
-        token = token.strip()
-        if not token:
-            continue
-        token_lower = token.lower()
-        skip = False
-        output = token
-
-        if KEYWORD_UNKNOWN_LICENSE_REFERENCE in token_lower:
-            skip = suppress_ulr
-        elif KEYWORD_SCANCODE_UNKNOWN in token_lower:
-            if repl_idx < len(replacements):
-                output = replacements[repl_idx]
-                repl_idx += 1
-            else:
-                skip = True
-        else:
-            output = _normalize_license_token(token) or token
-            if output.lower() in REMOVE_LICENSE:
-                skip = True
-
-        if skip or not output:
-            continue
-        if kept_licenses:
-            op_idx = token_idx - 1
-            kept_ops.append(ops[op_idx] if 0 <= op_idx < len(ops) else "AND")
-        kept_licenses.append(output)
-
-    return join_licenses_with_ops(kept_licenses, kept_ops)
+    tree = _parse_license_expression_tokens(_tokenize_license_expression(expr))
+    if tree is None:
+        return ""
+    transformed = _transform_license_expr_node(
+        tree, replacements, [0], suppress_ulr
+    )
+    return _serialize_license_expr_node(transformed)
 
 
 def get_license_expression_spdx(license_expression: str) -> str:
