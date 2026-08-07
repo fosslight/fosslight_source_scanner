@@ -20,6 +20,8 @@ SPDX_LICENSE_IDENTIFIER_PATTERN = re.compile(
     r'SPDX-License-Identifier\s*:\s*([^\r\n]+)', re.IGNORECASE
 )
 LICENSE_REF_PREFIX_PATTERN = re.compile(r'^LicenseRef-', re.IGNORECASE)
+# Trailing closers from block/HTML comments, e.g. "MIT */" or "MIT -->"
+SPDX_COMMENT_TRAILER_PATTERN = re.compile(r'\s*(?:\*/|-->)\s*$')
 KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
 KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
@@ -192,11 +194,9 @@ def parsing_scancode_32_earlier(
                             ):
                                 continue
                             if KEYWORD_SCANCODE_UNKNOWN in (key or ""):
-                                matched = SPDX_LICENSE_IDENTIFIER_PATTERN.search(matched_txt)
-                                if matched:
-                                    license_value = LICENSE_REF_PREFIX_PATTERN.sub(
-                                        '', matched.group(1).strip()
-                                    )
+                                declared = _extract_spdx_declared_expression(matched_txt)
+                                if declared:
+                                    license_value = declared
 
                             for word in replace_word:
                                 if word in license_value:
@@ -279,6 +279,39 @@ def join_licenses_with_ops(licenses: list[str], ops: list[str]) -> str:
     return result
 
 
+def _clean_spdx_declaration(raw: str) -> str:
+    """Strip whitespace and trailing comment terminators from a captured declaration."""
+    cleaned = (raw or "").strip()
+    if not cleaned:
+        return ""
+    return SPDX_COMMENT_TRAILER_PATTERN.sub('', cleaned).strip()
+
+
+def _strip_license_ref_prefix(token: str) -> str:
+    return LICENSE_REF_PREFIX_PATTERN.sub('', (token or "").strip())
+
+
+def _extract_spdx_declared_expression(matched_txt: str) -> str:
+    """
+    Extract SPDX-License-Identifier value from matched_text.
+
+    - Removes trailing comment closers (*/ , -->)
+    - Strips LicenseRef- from each AND/OR token
+    """
+    matched = SPDX_LICENSE_IDENTIFIER_PATTERN.search(matched_txt or "")
+    if not matched:
+        return ""
+    declared = _clean_spdx_declaration(matched.group(1))
+    if not declared:
+        return ""
+    tokens, ops = split_spdx_expression_with_ops(declared)
+    cleaned_tokens = [_strip_license_ref_prefix(token) for token in tokens]
+    cleaned_tokens = [token for token in cleaned_tokens if token]
+    if not cleaned_tokens:
+        return ""
+    return join_licenses_with_ops(cleaned_tokens, ops)
+
+
 def _normalize_license_token(token: str) -> str:
     token = (token or "").strip()
     if not token:
@@ -291,10 +324,7 @@ def _normalize_license_token(token: str) -> str:
 
 
 def _declared_licenses_from_matched_text(matched_txt: str) -> tuple[list[str], list[str]]:
-    matched = SPDX_LICENSE_IDENTIFIER_PATTERN.search(matched_txt or "")
-    if not matched:
-        return [], []
-    declared = LICENSE_REF_PREFIX_PATTERN.sub('', matched.group(1).strip())
+    declared = _extract_spdx_declared_expression(matched_txt)
     if not declared:
         return [], []
     return split_spdx_expression_with_ops(declared)
@@ -501,14 +531,10 @@ def parsing_scancode_32_later(
                         if found_lic_list:
                             found_lic_list = found_lic_list.lower()
                             if KEYWORD_SCANCODE_UNKNOWN in found_lic_list:
-                                matched = SPDX_LICENSE_IDENTIFIER_PATTERN.search(matched_txt)
-                                if matched:
-                                    declared = LICENSE_REF_PREFIX_PATTERN.sub(
-                                        '', matched.group(1).strip()
-                                    )
-                                    if declared:
-                                        found_lic_list = declared
-                                        resolved_unknown_spdx = True
+                                declared = _extract_spdx_declared_expression(matched_txt)
+                                if declared:
+                                    found_lic_list = declared
+                                    resolved_unknown_spdx = True
                             for found_lic in split_spdx_expression(found_lic_list):
                                 if found_lic:
                                     found_lic = found_lic.strip()
@@ -520,12 +546,11 @@ def parsing_scancode_32_later(
                                     ):
                                         continue
                                     if KEYWORD_SCANCODE_UNKNOWN in found_lic.lower():
-                                        matched = SPDX_LICENSE_IDENTIFIER_PATTERN.search(matched_txt)
-                                        if matched:
-                                            found_lic = LICENSE_REF_PREFIX_PATTERN.sub(
-                                                '', matched.group(1).strip()
-                                            )
+                                        declared = _extract_spdx_declared_expression(matched_txt)
+                                        if declared:
+                                            found_lic = declared
                                             resolved_unknown_spdx = True
+                                    found_lic = _strip_license_ref_prefix(found_lic)
                                     found_lic = _normalize_license_token(found_lic) or found_lic
                                     if not found_lic:
                                         continue
