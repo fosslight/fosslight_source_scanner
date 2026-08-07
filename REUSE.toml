@@ -8,18 +8,8 @@ SPDX-FileCopyrightText = "2021 LG Electronics"
 SPDX-License-Identifier = "Apache-2.0"
 
 [[annotations]]
-path = "tests/scancode_raw.json"
+path = "tests/**"
 precedence = "override"
-SPDX-FileCopyrightText = "2021 LG Electronics"
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/json_result/**"
-SPDX-FileCopyrightText = "2021 LG Electronics"
-SPDX-License-Identifier = "Apache-2.0"
-
-[[annotations]]
-path = "tests/test_files/**"
 SPDX-FileCopyrightText = "2021 LG Electronics"
 SPDX-License-Identifier = "Apache-2.0"
 
