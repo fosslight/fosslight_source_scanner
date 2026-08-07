@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Copyright (c) 2020 LG Electronics Inc.
-# SPDX-License-Identifier: LicenseRef-NEW AND LicenseRef-TEST
+# SPDX-License-Identifier: NEW OR DApache-2.0
 
 # SPDX-PackageDownloadLocation: https://dummy_url_for_test.com
 # The code is not licensed under GPL-2.0.
