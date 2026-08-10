@@ -208,7 +208,8 @@ def parsing_scancode_32_earlier(
                                         license_list[lic_matched_key] = lic_info
 
                         matched_rule = lic_item.get("matched_rule", {})
-                        result_item.is_license_text = matched_rule.get("is_license_text", False)
+                        if matched_rule.get("is_license_text", False):
+                            result_item.is_license_text = True
 
                     if len(license_detected) > 0:
                         result_item.licenses = license_detected

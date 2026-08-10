@@ -193,6 +193,58 @@ def test_legacy_unknown_spdx_uses_declared_identifier():
     assert results[0].licenses == ["MIT-like"]
 
 
+@pytest.mark.parametrize(
+    "licenses",
+    [
+        # license-text first, then non-license-text: last-match overwrite used to keep FSF
+        [
+            {
+                "key": "gpl-3.0",
+                "spdx_license_key": "GPL-3.0-only",
+                "matched_rule": {"is_license_text": True},
+            },
+            {
+                "key": "mit",
+                "spdx_license_key": "MIT",
+                "matched_rule": {"is_license_text": False},
+            },
+        ],
+        # reverse order must also filter
+        [
+            {
+                "key": "mit",
+                "spdx_license_key": "MIT",
+                "matched_rule": {"is_license_text": False},
+            },
+            {
+                "key": "gpl-3.0",
+                "spdx_license_key": "GPL-3.0-only",
+                "matched_rule": {"is_license_text": True},
+            },
+        ],
+    ],
+)
+def test_legacy_aggregates_is_license_text_for_fsf_filter(licenses):
+    fsf = "Copyright (c) 2007 Free Software Foundation, Inc."
+    other = "Copyright (c) 2020 Example Inc."
+    scancode_file_list = [{
+        "path": "COPYING",
+        "type": "file",
+        "licenses": licenses,
+        "copyrights": [
+            {"copyright": fsf},
+            {"copyright": other},
+        ],
+    }]
+
+    success, results, _messages, _ = parsing_scancode_32_earlier(scancode_file_list)
+
+    assert success is True
+    assert results[0].is_license_text is True
+    assert fsf not in results[0].copyright
+    assert other in results[0].copyright
+
+
 def test_build_comment_from_detected_expression_helper():
     matched_same = "# The code is not licensed under GPL-2.0."
     matches = [
