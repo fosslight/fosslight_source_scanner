@@ -93,147 +93,6 @@ def get_error_from_header(header_item: list) -> Tuple[bool, str]:
     return has_error, str_error
 
 
-def parsing_scancode_32_earlier(
-    scancode_file_list: list, has_error: bool = False, ui_mode: bool = False
-) -> Tuple[bool, list, list, dict]:
-    rc = True
-    msg = []
-    scancode_file_item = []
-    license_list = {}  # Key :[license]+[matched_text], value: MatchedLicense()
-
-    if scancode_file_list:
-        for file in scancode_file_list:
-            try:
-                is_dir = False
-                file_path = file.get("path", "")
-                if not file_path:
-                    continue
-                is_binary = file.get("is_binary", False)
-                if "type" in file:
-                    is_dir = file["type"] == "directory"
-                if not is_binary and not is_dir:
-                    licenses = file.get("licenses", [])
-                    copyright_list = file.get("copyrights", [])
-
-                    result_item = SourceItem(file_path)
-
-                    if has_error and "scan_errors" in file:
-                        error_msg = file.get("scan_errors", [])
-                        if len(error_msg) > 0:
-                            result_item.comment = ",".join(error_msg)
-                            scancode_file_item.append(result_item)
-                            continue
-                    copyright_value_list = []
-                    for x in copyright_list:
-                        latest_key_data = x.get("copyright", "")
-                        if latest_key_data:
-                            copyright_data = latest_key_data
-                        else:
-                            copyright_data = x.get("value", "")
-                        if copyright_data:
-                            try:
-                                copyright_data = re.sub(KEYWORD_SPDX_ID, '', copyright_data, flags=re.I)
-                                copyright_data = re.sub(KEYWORD_DOWNLOAD_LOC, '', copyright_data, flags=re.I).strip()
-                            except Exception:
-                                pass
-                            copyright_value_list.append(copyright_data)
-
-                    # Set the license value
-                    license_detected = []
-                    if not licenses:
-                        licenses = []
-                    # Keep license and/or copyright findings; UI keeps finding-less files too.
-                    if not licenses and not copyright_value_list and not ui_mode:
-                        continue
-
-                    license_expression_list = file.get("license_expressions", {})
-                    if len(license_expression_list) > 0:
-                        license_expression_list = [
-                            x.lower() for x in license_expression_list
-                            if x is not None]
-
-                    matched_texts_with_other_licenses = {
-                        (lic_item.get("matched_text") or "")
-                        for lic_item in licenses
-                        if (lic_item.get("matched_text") or "")
-                        and (lic_item.get("key") or "")
-                        and KEYWORD_UNKNOWN_LICENSE_REFERENCE not in (lic_item.get("key") or "").lower()
-                    }
-
-                    for lic_item in licenses:
-                        license_value = ""
-                        key = lic_item.get("key", "")
-                        if key in REMOVE_LICENSE:
-                            if key in license_expression_list:
-                                license_expression_list.remove(key)
-                            continue
-                        spdx = lic_item.get("spdx_license_key", "")
-                        # logger.debug("LICENSE_KEY:"+str(key)+",SPDX:"+str(spdx))
-
-                        if key is not None and key != "":
-                            key = key.lower()
-                            license_value = key
-                            if key in license_expression_list:
-                                license_expression_list.remove(key)
-                        if spdx is not None and spdx != "":
-                            # Print SPDX instead of Key.
-                            license_value = spdx.lower()
-
-                        if license_value != "":
-                            matched_txt = lic_item.get("matched_text", "")
-                            if (
-                                KEYWORD_UNKNOWN_LICENSE_REFERENCE in (key or "")
-                                and matched_txt in matched_texts_with_other_licenses
-                            ):
-                                continue
-                            if KEYWORD_SCANCODE_UNKNOWN in (key or ""):
-                                declared = _extract_spdx_declared_expression(matched_txt)
-                                if declared:
-                                    license_value = declared
-
-                            for word in replace_word:
-                                if word in license_value:
-                                    license_value = license_value.replace(word, "")
-                            license_detected.append(license_value)
-
-                            # Add matched licenses
-                            if "category" in lic_item:
-                                lic_category = lic_item["category"]
-                                if matched_txt:
-                                    lic_matched_key = license_value + matched_txt
-                                    if lic_matched_key in license_list:
-                                        license_list[lic_matched_key].set_files(file_path)
-                                    else:
-                                        lic_info = MatchedLicense(license_value, lic_category, matched_txt, file_path)
-                                        license_list[lic_matched_key] = lic_info
-
-                        matched_rule = lic_item.get("matched_rule", {})
-                        if matched_rule.get("is_license_text", False):
-                            result_item.is_license_text = True
-
-                    if len(license_detected) > 0:
-                        result_item.licenses = license_detected
-
-                        result_item.copyright = filter_fsf_copyright_from_gpl_license_text(
-                            copyright_value_list, license_detected, result_item.is_license_text
-                        )
-
-                        if len(license_expression_list) > 0:
-                            license_expression_list = list(
-                                set(license_expression_list))
-                            result_item.comment = ','.join(license_expression_list)
-
-                        scancode_file_item.append(result_item)
-                    elif copyright_value_list or ui_mode:
-                        result_item.copyright = copyright_value_list
-                        scancode_file_item.append(result_item)
-            except Exception as ex:
-                msg.append(f"Error Parsing item: {ex}")
-                rc = False
-    msg = list(set(msg))
-    return rc, scancode_file_item, msg, license_list
-
-
 def split_spdx_expression(spdx_string: str) -> list:
     for replace in SPDX_REPLACE_WORDS:
         spdx_string = spdx_string.replace(replace, "")
@@ -746,19 +605,10 @@ def parsing_file_item(
     scancode_file_list: list, has_error: bool, need_matched_license: bool = False,
     ui_mode: bool = False
 ) -> Tuple[bool, list, list, dict]:
-
-    rc = True
-    msg = []
-
-    first_item = next(iter(scancode_file_list or []), {})
-    if "licenses" in first_item:
-        rc, scancode_file_item, msg, license_list = parsing_scancode_32_earlier(
-            scancode_file_list, has_error, ui_mode
-        )
-    else:
-        rc, scancode_file_item, msg, license_list = parsing_scancode_32_later(
-            scancode_file_list, has_error, ui_mode
-        )
+    # scancode-toolkit>=32.0.2 always uses license_detections schema
+    rc, scancode_file_item, msg, license_list = parsing_scancode_32_later(
+        scancode_file_list, has_error, ui_mode
+    )
     if not need_matched_license:
         license_list = {}
     return rc, scancode_file_item, msg, license_list
