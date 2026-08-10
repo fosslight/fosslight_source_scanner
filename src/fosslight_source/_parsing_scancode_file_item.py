@@ -29,7 +29,9 @@ KEYWORD_UNKNOWN_LICENSE_REFERENCE = "unknown-license-reference"
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND_OR = re.compile(r"(?<=\s)(?:and|or)(?=\s)", re.IGNORECASE)
 KEY_AND_OR_CAPTURE = re.compile(r"(?<=\s)(and|or)(?=\s)", re.IGNORECASE)
-GPL_LICENSE_PATTERN = r'((a|l)?gpl|gfdl)'  # GPL, LGPL, AGPL, GFDL
+# GPL, LGPL, AGPL, GFDL
+GPL_LICENSE_PATTERN = re.compile(r'((a|l)?gpl|gfdl)', re.IGNORECASE)
+FSF_IN_COPYRIGHT = "free software foundation"
 SOURCE_EXTENSIONS = [
     '.java', '.cpp', '.c', '.cc', '.cxx', '.c++', '.h', '.hh', '.hpp', '.hxx', '.h++',
     '.cs', '.py', '.pyw', '.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx',
@@ -40,31 +42,15 @@ SOURCE_EXTENSIONS = [
 ]
 
 
-def is_gpl_family_license(licenses: list) -> bool:
-    if not licenses:
-        return False
-
-    for license_name in licenses:
-        if not license_name:
-            continue
-
-        license_lower = license_name.lower()
-        if re.search(GPL_LICENSE_PATTERN, license_lower):
-            logger.debug(f"GPL family license detected: {license_name}")
-            return True
-
-    return False
-
-
-def should_remove_copyright_for_gpl_license_text(licenses: list, is_license_text: bool) -> bool:
-    return is_license_text and is_gpl_family_license(licenses)
-
-
-def exclude_free_software_foundation_copyrights(copyrights: list) -> list:
-    return [
-        copyright_entry for copyright_entry in copyrights
-        if "free software foundation" not in copyright_entry.lower()
-    ]
+def filter_fsf_copyright_from_gpl_license_text(
+    copyrights: list, licenses: list, is_license_text: bool
+) -> list:
+    """Drop FSF boilerplate copyrights embedded in GPL-family license text."""
+    if not is_license_text or not any(
+        lic and GPL_LICENSE_PATTERN.search(lic) for lic in (licenses or [])
+    ):
+        return copyrights
+    return [c for c in copyrights if FSF_IN_COPYRIGHT not in c.lower()]
 
 
 def _expression_has_non_unknown_license_reference(license_expression: str) -> bool:
@@ -227,14 +213,9 @@ def parsing_scancode_32_earlier(
                     if len(license_detected) > 0:
                         result_item.licenses = license_detected
 
-                        # Remove copyright info for license text file of GPL family
-                        if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
-                            logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
-                            result_item.copyright = exclude_free_software_foundation_copyrights(
-                                copyright_value_list
-                            )
-                        else:
-                            result_item.copyright = copyright_value_list
+                        result_item.copyright = filter_fsf_copyright_from_gpl_license_text(
+                            copyright_value_list, license_detected, result_item.is_license_text
+                        )
 
                         if len(license_expression_list) > 0:
                             license_expression_list = list(
@@ -724,14 +705,9 @@ def parsing_scancode_32_later(
                     file.get("percentage_of_license_text", 0) > 90 and not is_source_file
                 )
 
-                # Remove copyright info for license text file of GPL family
-                if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
-                    logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
-                    result_item.copyright = exclude_free_software_foundation_copyrights(
-                        copyright_value_list
-                    )
-                else:
-                    result_item.copyright = copyright_value_list
+                result_item.copyright = filter_fsf_copyright_from_gpl_license_text(
+                    copyright_value_list, license_detected, result_item.is_license_text
+                )
 
                 if len(license_detected) > 1:
                     detected_expression = file.get("detected_license_expression", "") or ""
