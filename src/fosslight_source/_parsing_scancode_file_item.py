@@ -29,7 +29,9 @@ KEYWORD_UNKNOWN_LICENSE_REFERENCE = "unknown-license-reference"
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND_OR = re.compile(r"(?<=\s)(?:and|or)(?=\s)", re.IGNORECASE)
 KEY_AND_OR_CAPTURE = re.compile(r"(?<=\s)(and|or)(?=\s)", re.IGNORECASE)
-GPL_LICENSE_PATTERN = r'((a|l)?gpl|gfdl)'  # GPL, LGPL, AGPL, GFDL
+# GPL, LGPL, AGPL, GFDL
+GPL_LICENSE_PATTERN = re.compile(r'((a|l)?gpl|gfdl)', re.IGNORECASE)
+FSF_IN_COPYRIGHT = "free software foundation"
 SOURCE_EXTENSIONS = [
     '.java', '.cpp', '.c', '.cc', '.cxx', '.c++', '.h', '.hh', '.hpp', '.hxx', '.h++',
     '.cs', '.py', '.pyw', '.js', '.jsx', '.mjs', '.cjs', '.ts', '.tsx',
@@ -40,24 +42,15 @@ SOURCE_EXTENSIONS = [
 ]
 
 
-def is_gpl_family_license(licenses: list) -> bool:
-    if not licenses:
-        return False
-
-    for license_name in licenses:
-        if not license_name:
-            continue
-
-        license_lower = license_name.lower()
-        if re.search(GPL_LICENSE_PATTERN, license_lower):
-            logger.debug(f"GPL family license detected: {license_name}")
-            return True
-
-    return False
-
-
-def should_remove_copyright_for_gpl_license_text(licenses: list, is_license_text: bool) -> bool:
-    return is_license_text and is_gpl_family_license(licenses)
+def filter_fsf_copyright_from_gpl_license_text(
+    copyrights: list, licenses: list, is_license_text: bool
+) -> list:
+    """Drop FSF boilerplate copyrights embedded in GPL-family license text."""
+    if not is_license_text or not any(
+        lic and GPL_LICENSE_PATTERN.search(lic) for lic in (licenses or [])
+    ):
+        return copyrights
+    return [c for c in copyrights if FSF_IN_COPYRIGHT not in c.lower()]
 
 
 def _expression_has_non_unknown_license_reference(license_expression: str) -> bool:
@@ -215,17 +208,15 @@ def parsing_scancode_32_earlier(
                                         license_list[lic_matched_key] = lic_info
 
                         matched_rule = lic_item.get("matched_rule", {})
-                        result_item.is_license_text = matched_rule.get("is_license_text", False)
+                        if matched_rule.get("is_license_text", False):
+                            result_item.is_license_text = True
 
                     if len(license_detected) > 0:
                         result_item.licenses = license_detected
 
-                        # Remove copyright info for license text file of GPL family
-                        if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
-                            logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
-                            result_item.copyright = []
-                        else:
-                            result_item.copyright = copyright_value_list
+                        result_item.copyright = filter_fsf_copyright_from_gpl_license_text(
+                            copyright_value_list, license_detected, result_item.is_license_text
+                        )
 
                         if len(license_expression_list) > 0:
                             license_expression_list = list(
@@ -715,12 +706,9 @@ def parsing_scancode_32_later(
                     file.get("percentage_of_license_text", 0) > 90 and not is_source_file
                 )
 
-                # Remove copyright info for license text file of GPL family
-                if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
-                    logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
-                    result_item.copyright = []
-                else:
-                    result_item.copyright = copyright_value_list
+                result_item.copyright = filter_fsf_copyright_from_gpl_license_text(
+                    copyright_value_list, license_detected, result_item.is_license_text
+                )
 
                 if len(license_detected) > 1:
                     detected_expression = file.get("detected_license_expression", "") or ""
