@@ -60,6 +60,13 @@ def should_remove_copyright_for_gpl_license_text(licenses: list, is_license_text
     return is_license_text and is_gpl_family_license(licenses)
 
 
+def exclude_free_software_foundation_copyrights(copyrights: list) -> list:
+    return [
+        copyright_entry for copyright_entry in copyrights
+        if "free software foundation" not in copyright_entry.lower()
+    ]
+
+
 def _expression_has_non_unknown_license_reference(license_expression: str) -> bool:
     if not license_expression:
         return False
@@ -223,7 +230,9 @@ def parsing_scancode_32_earlier(
                         # Remove copyright info for license text file of GPL family
                         if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
                             logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
-                            result_item.copyright = []
+                            result_item.copyright = exclude_free_software_foundation_copyrights(
+                                copyright_value_list
+                            )
                         else:
                             result_item.copyright = copyright_value_list
 
@@ -718,7 +727,9 @@ def parsing_scancode_32_later(
                 # Remove copyright info for license text file of GPL family
                 if should_remove_copyright_for_gpl_license_text(license_detected, result_item.is_license_text):
                     logger.debug(f"Removing copyright for GPL family license text file: {file_path}")
-                    result_item.copyright = []
+                    result_item.copyright = exclude_free_software_foundation_copyrights(
+                        copyright_value_list
+                    )
                 else:
                     result_item.copyright = copyright_value_list
 
