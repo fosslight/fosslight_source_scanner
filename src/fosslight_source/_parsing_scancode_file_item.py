@@ -475,7 +475,7 @@ def get_license_expression_spdx(license_expression: str) -> str:
         return ""
 
 
-def parsing_scancode_32_later(
+def parsing_scancode(
     scancode_file_list: list, has_error: bool = False, ui_mode: bool = False
 ) -> Tuple[bool, list, list, dict]:
     rc = True
@@ -606,7 +606,7 @@ def parsing_file_item(
     ui_mode: bool = False
 ) -> Tuple[bool, list, list, dict]:
     # scancode-toolkit>=32.0.2 always uses license_detections schema
-    rc, scancode_file_item, msg, license_list = parsing_scancode_32_later(
+    rc, scancode_file_item, msg, license_list = parsing_scancode(
         scancode_file_list, has_error, ui_mode
     )
     if not need_matched_license:

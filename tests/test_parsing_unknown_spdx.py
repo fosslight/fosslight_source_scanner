@@ -8,7 +8,7 @@ from fosslight_source._parsing_scancode_file_item import (
     _extract_spdx_declared_expression,
     _declared_licenses_from_matched_text,
     build_comment_from_detected_expression,
-    parsing_scancode_32_later,
+    parsing_scancode,
     _matched_texts_with_other_licenses,
 )
 
@@ -64,7 +64,7 @@ def test_unknown_spdx_uses_declared_identifier(matched_text, expected_license):
         "copyrights": [],
     }]
 
-    success, results, _messages, _license_list = parsing_scancode_32_later(scancode_file_list)
+    success, results, _messages, _license_list = parsing_scancode(scancode_file_list)
 
     assert success is True
     assert results[0].licenses == [expected_license]
@@ -84,7 +84,7 @@ def test_unknown_spdx_in_compound_expression_splits_and_or():
         "copyrights": [],
     }]
 
-    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
     assert results[0].licenses == ["GPL-2.0", "MIT-like"]
@@ -118,7 +118,7 @@ def test_unknown_spdx_comment_preserves_and_or_from_detected_expression():
         "copyrights": [],
     }]
 
-    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
     assert results[0].licenses == ["NEW", "DApache-2.0", "GPL-2.0"]
@@ -146,7 +146,7 @@ def test_unknown_license_reference_suppressed_when_same_matched_text_has_other_l
         "copyrights": [],
     }]
 
-    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
     assert results[0].licenses == ["GPL-2.0"]
@@ -168,7 +168,7 @@ def test_licenseref_tokens_stripped_from_unknown_spdx_and_expression():
         "copyrights": [],
     }]
 
-    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
     assert results[0].licenses == ["NEW", "TEST"]
@@ -273,7 +273,7 @@ def test_two_license_comment_omits_outer_parentheses():
         }],
         "copyrights": [],
     }]
-    success, results, _messages, _ = parsing_scancode_32_later(scancode_file_list)
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
     assert success is True
     assert results[0].licenses == ["Apache-2.0", "MIT"]
     assert results[0].comment == "Apache-2.0 OR MIT"
