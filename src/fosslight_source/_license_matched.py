@@ -6,10 +6,8 @@ import logging
 import fosslight_util.constant as constant
 
 logger = logging.getLogger(constant.LOGGER_NAME)
-HEADER = ['No', 'Category', 'License',
-          'Matched Text', 'File Count', 'Files']
-HEADER_32_LATER = ['No', 'License', 'Matched Text',
-                   'File Count', 'Files']
+HEADER = ['No', 'License', 'Matched Text',
+          'File Count', 'Files']
 LOW_PRIORITY = ['Permissive', 'Public Domain']
 
 
@@ -46,18 +44,15 @@ class MatchedLicense:
     def set_matched_text(self, value: str) -> None:
         self.matched_text = value
 
-    def get_row_to_print(self, result_for_32_earlier: bool = True) -> list:
-        if result_for_32_earlier:
-            print_rows = [self.category, self.license, self.matched_text, str(len(self.files)), ','.join(self.files)]
-        else:
-            print_rows = [self.license, self.matched_text, str(len(self.files)), ','.join(self.files)]
-        return print_rows
+    def get_row_to_print(self) -> list:
+        return [self.license, self.matched_text, str(len(self.files)), ','.join(self.files)]
 
 
 def get_license_list_to_print(license_list: dict) -> list:
-    result_for_32_earlier = any([value.category for key, value in license_list.items()])
-    license_items = license_list.values()
-    license_items = sorted(license_items, key=lambda row: (row.priority, row.category, row.license))
-    license_rows = [lic_item.get_row_to_print(result_for_32_earlier) for lic_item in license_items]
-    license_rows.insert(0, HEADER if result_for_32_earlier else HEADER_32_LATER)
+    license_items = sorted(
+        license_list.values(),
+        key=lambda row: (row.priority, row.category, row.license),
+    )
+    license_rows = [lic_item.get_row_to_print() for lic_item in license_items]
+    license_rows.insert(0, HEADER)
     return license_rows
