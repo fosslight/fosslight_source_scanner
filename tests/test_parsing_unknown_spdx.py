@@ -17,6 +17,10 @@ from fosslight_source._parsing_scancode_file_item import (
     ("matched_text", "expected"),
     [
         ("// SPDX-License-Identifier: MIT", "MIT"),
+        ("// SPDX-License-Identifier-MIT", "MIT"),
+        ("// SPDX-License-Identifier, MIT", "MIT"),
+        ("// SPDX-License-Identifier MIT", "MIT"),
+        ('        "SPDX-license-identifier-BSD",', "BSD"),
         ("/* SPDX-License-Identifier: MIT */", "MIT"),
         ("<!-- SPDX-License-Identifier: MIT -->", "MIT"),
         ("# SPDX-License-Identifier: LicenseRef-MIT-like", "MIT-like"),
