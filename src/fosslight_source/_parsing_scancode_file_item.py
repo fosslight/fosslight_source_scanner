@@ -17,11 +17,12 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 REMOVE_LICENSE = ["warranty-disclaimer"]
 find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 SPDX_LICENSE_IDENTIFIER_PATTERN = re.compile(
-    r'SPDX-License-Identifier\s*:\s*([^\r\n]+)', re.IGNORECASE
+    r'SPDX[-\s]+License[-\s]+Identifier(?:\s*[:,-]\s*|\s+)([^\r\n]+)',
+    re.IGNORECASE,
 )
 LICENSE_REF_PREFIX_PATTERN = re.compile(r'^LicenseRef-', re.IGNORECASE)
-# Trailing closers from block/HTML comments, e.g. "MIT */" or "MIT -->"
-SPDX_COMMENT_TRAILER_PATTERN = re.compile(r'\s*(?:\*/|-->)\s*$')
+# Trailing closers from comments and quoted lists, e.g. "MIT */", "MIT -->", or '"MIT",'.
+SPDX_DECLARATION_TRAILER_PATTERN = re.compile(r'\s*(?:\*/|-->|["\']\s*,?)\s*$')
 KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
 KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
@@ -293,11 +294,11 @@ def _omit_parens_for_two_license_expression(expression: str) -> str:
 
 
 def _clean_spdx_declaration(raw: str) -> str:
-    """Strip whitespace and trailing comment terminators from a captured declaration."""
+    """Strip whitespace and trailing comment or quoted-list terminators."""
     cleaned = (raw or "").strip()
     if not cleaned:
         return ""
-    return SPDX_COMMENT_TRAILER_PATTERN.sub('', cleaned).strip()
+    return SPDX_DECLARATION_TRAILER_PATTERN.sub('', cleaned).strip()
 
 
 def _strip_license_ref_prefix(token: str) -> str:
