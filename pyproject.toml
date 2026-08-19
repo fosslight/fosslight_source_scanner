@@ -27,9 +27,9 @@ requires-python = ">=3.10,<3.15"
 dependencies = [
     "setuptools<=80.10.2",
     "pyparsing",
-    "scanoss>=1.19.0",
+    "scanoss>=1.45.0",
     "XlsxWriter",
-    "fosslight_util>=2.2.2",
+    "fosslight_util>=2.2.7",
     "PyYAML",
     "wheel>=0.38.1",
     "intbitset",
