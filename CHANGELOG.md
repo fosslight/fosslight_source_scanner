@@ -1,5 +1,21 @@
 # Changelog
 
+## v2.3.8 (20/08/2026)
+## Changes
+## 🐛 Hotfixes
+
+- fix(scanoss): minimum version >=1.45.0 @JustinWonjaePark (#306)
+- Keep non-FSF copyrights in GPL license text files @JustinWonjaePark (#303)
+- Fix unknown-spdx identifier @JustinWonjaePark (#301)
+
+## 🔧 Maintenance
+
+- chore(dev): trim requirements-dev @soimkim (#307)
+- Allow Non-SPDX-Compliant Formats @JustinWonjaePark (#305)
+- Drop pre-32 ScanCode parsing path @soimkim (#304)
+
+---
+
 ## v2.3.7 (31/07/2026)
 ## Changes
 ## 🚀 Features
@@ -314,9 +330,3 @@
 ## 🔧 Maintenance
 
 - Update supported format @dd-jy (#220)
-
----
-
-## v2.1.16 (12/12/2025)
-## Changes
-- Double-Check pom file license with license tag @dd-jy (#219)
