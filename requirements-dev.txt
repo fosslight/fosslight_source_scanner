@@ -1,8 +1,3 @@
 tox
 pytest
-pytest-cov
 flake8
-dataclasses
-scanoss>=1.45.0
-importlib-metadata
-pytest-xdist
