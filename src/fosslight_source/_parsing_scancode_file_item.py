@@ -65,14 +65,24 @@ def _expression_has_non_unknown_license_reference(license_expression: str) -> bo
 
 
 def _matched_texts_with_other_licenses(matches: list) -> set:
-    """matched_text values that also produced a non-unknown-license-reference license."""
-    texts = set()
+    """unknown-reference texts contained in another license's matched text."""
+    other_texts = set()
+    unknown_texts = []
     for matched_lic in matches or []:
         matched_txt = matched_lic.get("matched_text") or ""
         license_expression = matched_lic.get("license_expression") or ""
-        if matched_txt and _expression_has_non_unknown_license_reference(license_expression):
-            texts.add(matched_txt)
-    return texts
+        normalized_text = " ".join(matched_txt.lower().split())
+        if not normalized_text:
+            continue
+        if _expression_has_non_unknown_license_reference(license_expression):
+            other_texts.add(normalized_text)
+        if KEYWORD_UNKNOWN_LICENSE_REFERENCE in license_expression.lower():
+            unknown_texts.append((matched_txt, normalized_text))
+    return {
+        matched_txt
+        for matched_txt, normalized_text in unknown_texts
+        if any(normalized_text in other_text for other_text in other_texts)
+    }
 
 
 def get_error_from_header(header_item: list) -> Tuple[bool, str]:
