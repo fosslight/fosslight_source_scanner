@@ -22,5 +22,5 @@ def get_spdx_downloads(file_path: str) -> list[str]:
                     for word in find_word.findall(mmap_obj):
                         results.append(word.decode('utf-8'))
     except Exception as ex:
-        logger.warning(f"Failed to extract SPDX download location. {file_path}, {ex}")
+        logger.debug(f"Failed to extract SPDX download location. {file_path}, {ex}")
     return results
