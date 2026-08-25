@@ -178,16 +178,26 @@ def get_licenses_from_pyproject_toml(file_path: str) -> list[str]:
                 data = None
 
         if isinstance(data, dict):
-            project_tbl = data.get('project') or {}
-            license_value = project_tbl.get('license')
-            if isinstance(license_value, str) and license_value.strip():
-                return [license_value.strip()]
-            if isinstance(license_value, dict):
-                text_value = license_value.get('text')
-                if isinstance(text_value, str) and text_value.strip():
-                    return [text_value.strip()]
-                if license_value.get('file'):
-                    return []
+            project_tbl = data.get('project')
+            if isinstance(project_tbl, dict) and 'license' in project_tbl:
+                license_value = project_tbl.get('license')
+                if isinstance(license_value, str) and license_value.strip():
+                    return [license_value.strip()]
+                if isinstance(license_value, dict):
+                    text_value = license_value.get('text')
+                    if isinstance(text_value, str) and text_value.strip():
+                        return [text_value.strip()]
+                    if license_value.get('file'):
+                        return []
+                return []
+
+            tool_tbl = data.get('tool')
+            if isinstance(tool_tbl, dict):
+                poetry_tbl = tool_tbl.get('poetry')
+                if isinstance(poetry_tbl, dict):
+                    poetry_license = poetry_tbl.get('license')
+                    if isinstance(poetry_license, str) and poetry_license.strip():
+                        return [poetry_license.strip()]
     except Exception as ex:
         logger.info(f"Failed to parse pyproject.toml via toml parser for {file_path}: {ex}")
 
@@ -195,24 +205,40 @@ def get_licenses_from_pyproject_toml(file_path: str) -> list[str]:
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
         project_match = re.search(r'^\s*\[project\]\s*(.*?)(?=^\s*\[|\Z)', content, flags=re.MULTILINE | re.DOTALL)
-        if not project_match:
-            return []
-        block = project_match.group(1)
-        m = re.search(r'^\s*license\s*=\s*(?P<q>"""|\'\'\'|"|\')(?P<val>.*?)(?P=q)', block,
-                      flags=re.MULTILINE | re.DOTALL)
-        if m:
-            val = m.group('val').strip()
-            if val:
-                return [val]
-        m2 = re.search(r'^\s*license\s*=\s*\{[^}]*?\btext\s*=\s*(?P<q>"""|\'\'\'|"|\')(?P<val>.*?)(?P=q)',
-                       block, flags=re.MULTILINE | re.DOTALL)
-        if m2:
-            val = m2.group('val').strip()
-            if val:
-                return [val]
-        m3 = re.search(r'^\s*license\s*=\s*\{[^}]*?\bfile\s*=', block, flags=re.MULTILINE | re.DOTALL)
-        if m3:
-            return []
+        if project_match:
+            block = project_match.group(1)
+            project_license_declared = re.search(r'^\s*license\s*=', block, flags=re.MULTILINE)
+            if project_license_declared:
+                m = re.search(r'^\s*license\s*=\s*(?P<q>"""|\'\'\'|"|\')(?P<val>.*?)(?P=q)', block,
+                              flags=re.MULTILINE | re.DOTALL)
+                if m:
+                    val = m.group('val').strip()
+                    if val:
+                        return [val]
+                m2 = re.search(r'^\s*license\s*=\s*\{[^}]*?\btext\s*=\s*(?P<q>"""|\'\'\'|"|\')(?P<val>.*?)(?P=q)',
+                               block, flags=re.MULTILINE | re.DOTALL)
+                if m2:
+                    val = m2.group('val').strip()
+                    if val:
+                        return [val]
+                return []
+
+        poetry_match = re.search(
+            r'^\s*\[tool\.poetry\]\s*(.*?)(?=^\s*\[|\Z)',
+            content,
+            flags=re.MULTILINE | re.DOTALL,
+        )
+        if poetry_match:
+            poetry_block = poetry_match.group(1)
+            poetry_license = re.search(
+                r'^\s*license\s*=\s*(?P<q>"""|\'\'\'|"|\')(?P<val>.*?)(?P=q)',
+                poetry_block,
+                flags=re.MULTILINE | re.DOTALL,
+            )
+            if poetry_license:
+                val = poetry_license.group('val').strip()
+                if val:
+                    return [val]
     except Exception as ex:
         logger.info(f"Failed to parse pyproject.toml {file_path}: {ex}")
         return []
