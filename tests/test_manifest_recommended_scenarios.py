@@ -56,6 +56,22 @@ def test_scenario2_package_json_manifest_fail_keeps_scancode_licenses():
     assert merged[0].licenses == ["Apache-2.0"]
 
 
+def test_scenario3_android_bp_from_spdx_marks_manifest_without_new_row():
+    """Android.bp added by spdx merge: manifest flag on existing item, no duplicate row."""
+    spdx_item = SourceItem("module/Android.bp")
+    spdx_item.download_location = ["https://example.com/repo"]
+
+    merged, _, _, _ = merge_results(
+        scancode_result=[spdx_item],
+        manifest_licenses={"module/Android.bp": []},
+    )
+
+    assert len(merged) == 1
+    assert merged[0].is_manifest_file is True
+    assert merged[0].download_location == ["https://example.com/repo"]
+    assert merged[0].licenses == []
+
+
 def test_scenario3_android_bp_not_in_scancode_no_row_non_ui():
     """Android.bp absent from ScanCode: no row in non-UI mode."""
     manifest = {"module/Android.bp": []}

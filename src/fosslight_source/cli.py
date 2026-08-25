@@ -453,10 +453,11 @@ def merge_results(
     if manifest_licenses:
         for file_name, licenses in manifest_licenses.items():
             valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
-            if not valid_licenses and file_name not in scancode_result:
-                if not ui_mode:
-                    continue
-            item = _get_or_append_source_item(scancode_result, file_name)
+            item = _get_or_append_source_item(
+                scancode_result, file_name, append=bool(valid_licenses) or ui_mode
+            )
+            if item is None:
+                continue
             item.is_manifest_file = True
             if valid_licenses:
                 # overwrite existing detected licenses with manifest-provided licenses
@@ -499,9 +500,13 @@ def merge_results(
     return scancode_result, kb_status_message, kb_requested_count, kb_returned_count
 
 
-def _get_or_append_source_item(scancode_result: list, file_name: str) -> SourceItem:
+def _get_or_append_source_item(
+    scancode_result: list, file_name: str, append: bool = True
+) -> Optional[SourceItem]:
     if file_name in scancode_result:
         return scancode_result[scancode_result.index(file_name)]
+    if not append:
+        return None
     item = SourceItem(file_name)
     scancode_result.append(item)
     return item
@@ -730,11 +735,7 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> tuple[dict, di
                 spdx_downloads[rel_path_file] = downloads
 
             if is_manifest_file(file_path):
-                # Android.bp: ScanCode licenses are kept; skip get_manifest_licenses.
-                if os.path.basename(file_path).lower() == 'android.bp':
-                    manifest_licenses[rel_path_file] = []
-                else:
-                    manifest_licenses[rel_path_file] = get_manifest_licenses(file_path) or []
+                manifest_licenses[rel_path_file] = get_manifest_licenses(file_path) or []
 
     return spdx_downloads, manifest_licenses
 

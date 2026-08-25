@@ -345,6 +345,9 @@ def get_licenses_from_huggingface_metadata(file_path: str) -> list[str]:
 
 
 def get_manifest_licenses(file_path: str) -> list[str]:
+    # Android.bp licenses come from ScanCode; manifest merge only sets is_manifest_file.
+    if os.path.basename(file_path).lower() == 'android.bp':
+        return []
     if file_path.endswith('.pom'):
         try:
             pom_licenses = get_license_from_pom(group_id='', artifact_id='', version='', pom_path=file_path, check_parent=True)
