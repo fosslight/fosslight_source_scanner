@@ -15,7 +15,7 @@ replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "lic
 _notice_filename = ['licen[cs]e[s]?', 'notice[s]?', 'legal', 'copyright[s]?', 'copying*', 'patent[s]?', 'unlicen[cs]e', 'eula',
                     '[a,l]?gpl[-]?[1-3]?[.,-,_]?[0-1]?', 'mit', 'bsd[-]?[0-4]?', 'bsd[-]?[0-4][-]?clause[s]?',
                     'apache[-,_]?[1-2]?[.,-,_]?[0-2]?']
-_manifest_license_filename = [
+_manifest_filename = [
     r'.*\.pom$',
     r'package\.json$',
     r'composer\.json$',
@@ -25,9 +25,10 @@ _manifest_license_filename = [
     r'.*\.podspec$',
     r'Cargo\.toml$',
     r'huggingface_hub_metadata\.json$',
+    r'Android\.bp$',
 ]
-# Manifest marker only: is_manifest_file=True, but license comes from ScanCode.
-_manifest_marker_filename = [
+# License extraction via get_manifest_licenses is skipped; ScanCode licenses are kept.
+_manifest_skip_license_extraction = [
     r'Android\.bp$',
 ]
 MAX_LICENSE_LENGTH = 200
@@ -53,15 +54,15 @@ def _matches_manifest_pattern(file_path: str, patterns: list) -> bool:
 
 
 def extracts_manifest_license(file_path: str) -> bool:
-    return _matches_manifest_pattern(file_path, _manifest_license_filename)
+    return _matches_manifest_pattern(file_path, _manifest_filename)
 
 
-def is_manifest_marker_file(file_path: str) -> bool:
-    return _matches_manifest_pattern(file_path, _manifest_marker_filename)
+def skips_manifest_license_extraction(file_path: str) -> bool:
+    return _matches_manifest_pattern(file_path, _manifest_skip_license_extraction)
 
 
 def is_manifest_file(file_path: str) -> bool:
-    return extracts_manifest_license(file_path) or is_manifest_marker_file(file_path)
+    return extracts_manifest_license(file_path)
 
 
 class SourceItem(FileItem):
@@ -70,7 +71,7 @@ class SourceItem(FileItem):
         super().__init__("")
         self.source_name_or_path = value
         self.is_license_text = False
-        self.is_manifest_file = is_manifest_marker_file(value)
+        self.is_manifest_file = False
         self.scanoss_reference = {}
         self.matched_lines = ""  # Only for SCANOSS results
         self.fileURL = ""  # Only for SCANOSS results

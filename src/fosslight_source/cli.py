@@ -29,7 +29,7 @@ import tqdm
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
-from ._scan_item import SourceItem, resolve_kb_config, is_notice_file, extracts_manifest_license
+from ._scan_item import SourceItem, resolve_kb_config, is_notice_file, is_manifest_file, skips_manifest_license_extraction
 from ._kb_client import fetch_origin_urls_via_scan_job
 from fosslight_util.cover import dump_result_log
 from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
@@ -453,10 +453,9 @@ def merge_results(
     if manifest_licenses:
         for file_name, licenses in manifest_licenses.items():
             valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
-            # Non-UI: skip manifests with no extracted licenses.
-            # UI: keep/create the row and mark is_manifest_file even without licenses.
-            if not valid_licenses and not ui_mode:
-                continue
+            if not valid_licenses and file_name not in scancode_result:
+                if not ui_mode:
+                    continue
             item = _get_or_append_source_item(scancode_result, file_name)
             item.is_manifest_file = True
             if valid_licenses:
@@ -730,8 +729,11 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> tuple[dict, di
             if downloads:
                 spdx_downloads[rel_path_file] = downloads
 
-            if extracts_manifest_license(file_path):
-                manifest_licenses[rel_path_file] = get_manifest_licenses(file_path) or []
+            if is_manifest_file(file_path):
+                if skips_manifest_license_extraction(file_path):
+                    manifest_licenses[rel_path_file] = []
+                else:
+                    manifest_licenses[rel_path_file] = get_manifest_licenses(file_path) or []
 
     return spdx_downloads, manifest_licenses
 
