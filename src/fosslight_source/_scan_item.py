@@ -46,13 +46,31 @@ def resolve_kb_config(kb_url: str = "", kb_token: str = "") -> tuple[str, str]:
     return f"{url.rstrip('/')}/", token
 
 
+def _matches_manifest_pattern(file_path: str, patterns: list) -> bool:
+    pattern = r"({})$".format("|".join(patterns))
+    filename = os.path.basename(file_path)
+    return bool(re.match(pattern, filename, re.IGNORECASE))
+
+
+def extracts_manifest_license(file_path: str) -> bool:
+    return _matches_manifest_pattern(file_path, _manifest_license_filename)
+
+
+def is_manifest_marker_file(file_path: str) -> bool:
+    return _matches_manifest_pattern(file_path, _manifest_marker_filename)
+
+
+def is_manifest_file(file_path: str) -> bool:
+    return extracts_manifest_license(file_path) or is_manifest_marker_file(file_path)
+
+
 class SourceItem(FileItem):
 
     def __init__(self, value: str) -> None:
         super().__init__("")
         self.source_name_or_path = value
         self.is_license_text = False
-        self.is_manifest_file = False
+        self.is_manifest_file = is_manifest_marker_file(value)
         self.scanoss_reference = {}
         self.matched_lines = ""  # Only for SCANOSS results
         self.fileURL = ""  # Only for SCANOSS results
@@ -225,20 +243,3 @@ def is_notice_file(file_path: str) -> bool:
     filename = os.path.basename(file_path)
     return bool(re.match(pattern, filename, re.IGNORECASE))
 
-
-def _matches_manifest_pattern(file_path: str, patterns: list) -> bool:
-    pattern = r"({})$".format("|".join(patterns))
-    filename = os.path.basename(file_path)
-    return bool(re.match(pattern, filename, re.IGNORECASE))
-
-
-def extracts_manifest_license(file_path: str) -> bool:
-    return _matches_manifest_pattern(file_path, _manifest_license_filename)
-
-
-def is_manifest_marker_file(file_path: str) -> bool:
-    return _matches_manifest_pattern(file_path, _manifest_marker_filename)
-
-
-def is_manifest_file(file_path: str) -> bool:
-    return extracts_manifest_license(file_path) or is_manifest_marker_file(file_path)
