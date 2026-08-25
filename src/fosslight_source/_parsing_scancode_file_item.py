@@ -7,6 +7,7 @@ import os
 import logging
 import re
 import fosslight_util.constant as constant
+from fosslight_util.exclude import is_excluded_filename
 from ._license_matched import MatchedLicense
 from ._scan_item import SourceItem
 from ._scan_item import replace_word
@@ -492,6 +493,9 @@ def parsing_scancode(
                 is_dir = file.get("type", "") == "directory"
                 if (not file_path) or is_binary or is_dir:
                     logger.info(f"Skipping {file_path} because it is binary or directory")
+                    continue
+                if is_excluded_filename(file_path):
+                    logger.debug(f"Skipping {file_path} because it is an excluded filename")
                     continue
                 result_item = SourceItem(file_path)
                 if has_error:

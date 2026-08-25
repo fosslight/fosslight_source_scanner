@@ -19,7 +19,6 @@ from fosslight_util.output_format import check_output_formats_v2
 from fosslight_util.exclude import (
     EXCLUDE_DIRECTORY,
     EXCLUDE_FILE_EXTENSION,
-    EXCLUDE_FILENAME,
     PACKAGE_DIRECTORY,
 )
 
@@ -166,14 +165,14 @@ def _default_scancode_ignore_patterns(
     Directory names use path-based globs (e.g. **/tests/**) so they do not match
     the scan root directory name itself.
     Binary files are excluded separately via scancode --ignore-binaries.
+    EXCLUDE_FILENAME is not passed to ScanCode --ignore: matching many exact
+    names on a large tree is slow. Those files are dropped after parsing.
     """
     patterns = {".*"}
     for name in PACKAGE_DIRECTORY + EXCLUDE_DIRECTORY:
         patterns.add(_directory_ignore_pattern(name))
     for ext in EXCLUDE_FILE_EXTENSION:
         patterns.add(f"*.{ext}")
-    for name in EXCLUDE_FILENAME:
-        patterns.add(name)
 
     for pattern in path_to_exclude or []:
         if os.path.isabs(pattern):
