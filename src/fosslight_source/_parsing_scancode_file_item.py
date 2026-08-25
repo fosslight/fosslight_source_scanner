@@ -21,9 +21,15 @@ SPDX_LICENSE_IDENTIFIER_PATTERN = re.compile(
     r'SPDX[-\s]+License[-\s]+Identifier(?:\s*[:,-]\s*|\s+)([^\r\n]+)',
     re.IGNORECASE,
 )
+# Android Soong license_kinds string, e.g. "SPDX-license-identifier-BSD"
+SOONG_SPDX_LICENSE_KIND_PATTERN = re.compile(
+    r'SPDX-license-identifier-([A-Za-z0-9.-]+)',
+    re.IGNORECASE,
+)
 LICENSE_REF_PREFIX_PATTERN = re.compile(r'^LicenseRef-', re.IGNORECASE)
 # Trailing closers from comments and quoted lists, e.g. "MIT */", "MIT -->", or '"MIT",'.
 SPDX_DECLARATION_TRAILER_PATTERN = re.compile(r'\s*(?:\*/|-->|["\']\s*,?)\s*$')
+SPDX_DECLARATION_LINE_COMMENT_PATTERN = re.compile(r'\s//.*$')
 KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
 KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
@@ -295,11 +301,22 @@ def _omit_parens_for_two_license_expression(expression: str) -> str:
 
 
 def _clean_spdx_declaration(raw: str) -> str:
-    """Strip whitespace and trailing comment or quoted-list terminators."""
+    """Strip whitespace, line comments, and trailing comment or quoted-list terminators."""
     cleaned = (raw or "").strip()
     if not cleaned:
         return ""
-    return SPDX_DECLARATION_TRAILER_PATTERN.sub('', cleaned).strip()
+    cleaned = SPDX_DECLARATION_LINE_COMMENT_PATTERN.sub('', cleaned).strip()
+    cleaned = SPDX_DECLARATION_TRAILER_PATTERN.sub('', cleaned).strip()
+    cleaned = cleaned.strip('"\'')
+    return cleaned.strip()
+
+
+def _extract_soong_license_kind(matched_txt: str) -> str:
+    """Extract license id from Android Soong SPDX-license-identifier-* strings."""
+    matched = SOONG_SPDX_LICENSE_KIND_PATTERN.search(matched_txt or "")
+    if not matched:
+        return ""
+    return matched.group(1)
 
 
 def _strip_license_ref_prefix(token: str) -> str:
@@ -310,9 +327,14 @@ def _extract_spdx_declared_expression(matched_txt: str) -> str:
     """
     Extract SPDX-License-Identifier value from matched_text.
 
-    - Removes trailing comment closers (*/ , -->)
+    - Android Soong license_kinds (SPDX-license-identifier-*) first
+    - Removes trailing line comments and comment closers (*/, -->)
     - Strips LicenseRef- from each AND/OR token
     """
+    soong_license = _extract_soong_license_kind(matched_txt)
+    if soong_license:
+        return soong_license
+
     matched = SPDX_LICENSE_IDENTIFIER_PATTERN.search(matched_txt or "")
     if not matched:
         return ""

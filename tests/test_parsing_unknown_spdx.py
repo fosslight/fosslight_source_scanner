@@ -21,6 +21,7 @@ from fosslight_source._parsing_scancode_file_item import (
         ("// SPDX-License-Identifier, MIT", "MIT"),
         ("// SPDX-License-Identifier MIT", "MIT"),
         ('        "SPDX-license-identifier-BSD",', "BSD"),
+        ('        "SPDX-license-identifier-OFL", // by exception only', "OFL"),
         ("/* SPDX-License-Identifier: MIT */", "MIT"),
         ("<!-- SPDX-License-Identifier: MIT -->", "MIT"),
         ("# SPDX-License-Identifier: LicenseRef-MIT-like", "MIT-like"),
@@ -281,3 +282,65 @@ def test_two_license_comment_omits_outer_parentheses():
     assert success is True
     assert results[0].licenses == ["Apache-2.0", "MIT"]
     assert results[0].comment == "Apache-2.0 OR MIT"
+
+
+def test_android_bp_soong_license_kinds_without_line_comment_in_license():
+    scancode_file_list = [{
+        "path": "Android.bp",
+        "type": "file",
+        "detected_license_expression": (
+            "(apache-2.0 AND unknown-license-reference) AND (unknown-spdx AND mit)"
+        ),
+        "license_detections": [
+            {
+                "license_expression": "apache-2.0 AND unknown-license-reference",
+                "matches": [
+                    {
+                        "license_expression": "apache-2.0",
+                        "matched_text": (
+                            "// Licensed under the Apache License, Version 2.0 (the \"License\");\n"
+                            "// limitations under the License."
+                        ),
+                    },
+                    {
+                        "license_expression": "unknown-license-reference",
+                        "matched_text": "// *** THIS PACKAGE HAS SPECIAL LICENSING CONDITIONS.  PLEASE",
+                    },
+                ],
+            },
+            {
+                "license_expression": "unknown-spdx AND mit",
+                "matches": [
+                    {
+                        "license_expression": "unknown-spdx",
+                        "matched_text": '        "SPDX-license-identifier-BSD",',
+                    },
+                    {
+                        "license_expression": "mit",
+                        "matched_text": '        "SPDX-license-identifier-MIT",',
+                    },
+                    {
+                        "license_expression": "unknown-spdx",
+                        "matched_text": (
+                            '        "SPDX-license-identifier-OFL", // by exception only'
+                        ),
+                    },
+                ],
+            },
+        ],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    licenses = results[0].licenses
+    assert licenses == [
+        "Apache-2.0",
+        "unknown-license-reference",
+        "BSD",
+        "MIT",
+        "OFL",
+    ]
+    assert all("//" not in lic for lic in results[0].licenses)
+    assert all('"' not in lic for lic in results[0].licenses)
