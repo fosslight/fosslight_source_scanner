@@ -27,10 +27,6 @@ _manifest_filename = [
     r'huggingface_hub_metadata\.json$',
     r'Android\.bp$',
 ]
-# License extraction via get_manifest_licenses is skipped; ScanCode licenses are kept.
-_manifest_skip_license_extraction = [
-    r'Android\.bp$',
-]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
 SUBSTRING_LICENSE_COMMENT = "Maximum character limit (License)"
@@ -45,24 +41,6 @@ def resolve_kb_config(kb_url: str = "", kb_token: str = "") -> tuple[str, str]:
         token = (os.environ.get("KB_TOKEN") or "").strip()
 
     return f"{url.rstrip('/')}/", token
-
-
-def _matches_manifest_pattern(file_path: str, patterns: list) -> bool:
-    pattern = r"({})$".format("|".join(patterns))
-    filename = os.path.basename(file_path)
-    return bool(re.match(pattern, filename, re.IGNORECASE))
-
-
-def extracts_manifest_license(file_path: str) -> bool:
-    return _matches_manifest_pattern(file_path, _manifest_filename)
-
-
-def skips_manifest_license_extraction(file_path: str) -> bool:
-    return _matches_manifest_pattern(file_path, _manifest_skip_license_extraction)
-
-
-def is_manifest_file(file_path: str) -> bool:
-    return extracts_manifest_license(file_path)
 
 
 class SourceItem(FileItem):
@@ -241,6 +219,12 @@ class SourceItem(FileItem):
 
 def is_notice_file(file_path: str) -> bool:
     pattern = r"({})(?<!w)".format("|".join(_notice_filename))
+    filename = os.path.basename(file_path)
+    return bool(re.match(pattern, filename, re.IGNORECASE))
+
+
+def is_manifest_file(file_path: str) -> bool:
+    pattern = r"({})$".format("|".join(_manifest_filename))
     filename = os.path.basename(file_path)
     return bool(re.match(pattern, filename, re.IGNORECASE))
 

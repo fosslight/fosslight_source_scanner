@@ -7,7 +7,6 @@ from unittest.mock import patch
 from fosslight_source._scan_item import (
     SourceItem,
     is_manifest_file,
-    skips_manifest_license_extraction,
 )
 from fosslight_source.cli import merge_results, metadata_collector
 
@@ -16,11 +15,6 @@ def test_is_manifest_file_recognizes_android_bp():
     assert is_manifest_file("/tmp/module/Android.bp") is True
     assert is_manifest_file("/tmp/module/android.bp") is True
     assert is_manifest_file("/tmp/module/package.json") is True
-
-
-def test_skips_manifest_license_extraction_for_android_bp():
-    assert skips_manifest_license_extraction("/tmp/module/Android.bp") is True
-    assert skips_manifest_license_extraction("/tmp/module/package.json") is False
 
 
 def test_metadata_collector_adds_android_bp_without_license_extraction(tmp_path):

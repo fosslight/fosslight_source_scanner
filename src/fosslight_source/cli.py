@@ -29,7 +29,7 @@ import tqdm
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
-from ._scan_item import SourceItem, resolve_kb_config, is_notice_file, is_manifest_file, skips_manifest_license_extraction
+from ._scan_item import SourceItem, resolve_kb_config, is_notice_file, is_manifest_file
 from ._kb_client import fetch_origin_urls_via_scan_job
 from fosslight_util.cover import dump_result_log
 from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
@@ -730,7 +730,8 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> tuple[dict, di
                 spdx_downloads[rel_path_file] = downloads
 
             if is_manifest_file(file_path):
-                if skips_manifest_license_extraction(file_path):
+                # Android.bp: ScanCode licenses are kept; skip get_manifest_licenses.
+                if os.path.basename(file_path).lower() == 'android.bp':
                     manifest_licenses[rel_path_file] = []
                 else:
                     manifest_licenses[rel_path_file] = get_manifest_licenses(file_path) or []
