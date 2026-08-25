@@ -15,7 +15,7 @@ replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "lic
 _notice_filename = ['licen[cs]e[s]?', 'notice[s]?', 'legal', 'copyright[s]?', 'copying*', 'patent[s]?', 'unlicen[cs]e', 'eula',
                     '[a,l]?gpl[-]?[1-3]?[.,-,_]?[0-1]?', 'mit', 'bsd[-]?[0-4]?', 'bsd[-]?[0-4][-]?clause[s]?',
                     'apache[-,_]?[1-2]?[.,-,_]?[0-2]?']
-_manifest_filename = [
+_manifest_license_filename = [
     r'.*\.pom$',
     r'package\.json$',
     r'composer\.json$',
@@ -25,6 +25,10 @@ _manifest_filename = [
     r'.*\.podspec$',
     r'Cargo\.toml$',
     r'huggingface_hub_metadata\.json$',
+]
+# Manifest marker only: is_manifest_file=True, but license comes from ScanCode.
+_manifest_marker_filename = [
+    r'Android\.bp$',
 ]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
@@ -222,7 +226,19 @@ def is_notice_file(file_path: str) -> bool:
     return bool(re.match(pattern, filename, re.IGNORECASE))
 
 
-def is_manifest_file(file_path: str) -> bool:
-    pattern = r"({})$".format("|".join(_manifest_filename))
+def _matches_manifest_pattern(file_path: str, patterns: list) -> bool:
+    pattern = r"({})$".format("|".join(patterns))
     filename = os.path.basename(file_path)
     return bool(re.match(pattern, filename, re.IGNORECASE))
+
+
+def extracts_manifest_license(file_path: str) -> bool:
+    return _matches_manifest_pattern(file_path, _manifest_license_filename)
+
+
+def is_manifest_marker_file(file_path: str) -> bool:
+    return _matches_manifest_pattern(file_path, _manifest_marker_filename)
+
+
+def is_manifest_file(file_path: str) -> bool:
+    return extracts_manifest_license(file_path) or is_manifest_marker_file(file_path)
