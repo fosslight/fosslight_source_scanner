@@ -29,13 +29,12 @@ import tqdm
 import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
-from ._scan_item import SourceItem, resolve_kb_config, is_notice_file
+from ._scan_item import SourceItem, resolve_kb_config, is_notice_file, is_manifest_file
 from ._kb_client import fetch_origin_urls_via_scan_job
 from fosslight_util.cover import dump_result_log
 from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
 from fosslight_util.oss_item import ScannerItem
 from typing import Optional, Tuple
-from ._scan_item import is_manifest_file
 import shutil
 from ._merge import (
     _add_pre_merge_sheet,

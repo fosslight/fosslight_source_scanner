@@ -3,6 +3,8 @@ tag-template: 'v$RESOLVED_VERSION'
 categories:
   - title: '🚀 Features'
     label: 'enhancement'
+  - title: '✨ Improvements'
+    label: 'improvement'
   - title: '🐛 Hotfixes'
     labels:
       - 'bug'
