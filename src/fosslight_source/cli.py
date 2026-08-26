@@ -453,11 +453,11 @@ def merge_results(
     if manifest_licenses:
         for file_name, licenses in manifest_licenses.items():
             valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
-            # Non-UI: skip manifests with no extracted licenses.
-            # UI: keep/create the row and mark is_manifest_file even without licenses.
-            if not valid_licenses and not ui_mode:
+            item = _get_or_append_source_item(
+                scancode_result, file_name, append=bool(valid_licenses) or ui_mode
+            )
+            if item is None:
                 continue
-            item = _get_or_append_source_item(scancode_result, file_name)
             item.is_manifest_file = True
             if valid_licenses:
                 # overwrite existing detected licenses with manifest-provided licenses
@@ -500,9 +500,13 @@ def merge_results(
     return scancode_result, kb_status_message, kb_requested_count, kb_returned_count
 
 
-def _get_or_append_source_item(scancode_result: list, file_name: str) -> SourceItem:
+def _get_or_append_source_item(
+    scancode_result: list, file_name: str, append: bool = True
+) -> Optional[SourceItem]:
     if file_name in scancode_result:
         return scancode_result[scancode_result.index(file_name)]
+    if not append:
+        return None
     item = SourceItem(file_name)
     scancode_result.append(item)
     return item
@@ -705,7 +709,7 @@ def run_scanners(
     return success, result_log.get(RESULT_KEY, ""), scan_item, license_list, scanoss_result
 
 
-def metadata_collector(path_to_scan: str, excluded_files: set) -> dict:
+def metadata_collector(path_to_scan: str, excluded_files: set) -> tuple[dict, dict]:
     """
     Collect metadata for merging.
 

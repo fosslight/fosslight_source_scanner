@@ -25,6 +25,7 @@ _manifest_filename = [
     r'.*\.podspec$',
     r'Cargo\.toml$',
     r'huggingface_hub_metadata\.json$',
+    r'Android\.bp$',
 ]
 MAX_LICENSE_LENGTH = 200
 MAX_LICENSE_TOTAL_LENGTH = 600
