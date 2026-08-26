@@ -198,6 +198,8 @@ def get_licenses_from_pyproject_toml(file_path: str) -> list[str]:
                     poetry_license = poetry_tbl.get('license')
                     if isinstance(poetry_license, str) and poetry_license.strip():
                         return [poetry_license.strip()]
+            # Structured parse succeeded; do not re-read/regex the same file.
+            return []
     except Exception as ex:
         logger.info(f"Failed to parse pyproject.toml via toml parser for {file_path}: {ex}")
 
