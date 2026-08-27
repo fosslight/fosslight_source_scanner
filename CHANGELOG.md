@@ -1,5 +1,23 @@
 # Changelog
 
+## v2.3.9 (27/08/2026)
+## Changes
+## ✨ Improvements
+
+- Mark Android.bp as manifest without manifest license extraction. @soimkim (#312)
+- Filter excluded filenames after ScanCode instead of --ignore @soimkim (#309)
+
+## 🐛 Hotfixes
+
+-Restore Soong SPDX-license-identifier from unknown-spdx matches. @soimkim (#311)
+
+## 🔧 Maintenance
+
+- Support poetry license metadata @JustinWonjaePark (#310)
+- Change logging level of SPDX extraction failures @JustinWonjaePark (#308)
+
+---
+
 ## v2.3.8 (20/08/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -322,11 +340,3 @@
 
 - Add how to use -e option @bjk7119 (#223)
 - Exclude default paths from ScanCode @soimkim (#224)
-
----
-
-## v2.1.17 (24/12/2025)
-## Changes
-## 🔧 Maintenance
-
-- Update supported format @dd-jy (#220)
