@@ -30,7 +30,7 @@ import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, resolve_kb_config, is_notice_file, is_manifest_file
-from ._kb_client import fetch_origin_urls_via_scan_job
+from ._kb_client import create_kb_ssl_context, fetch_origin_urls_via_scan_job
 from fosslight_util.cover import dump_result_log
 from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
 from fosslight_util.oss_item import ScannerItem
@@ -295,7 +295,7 @@ def check_kb_server_reachable(kb_url: str, kb_token: str = "") -> bool:
             request = urllib.request.Request(f"{kb_url}health", method='GET')
             if kb_token:
                 request.add_header('Authorization', f'Bearer {kb_token}')
-            with urllib.request.urlopen(request, timeout=10) as response:
+            with urllib.request.urlopen(request, timeout=10, context=create_kb_ssl_context()) as response:
                 logger.debug(f"KB server is reachable. Response status: {response.status}")
                 return True
         except urllib.error.HTTPError:

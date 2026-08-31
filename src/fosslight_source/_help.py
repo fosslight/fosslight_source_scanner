@@ -45,6 +45,8 @@ _HELP_MESSAGE_SOURCE_SCANNER = f"""
     --hide_progress        Hide the progress bar during scanning
     --kb_url <url>         KB API URL (priority: parameter > KB_URL env > default)
     --kb_token <token>     KB bearer token (priority: parameter > KB_TOKEN env)
+                           HTTPS uses the OS certificate store. Set KB_SSL_VERIFY=false
+                           only if certificate verification must be skipped.
 
     💡 Examples
     ────────────────────────────────────────────────────────────────────

@@ -5,6 +5,8 @@
 
 import json
 import logging
+import os
+import ssl
 import time
 import urllib.error
 import urllib.request
@@ -19,6 +21,31 @@ _SCAN_JOB_POLL_MAX_INTERVAL_SEC = 10.0
 _SCAN_JOB_REQUEST_TIMEOUT_SEC = 30
 _SCAN_JOB_MIN_WAIT_SEC = 300
 _SCAN_JOB_PER_HASH_SEC = 35
+_KB_SSL_VERIFY_FALSE = {"0", "false", "no", "off"}
+_logged_insecure_kb_ssl = False
+
+
+def kb_ssl_verify_enabled() -> bool:
+    raw = os.environ.get("KB_SSL_VERIFY", "true")
+    return raw.strip().lower() not in _KB_SSL_VERIFY_FALSE
+
+
+def create_kb_ssl_context() -> ssl.SSLContext:
+    """TLS context for KB HTTPS. Uses the OS trust store (Windows store, like the browser)."""
+    global _logged_insecure_kb_ssl
+    if not kb_ssl_verify_enabled():
+        if not _logged_insecure_kb_ssl:
+            logger.warning("KB TLS certificate verification is disabled (KB_SSL_VERIFY)")
+            _logged_insecure_kb_ssl = True
+        ctx = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        return ctx
+    try:
+        import truststore
+        return truststore.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+    except ImportError:
+        return ssl.create_default_context()
 
 
 def _kb_request(
@@ -40,7 +67,7 @@ def _kb_request(
     if kb_token:
         request.add_header("Authorization", f"Bearer {kb_token}")
 
-    with urllib.request.urlopen(request, timeout=timeout) as response:
+    with urllib.request.urlopen(request, timeout=timeout, context=create_kb_ssl_context()) as response:
         body = response.read().decode()
         return json.loads(body) if body else {}
 
