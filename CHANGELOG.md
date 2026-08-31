@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.10 (31/08/2026)
+## Changes
+## 🐛 Hotfixes
+
+- Use os trust store for https kb @soimkim (#313)
+
+---
+
 ## v2.3.9 (27/08/2026)
 ## Changes
 ## ✨ Improvements
@@ -9,7 +17,7 @@
 
 ## 🐛 Hotfixes
 
--Restore Soong SPDX-license-identifier from unknown-spdx matches. @soimkim (#311)
+- Restore Soong SPDX-license-identifier from unknown-spdx matches. @soimkim (#311)
 
 ## 🔧 Maintenance
 
@@ -327,16 +335,3 @@
 ## 🐛 Hotfixes
 
 - Update fosslight_util minimun version @dd-jy (#225)
-
----
-
-## v2.1.18 (07/01/2026)
-## Changes
-## 🐛 Hotfixes
-
-- Improve path exclusion handling in scancode @soimkim (#222)
-
-## 🔧 Maintenance
-
-- Add how to use -e option @bjk7119 (#223)
-- Exclude default paths from ScanCode @soimkim (#224)
