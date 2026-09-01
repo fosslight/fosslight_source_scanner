@@ -26,6 +26,11 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
 _PKG_NAME = "fosslight_source"
 
+_MAX_IN_MEMORY_ENV = "FOSSLIGHT_SCANCODE_MAX_IN_MEMORY"
+_SCANCODE_DEFAULT_MAX_IN_MEMORY = 10000
+_MEMORY_FRACTION_FOR_CODEBASE = 0.4
+_BYTES_PER_RESOURCE = 4096
+
 try:
     from click.core import UNSET as _CLICK_UNSET  # Click >= 8.3
     _HAS_CLICK_UNSET = True
@@ -182,6 +187,39 @@ def _default_scancode_ignore_patterns(
     return tuple(sorted(patterns))
 
 
+def _available_memory_bytes() -> int:
+    try:
+        with open("/proc/meminfo") as meminfo:
+            for line in meminfo:
+                if line.startswith("MemAvailable:"):
+                    return int(line.split()[1]) * 1024
+    except OSError:
+        pass
+    try:
+        return os.sysconf("SC_PAGE_SIZE") * os.sysconf("SC_AVPHYS_PAGES")
+    except (AttributeError, ValueError, OSError):
+        return 0
+
+
+def _resolve_max_in_memory() -> int:
+    """
+    Past --max-in-memory resources, ScanCode caches every Resource in its own
+    file under the temp dir, which makes the inventory and every codebase walk
+    disk bound. Raise the threshold to whatever memory allows and let ScanCode
+    keep spilling beyond that.
+    """
+    override = os.environ.get(_MAX_IN_MEMORY_ENV, "").strip()
+    if override:
+        try:
+            return int(override)
+        except ValueError:
+            logger.warning(f"Ignoring invalid {_MAX_IN_MEMORY_ENV}={override}")
+
+    budget = _available_memory_bytes() * _MEMORY_FRACTION_FOR_CODEBASE
+    resolved = int(budget // _BYTES_PER_RESOURCE)
+    return max(resolved, _SCANCODE_DEFAULT_MAX_IN_MEMORY)
+
+
 def run_scan(
     path_to_scan: str, output_file_name: str = "",
     _write_json_file: bool = False, num_cores: int = -1,
@@ -252,9 +290,12 @@ def run_scan(
                     path_to_exclude, abs_path_to_scan
                 )
                 logger.debug(f"Scancode ignore patterns: {len(ignore_tuple)}")
+                max_in_memory = _resolve_max_in_memory()
+                logger.debug(f"Scancode max_in_memory: {max_in_memory}")
 
                 kwargs = {
                     "max_depth": 100,
+                    "max_in_memory": max_in_memory,
                     "strip_root": True,
                     "license": True,
                     "copyright": True,
