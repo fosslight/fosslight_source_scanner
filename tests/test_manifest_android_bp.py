@@ -49,7 +49,7 @@ def test_merge_results_sets_manifest_flag_without_overwriting_scancode_licenses(
 
     assert len(merged) == 1
     assert merged[0].is_manifest_file is True
-    assert merged[0].licenses == ["Apache-2.0", "MIT", "BSD"]
+    assert merged[0].licenses == ["Apache-2.0", "BSD", "MIT"]
 
 
 def test_merge_results_skips_android_bp_not_in_scancode_result():

@@ -111,7 +111,8 @@ def _get_top_merge_values(scan_items: list, value_getter) -> list:
             normalized_value = _normalize_merge_text(value)
             if normalized_value:
                 values.append(normalized_value)
-    return [value for value, _ in Counter(values).most_common(3)]
+    ranked = sorted(Counter(values).items(), key=lambda entry: (-entry[1], entry[0]))
+    return [value for value, _ in ranked[:3]]
 
 
 def _can_merge_folder(scan_items: list) -> bool:

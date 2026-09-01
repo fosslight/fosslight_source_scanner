@@ -7,6 +7,7 @@ import os
 import logging
 import re
 import hashlib
+from bisect import insort
 import fosslight_util.constant as constant
 from fosslight_util.oss_item import FileItem, OssItem, get_checksum_sha1
 
@@ -78,13 +79,13 @@ class SourceItem(FileItem):
     def licenses(self, value: list) -> None:
         if value:
             max_length_exceed = False
-            for new_lic in value:
+            for new_lic in sorted(value):
                 if new_lic:
                     if len(new_lic) > MAX_LICENSE_LENGTH:
                         new_lic = new_lic[:MAX_LICENSE_LENGTH]
                         max_length_exceed = True
                     if new_lic not in self._licenses:
-                        self._licenses.append(new_lic)
+                        insort(self._licenses, new_lic)
                         if len(",".join(self._licenses)) > MAX_LICENSE_TOTAL_LENGTH:
                             self._licenses.remove(new_lic)
                             max_length_exceed = True
@@ -180,10 +181,11 @@ class SourceItem(FileItem):
         kb_origin_urls: dict[str, str] | None = None,
     ) -> None:
         self.oss_items = []
+        copyrights = "\n".join(self.copyright)
         if self.download_location:
             for url in self.download_location:
                 item = OssItem(self.oss_name, self.oss_version, self.licenses, url)
-                item.copyright = "\n".join(self.copyright)
+                item.copyright = copyrights
                 item.comment = self.comment
                 self.oss_items.append(item)
         else:
@@ -198,7 +200,7 @@ class SourceItem(FileItem):
                         oss_name, oss_version, download_url = self._apply_kb_origin_url(origin_url)
                         item = OssItem(oss_name, oss_version, self.licenses, download_url)
 
-            item.copyright = "\n".join(self.copyright)
+            item.copyright = copyrights
             item.comment = self.comment
             self.oss_items.append(item)
 

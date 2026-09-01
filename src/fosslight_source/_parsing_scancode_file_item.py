@@ -605,8 +605,10 @@ def parsing_scancode(
                     file.get("percentage_of_license_text", 0) > 90 and not is_source_file
                 )
 
-                result_item.copyright = filter_fsf_copyright_from_gpl_license_text(
-                    copyright_value_list, license_detected, result_item.is_license_text
+                result_item.copyright = sorted(
+                    filter_fsf_copyright_from_gpl_license_text(
+                        copyright_value_list, license_detected, result_item.is_license_text
+                    )
                 )
 
                 if len(license_detected) > 1:

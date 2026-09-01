@@ -18,7 +18,7 @@ def test_scenario1_android_bp_keeps_scancode_licenses():
 
     assert len(merged) == 1
     assert merged[0].is_manifest_file is True
-    assert merged[0].licenses == ["Apache-2.0", "unknown-license-reference", "BSD", "MIT", "OFL"]
+    assert merged[0].licenses == ["Apache-2.0", "BSD", "MIT", "OFL", "unknown-license-reference"]
 
 
 def test_scenario2_package_json_manifest_fail_keeps_scancode_licenses():
