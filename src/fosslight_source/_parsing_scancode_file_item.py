@@ -6,6 +6,7 @@
 import os
 import logging
 import re
+from functools import lru_cache
 import fosslight_util.constant as constant
 from fosslight_util.exclude import is_excluded_filename
 from ._license_matched import MatchedLicense
@@ -484,12 +485,24 @@ def build_comment_from_detected_expression(
     )
 
 
+@lru_cache(maxsize=65536)
 def get_license_expression_spdx(license_expression: str) -> str:
     if not license_expression or not license_expression.strip():
         return ""
     try:
-        from licensedcode.cache import build_spdx_license_expression
-        result = build_spdx_license_expression(license_expression.strip())
+        from licensedcode.cache import (
+            build_spdx_license_expression,
+            get_licenses_db,
+            get_licensing,
+        )
+        expression = license_expression.strip()
+        # licensedcode re-reads the whole license database from disk for every
+        # key it cannot resolve, and then raises anyway. Screen the keys first
+        # so unknown tokens stay cheap.
+        licenses_db = get_licenses_db()
+        if any(key not in licenses_db for key in get_licensing().license_keys(expression)):
+            return ""
+        result = build_spdx_license_expression(expression)
         if result is None:
             return ""
         if isinstance(result, str) and result.lower().startswith("licenseref-"):
@@ -592,8 +605,10 @@ def parsing_scancode(
                     file.get("percentage_of_license_text", 0) > 90 and not is_source_file
                 )
 
-                result_item.copyright = filter_fsf_copyright_from_gpl_license_text(
-                    copyright_value_list, license_detected, result_item.is_license_text
+                result_item.copyright = sorted(
+                    filter_fsf_copyright_from_gpl_license_text(
+                        copyright_value_list, license_detected, result_item.is_license_text
+                    )
                 )
 
                 if len(license_detected) > 1:

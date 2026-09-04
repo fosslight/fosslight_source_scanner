@@ -126,7 +126,7 @@ def test_unknown_spdx_comment_preserves_and_or_from_detected_expression():
     success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
-    assert results[0].licenses == ["NEW", "DApache-2.0", "GPL-2.0"]
+    assert results[0].licenses == ["DApache-2.0", "GPL-2.0", "NEW"]
     assert "unknown-license-reference" not in [lic.lower() for lic in results[0].licenses]
     assert results[0].comment == "NEW OR DApache-2.0 AND GPL-2.0"
 
@@ -337,10 +337,10 @@ def test_android_bp_soong_license_kinds_without_line_comment_in_license():
     licenses = results[0].licenses
     assert licenses == [
         "Apache-2.0",
-        "unknown-license-reference",
         "BSD",
         "MIT",
         "OFL",
+        "unknown-license-reference",
     ]
     assert all("//" not in lic for lic in results[0].licenses)
     assert all('"' not in lic for lic in results[0].licenses)
