@@ -35,6 +35,7 @@ KEYWORD_SPDX_ID = r'SPDX-License-Identifier\s*[\S]+'
 KEYWORD_DOWNLOAD_LOC = r'DownloadLocation\s*[\S]+'
 KEYWORD_SCANCODE_UNKNOWN = "unknown-spdx"
 KEYWORD_UNKNOWN_LICENSE_REFERENCE = "unknown-license-reference"
+HTTP_URL_PATTERN = re.compile(r'https?://', re.IGNORECASE)
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND_OR = re.compile(r"(?<=\s)(?:and|or)(?=\s)", re.IGNORECASE)
 KEY_AND_OR_CAPTURE = re.compile(r"(?<=\s)(and|or)(?=\s)", re.IGNORECASE)
@@ -62,25 +63,41 @@ def filter_fsf_copyright_from_gpl_license_text(
     return [c for c in copyrights if FSF_IN_COPYRIGHT not in c.lower()]
 
 
-def _expression_has_non_unknown_license_reference(license_expression: str) -> bool:
+def _expression_has_other_license(license_expression: str) -> bool:
     if not license_expression:
         return False
     for token in split_spdx_expression(license_expression.lower()):
         token = token.strip()
-        if token and KEYWORD_UNKNOWN_LICENSE_REFERENCE not in token:
+        if (
+            token
+            and KEYWORD_UNKNOWN_LICENSE_REFERENCE not in token
+            and token not in REMOVE_LICENSE
+        ):
             return True
     return False
 
 
-def _matched_texts_with_other_licenses(matches: list) -> set:
-    """matched_text values that also produced a non-unknown-license-reference license."""
-    texts = set()
+def _file_has_other_license(matches: list) -> bool:
+    """Return whether a file has a license other than unknown-license-reference."""
     for matched_lic in matches or []:
-        matched_txt = matched_lic.get("matched_text") or ""
         license_expression = matched_lic.get("license_expression") or ""
-        if matched_txt and _expression_has_non_unknown_license_reference(license_expression):
-            texts.add(matched_txt)
-    return texts
+        if _expression_has_other_license(license_expression):
+            return True
+    return False
+
+
+def _matched_text_has_http_url(matched_text: str) -> bool:
+    """Return whether matched text contains an HTTP or HTTPS URL."""
+    return bool(HTTP_URL_PATTERN.search(matched_text or ""))
+
+
+def _should_keep_unknown_license_reference(
+    matched_text: str, has_other_license_in_file: bool
+) -> bool:
+    return (
+        not has_other_license_in_file
+        and _matched_text_has_http_url(matched_text)
+    )
 
 
 def get_error_from_header(header_item: list) -> Tuple[bool, str]:
@@ -425,23 +442,25 @@ def _build_unknown_spdx_replacement_queue(matches: list) -> list[str]:
 
 
 def _should_suppress_unknown_license_reference(
-    matches: list, matched_texts_with_other_licenses: set
+    matches: list, has_other_license_in_file: bool
 ) -> bool:
+    has_unknown_license_reference = False
     for matched_lic in matches or []:
         expr = (matched_lic.get("license_expression") or "").lower()
-        matched_txt = matched_lic.get("matched_text") or ""
-        if (
-            KEYWORD_UNKNOWN_LICENSE_REFERENCE in expr
-            and matched_txt in matched_texts_with_other_licenses
+        if KEYWORD_UNKNOWN_LICENSE_REFERENCE not in expr:
+            continue
+        has_unknown_license_reference = True
+        if _should_keep_unknown_license_reference(
+            matched_lic.get("matched_text") or "", has_other_license_in_file
         ):
-            return True
-    return False
+            return False
+    return has_unknown_license_reference
 
 
 def build_comment_from_detected_expression(
     detected_expression: str,
     matches: list,
-    matched_texts_with_other_licenses: set,
+    suppress_unknown_license_reference: bool,
 ) -> str:
     """
     Rebuild comment from detected expression.
@@ -471,14 +490,11 @@ def build_comment_from_detected_expression(
         )
 
     replacements = _build_unknown_spdx_replacement_queue(matches)
-    suppress_ulr = _should_suppress_unknown_license_reference(
-        matches, matched_texts_with_other_licenses
-    )
     tree = _parse_license_expression_tokens(_tokenize_license_expression(expr))
     if tree is None:
         return ""
     transformed = _transform_license_expr_node(
-        tree, replacements, [0], suppress_ulr
+        tree, replacements, [0], suppress_unknown_license_reference
     )
     return _omit_parens_for_two_license_expression(
         _serialize_license_expr_node(transformed)
@@ -558,7 +574,12 @@ def parsing_scancode(
                 all_matches = []
                 for lic in licenses or []:
                     all_matches.extend(lic.get("matches") or [])
-                matched_texts_with_other_licenses = _matched_texts_with_other_licenses(all_matches)
+                has_other_license_in_file = _file_has_other_license(all_matches)
+                suppress_unknown_license_reference = (
+                    _should_suppress_unknown_license_reference(
+                        all_matches, has_other_license_in_file
+                    )
+                )
                 for lic in licenses or []:
                     matched_lic_list = lic.get("matches", [])
                     for matched_lic in matched_lic_list:
@@ -578,7 +599,9 @@ def parsing_scancode(
                                         continue
                                     if (
                                         KEYWORD_UNKNOWN_LICENSE_REFERENCE in found_lic.lower()
-                                        and matched_txt in matched_texts_with_other_licenses
+                                        and not _should_keep_unknown_license_reference(
+                                            matched_txt, has_other_license_in_file
+                                        )
                                     ):
                                         continue
                                     if KEYWORD_SCANCODE_UNKNOWN in found_lic.lower():
@@ -618,6 +641,7 @@ def parsing_scancode(
                         resolved_unknown_spdx
                         or KEYWORD_SCANCODE_UNKNOWN in detected_expression.lower()
                         or "licenseref-scancode-unknown-spdx" in detected_expression_spdx.lower()
+                        or suppress_unknown_license_reference
                     ):
                         # Prefer non-SPDX expression so unknown-spdx tokens map cleanly.
                         # Comment only for dual-license style expressions that include OR.
@@ -626,7 +650,7 @@ def parsing_scancode(
                             result_item.comment = build_comment_from_detected_expression(
                                 source_expression,
                                 all_matches,
-                                matched_texts_with_other_licenses,
+                                suppress_unknown_license_reference,
                             )
                     else:
                         license_expression = detected_expression_spdx or detected_expression

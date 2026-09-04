@@ -9,7 +9,9 @@ from fosslight_source._parsing_scancode_file_item import (
     _declared_licenses_from_matched_text,
     build_comment_from_detected_expression,
     parsing_scancode,
-    _matched_texts_with_other_licenses,
+    _file_has_other_license,
+    _matched_text_has_http_url,
+    _should_suppress_unknown_license_reference,
 )
 
 
@@ -157,6 +159,168 @@ def test_unknown_license_reference_suppressed_when_same_matched_text_has_other_l
     assert results[0].licenses == ["GPL-2.0"]
 
 
+@pytest.mark.parametrize(
+    "matched_text",
+    [
+        "License terms: http://example.com/license",
+        "License terms: https://example.com/license",
+        "License terms: HTTPS://example.com/license",
+    ],
+)
+def test_unknown_license_reference_kept_when_it_is_only_license_with_url(matched_text):
+    scancode_file_list = [{
+        "path": "reference.txt",
+        "type": "file",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "unknown-license-reference",
+                "matched_text": matched_text,
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, license_list = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["unknown-license-reference"]
+    assert [item.matched_text for item in license_list.values()] == [matched_text]
+
+
+@pytest.mark.parametrize("matched_text", ["See the accompanying license", "", None])
+def test_unknown_license_reference_suppressed_without_url(matched_text):
+    scancode_file_list = [{
+        "path": "reference.txt",
+        "type": "file",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "unknown-license-reference",
+                "matched_text": matched_text,
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, license_list = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == []
+    assert license_list == {}
+
+
+def test_unknown_license_reference_suppressed_by_other_license_in_same_file():
+    reference_text = "License terms: https://example.com/license"
+    scancode_file_list = [{
+        "path": "mixed.txt",
+        "type": "file",
+        "detected_license_expression": (
+            "unknown-license-reference OR mit OR apache-2.0"
+        ),
+        "license_detections": [{
+            "matches": [
+                {
+                    "license_expression": "unknown-license-reference",
+                    "matched_text": reference_text,
+                },
+                {
+                    "license_expression": "mit",
+                    "matched_text": "Permission is hereby granted, free of charge...",
+                },
+                {
+                    "license_expression": "apache-2.0",
+                    "matched_text": "Licensed under the Apache License, Version 2.0",
+                },
+            ],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, license_list = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["MIT", "Apache-2.0"]
+    assert results[0].comment == "MIT OR Apache-2.0"
+    assert all(
+        item.license != "unknown-license-reference"
+        for item in license_list.values()
+    )
+
+
+def test_unknown_license_reference_filter_is_scoped_to_each_file():
+    reference_text = "License terms: https://example.com/license"
+    scancode_file_list = [
+        {
+            "path": "reference.txt",
+            "type": "file",
+            "license_detections": [{
+                "matches": [{
+                    "license_expression": "unknown-license-reference",
+                    "matched_text": reference_text,
+                }],
+            }],
+            "copyrights": [],
+        },
+        {
+            "path": "mit.txt",
+            "type": "file",
+            "license_detections": [{
+                "matches": [{
+                    "license_expression": "mit",
+                    "matched_text": "Permission is hereby granted, free of charge...",
+                }],
+            }],
+            "copyrights": [],
+        },
+    ]
+
+    success, results, _messages, _license_list = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["unknown-license-reference"]
+    assert results[1].licenses == ["MIT"]
+
+
+def test_only_url_backed_unknown_license_reference_is_reported():
+    valid_text = "License terms: https://example.com/license"
+    invalid_text = "See the accompanying license"
+    scancode_file_list = [{
+        "path": "references.txt",
+        "type": "file",
+        "license_detections": [{
+            "matches": [
+                {
+                    "license_expression": "unknown-license-reference",
+                    "matched_text": invalid_text,
+                },
+                {
+                    "license_expression": "unknown-license-reference",
+                    "matched_text": valid_text,
+                },
+            ],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, license_list = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["unknown-license-reference"]
+    assert [item.matched_text for item in license_list.values()] == [valid_text]
+
+
+@pytest.mark.parametrize(
+    ("matched_text", "expected"),
+    [
+        ("http://example.com/license", True),
+        ("HTTPS://example.com/license", True),
+        ("ftp://example.com/license", False),
+        (None, False),
+    ],
+)
+def test_matched_text_has_http_url(matched_text, expected):
+    assert _matched_text_has_http_url(matched_text) is expected
+
+
 def test_licenseref_tokens_stripped_from_unknown_spdx_and_expression():
     scancode_file_list = [{
         "path": "refs.py",
@@ -196,11 +360,11 @@ def test_build_comment_from_detected_expression_helper():
             "matched_text": matched_same,
         },
     ]
-    other_texts = _matched_texts_with_other_licenses(matches)
+    has_other_license = _file_has_other_license(matches)
     comment = build_comment_from_detected_expression(
         "(unknown-spdx OR unknown-spdx) AND unknown-license-reference AND gpl-2.0",
         matches,
-        other_texts,
+        _should_suppress_unknown_license_reference(matches, has_other_license),
     )
     assert comment == "NEW OR DApache-2.0 AND GPL-2.0"
 
@@ -216,7 +380,7 @@ def test_comment_without_parens_uses_operator_before_kept_token():
     comment = build_comment_from_detected_expression(
         "mit OR unknown-license-reference AND apache-2.0",
         matches,
-        {matched_same},
+        True,
     )
     assert comment == "MIT AND Apache-2.0"
 
@@ -232,7 +396,7 @@ def test_comment_with_parens_preserves_or_group():
     comment = build_comment_from_detected_expression(
         "mit OR (unknown-license-reference AND apache-2.0)",
         matches,
-        {matched_same},
+        True,
     )
     assert comment == "MIT OR Apache-2.0"
 
@@ -248,7 +412,7 @@ def test_comment_with_parens_preserves_and_after_group():
     comment = build_comment_from_detected_expression(
         "(mit OR unknown-license-reference) AND apache-2.0",
         matches,
-        {matched_same},
+        True,
     )
     assert comment == "MIT AND Apache-2.0"
 
