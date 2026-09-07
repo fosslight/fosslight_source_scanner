@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.3.11 (07/09/2026)
+## Changes
+## 🚀 Features
+
+- Detect binaries in parallel during pre-scan @soimkim (#314)
+
+## 🔧 Maintenance
+
+- Own EXCLUDE_FILENAME_SOURCE in source scanner @soimkim (#316)
+- Filter non-URL unknown license references @JustinWonjaePark (#315)
+
+---
+
 ## v2.3.10 (31/08/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -327,11 +340,3 @@
 ## 🔧 Maintenance
 
 - Remove duplication in skipped path @soimkim (#226)
-
----
-
-## v2.1.19 (07/01/2026)
-## Changes
-## 🐛 Hotfixes
-
-- Update fosslight_util minimun version @dd-jy (#225)
