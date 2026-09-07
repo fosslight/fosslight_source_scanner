@@ -5,6 +5,7 @@
 
 import logging
 import fosslight_util.constant as constant
+from ._exclude import is_excluded_source_filename
 from ._scan_item import SourceItem
 from ._scan_item import replace_word
 from typing import Tuple
@@ -39,7 +40,7 @@ def parsing_scan_result(scanoss_report: dict, excluded_files: set = None) -> Tup
 
     for file_path, findings in scanoss_report.items():
         file_path_normalized = file_path.replace('\\', '/')
-        if file_path_normalized in excluded_files:
+        if file_path_normalized in excluded_files or is_excluded_source_filename(file_path_normalized):
             continue
         result_item = SourceItem(file_path)
 
