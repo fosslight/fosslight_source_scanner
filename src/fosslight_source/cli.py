@@ -22,6 +22,7 @@ from fosslight_util.correct import correct_with_yaml
 from fosslight_util.parsing_yaml import SUPPORT_OSS_INFO_FILES
 from .run_scancode import run_scan
 from fosslight_util.exclude import get_excluded_paths
+from ._exclude import EXCLUDE_FILENAME_SOURCE, is_excluded_source_filename
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
@@ -380,7 +381,8 @@ def _collect_kb_file_hashes(
 
     for file_path in tqdm.tqdm(files_to_scan, desc="KB Hashing", disable=hide_progress):
         rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
-        if rel_path in scancode_paths or rel_path in excluded_files or is_notice_file(file_path):
+        if (rel_path in scancode_paths or rel_path in excluded_files
+                or is_excluded_source_filename(rel_path) or is_notice_file(file_path)):
             continue
         extra_item = SourceItem(rel_path)
         md5_hash, _wfp = extra_item._get_hash(path_to_scan)
@@ -629,7 +631,9 @@ def run_scanners(
                 (excluded_path_with_default_exclusion,
                  excluded_path_without_dot,
                  excluded_files,
-                 cnt_file_except_skipped) = get_excluded_paths(path_to_scan, path_to_exclude_with_filename)
+                 cnt_file_except_skipped) = get_excluded_paths(
+                    path_to_scan, path_to_exclude_with_filename,
+                    exclude_filenames=EXCLUDE_FILENAME_SOURCE)
                 logger.debug(f"Skipped paths count: {len(excluded_path_with_default_exclusion)}")
 
             if not selected_scanner:
@@ -727,7 +731,7 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> tuple[dict, di
         for file in files:
             file_path = os.path.join(root, file)
             rel_path_file = os.path.relpath(file_path, abs_path_to_scan).replace('\\', '/')
-            if rel_path_file in excluded_files:
+            if rel_path_file in excluded_files or is_excluded_source_filename(rel_path_file):
                 continue
 
             downloads = get_spdx_downloads(file_path)

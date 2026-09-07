@@ -170,7 +170,7 @@ def _default_scancode_ignore_patterns(
     Directory names use path-based globs (e.g. **/tests/**) so they do not match
     the scan root directory name itself.
     Binary files are excluded separately via scancode --ignore-binaries.
-    EXCLUDE_FILENAME is not passed to ScanCode --ignore: matching many exact
+    EXCLUDE_FILENAME_SOURCE is not passed to ScanCode --ignore: matching many exact
     names on a large tree is slow. Those files are dropped after parsing.
     """
     patterns = {".*"}
