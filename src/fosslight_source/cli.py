@@ -461,8 +461,10 @@ def merge_results(
             if item is None:
                 continue
             item.is_manifest_file = True
+            # Overwrite ScanCode licenses only when manifest extraction found at least one
+            # license. Empty results (parse failure, Android.bp, license-file-only fields,
+            # SEE LICENSE IN, etc.) must keep existing ScanCode licenses.
             if valid_licenses:
-                # overwrite existing detected licenses with manifest-provided licenses
                 item.licenses = []  # clear existing licenses (setter clears when value falsy)
                 item.licenses = valid_licenses
 

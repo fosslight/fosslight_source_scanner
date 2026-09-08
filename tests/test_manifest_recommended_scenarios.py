@@ -36,6 +36,21 @@ def test_scenario2_package_json_manifest_fail_keeps_scancode_licenses():
     assert merged[0].licenses == ["Apache-2.0"]
 
 
+def test_scenario2_pyproject_license_file_keeps_scancode_licenses():
+    """pyproject.toml license={file=...} yields []; ScanCode licenses must not be cleared."""
+    scancode_item = SourceItem("tornado/pyproject.toml")
+    scancode_item.licenses = ["Apache-2.0"]
+
+    merged, _, _, _ = merge_results(
+        scancode_result=[scancode_item],
+        manifest_licenses={"tornado/pyproject.toml": []},
+    )
+
+    assert len(merged) == 1
+    assert merged[0].is_manifest_file is True
+    assert merged[0].licenses == ["Apache-2.0"]
+
+
 def test_scenario3_android_bp_from_spdx_marks_manifest_without_new_row():
     """Android.bp added by spdx merge: manifest flag on existing item, no duplicate row."""
     spdx_item = SourceItem("module/Android.bp")
