@@ -455,17 +455,20 @@ def merge_results(
     if manifest_licenses:
         for file_name, licenses in manifest_licenses.items():
             valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
+            is_android_bp = os.path.basename(str(file_name)).lower() == "android.bp"
             item = _get_or_append_source_item(
                 scancode_result, file_name, append=bool(valid_licenses) or ui_mode
             )
             if item is None:
                 continue
             item.is_manifest_file = True
-            # Overwrite ScanCode licenses only when manifest extraction found at least one
-            # license. Empty results (parse failure, Android.bp, license-file-only fields,
-            # SEE LICENSE IN, etc.) must keep existing ScanCode licenses.
+            # Android.bp is a marker only: keep ScanCode licenses.
+            # All other manifests always apply extracted licenses, including empty,
+            # so a blank/unresolved manifest license clears ScanCode licenses.
+            if is_android_bp:
+                continue
+            item.licenses = []
             if valid_licenses:
-                item.licenses = []  # clear existing licenses (setter clears when value falsy)
                 item.licenses = valid_licenses
 
     kb_origin_urls: dict[str, str] = {}

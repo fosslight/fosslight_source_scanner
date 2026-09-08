@@ -124,7 +124,7 @@ def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
         if parser.has_section('metadata'):
             license_value = parser.get('metadata', 'license', fallback='').strip()
             if license_value:
-                # license = LICENSE is a file reference; treat as not found (keep ScanCode).
+                # license = LICENSE is a file reference; treat as empty (clears ScanCode on merge).
                 if _is_setup_cfg_license_file_ref(license_value):
                     return []
                 return _split_spdx_expression(license_value)
@@ -383,8 +383,8 @@ def get_licenses_from_huggingface_metadata(file_path: str) -> list[str]:
 
 
 def get_manifest_licenses(file_path: str) -> list[str]:
-    # Empty return means merge keeps ScanCode licenses and only sets is_manifest_file
-    # (Android.bp, extraction failure, license-file-only metadata, etc.).
+    # Empty return is applied as-is in merge (clears ScanCode licenses), except Android.bp
+    # which is a marker only and keeps ScanCode licenses.
     if os.path.basename(file_path).lower() == 'android.bp':
         return []
     if file_path.endswith('.pom'):

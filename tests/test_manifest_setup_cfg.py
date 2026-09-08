@@ -25,16 +25,17 @@ def test_setup_cfg_license_filename_case_insensitive(tmp_path):
     assert get_licenses_from_setup_cfg(str(path)) == []
 
 
-def test_setup_cfg_license_filename_keeps_scancode_licenses(tmp_path):
+def test_setup_cfg_license_filename_clears_scancode_licenses(tmp_path):
     path = tmp_path / "setup.cfg"
     path.write_text("[metadata]\nname = demo\nlicense = LICENSE\n", encoding="utf-8")
     assert get_licenses_from_setup_cfg(str(path)) == []
 
     scancode_item = SourceItem("pkg/setup.cfg")
     scancode_item.licenses = ["Apache-2.0"]
+    scancode_item.download_location = ["https://example.com/pkg"]
     merged, _, _, _ = merge_results(
         scancode_result=[scancode_item],
         manifest_licenses={"pkg/setup.cfg": []},
     )
     assert merged[0].is_manifest_file is True
-    assert merged[0].licenses == ["Apache-2.0"]
+    assert merged[0].licenses == []
