@@ -90,7 +90,7 @@ def _file_has_other_license(matches: list) -> bool:
 
 
 def _matched_text_has_spdx_license_identifier(matched_txt: str) -> bool:
-    """True for classic 'SPDX-License-Identifier:' (colon). Soong dash form does not count."""
+    """True for classic SPDX-License-Identifier with a colon. Soong dash form does not count."""
     return bool(
         re.search(
             r'SPDX[-\s]+License[-\s]+Identifier\s*:\s*\S',
@@ -118,7 +118,7 @@ def _is_spdx_declaration_line(matched_txt: str) -> bool:
 
 
 def _file_has_spdx_license_identifier(matches: list) -> bool:
-    """True if any match is a classic SPDX-License-Identifier: declaration line."""
+    """True if any match is a classic SPDX-License-Identifier declaration line (colon form)."""
     return any(
         _is_spdx_declaration_line(m.get("matched_text") or "")
         and _matched_text_has_spdx_license_identifier(m.get("matched_text") or "")
