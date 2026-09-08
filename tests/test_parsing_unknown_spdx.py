@@ -141,9 +141,10 @@ def test_unknown_spdx_comment_preserves_and_or_from_detected_expression():
     success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
-    assert results[0].licenses == ["DApache-2.0", "GPL-2.0", "NEW"]
+    # SPDX-License-Identifier: present → SPDX priority drops non-declaration gpl-2.0 match
+    assert results[0].licenses == ["DApache-2.0", "NEW"]
     assert "unknown-license-reference" not in [lic.lower() for lic in results[0].licenses]
-    assert results[0].comment == "NEW OR DApache-2.0 AND GPL-2.0"
+    assert results[0].comment == "NEW OR DApache-2.0"
 
 
 def test_unknown_license_reference_suppressed_when_same_matched_text_has_other_license():
@@ -524,9 +525,9 @@ def test_android_bp_soong_license_kinds_without_line_comment_in_license():
 
 
 def test_ignore_unknown_spdx_when_file_has_spdx_declaration():
-    """tag.pl-like: real SPDX tag present → ignore misplaced unknown-spdx match."""
+    """SPDX-License-Identifier present → ignore unrestorable unknown-spdx match."""
     scancode_file_list = [{
-        "path": "tag.pl",
+        "path": "sample.c",
         "type": "file",
         "detected_license_expression": "gpl-2.0 AND unknown-spdx",
         "license_detections": [
@@ -555,3 +556,52 @@ def test_ignore_unknown_spdx_when_file_has_spdx_declaration():
     assert results[0].licenses == ["GPL-2.0"]
     assert all("unknown" not in lic.lower() for lic in results[0].licenses)
     assert all("tag" not in lic.lower() for lic in results[0].licenses)
+
+
+def test_spdx_priority_drops_body_rule_matches():
+    """When SPDX-License-Identifier: exists, keep declaration only; drop code mentions."""
+    scancode_file_list = [{
+        "path": "sample.c",
+        "type": "file",
+        "detected_license_expression": (
+            "gpl-2.0 AND (gpl-2.0 AND bsd-simplified AND (gpl-2.0 OR bsd-simplified))"
+        ),
+        "license_detections": [
+            {
+                "matches": [{
+                    "license_expression": "gpl-2.0",
+                    "matched_text": "# SPDX-License-Identifier: GPL-2.0",
+                }],
+            },
+            {
+                "matches": [
+                    {
+                        "license_expression": "gpl-2.0",
+                        "matched_text": (
+                            "\t\t\t\t\t    not $spdx_license =~ /GPL-2\\.0.*BSD-2-Clause/) {"
+                        ),
+                    },
+                    {
+                        "license_expression": "bsd-simplified",
+                        "matched_text": (
+                            "\t\t\t\t\t    not $spdx_license =~ /GPL-2\\.0.*BSD-2-Clause/) {"
+                        ),
+                    },
+                    {
+                        "license_expression": "gpl-2.0 OR bsd-simplified",
+                        "matched_text": (
+                            "DT binding documents should be licensed "
+                            "(GPL-2.0-only OR BSD-2-Clause)"
+                        ),
+                    },
+                ],
+            },
+        ],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["GPL-2.0"]
+    assert results[0].comment == ""
