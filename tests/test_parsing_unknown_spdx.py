@@ -141,7 +141,8 @@ def test_unknown_spdx_comment_preserves_and_or_from_detected_expression():
     success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
-    # SPDX-License-Identifier: present → SPDX priority drops non-declaration gpl-2.0 match
+    # Classic SPDX-License-Identifier with colon present → SPDX priority drops
+    # non-declaration gpl-2.0 match
     assert results[0].licenses == ["DApache-2.0", "NEW"]
     assert "unknown-license-reference" not in [lic.lower() for lic in results[0].licenses]
     assert results[0].comment == "NEW OR DApache-2.0"
@@ -559,7 +560,7 @@ def test_ignore_unknown_spdx_when_file_has_spdx_declaration():
 
 
 def test_spdx_priority_drops_body_rule_matches():
-    """When SPDX-License-Identifier: exists, keep declaration only; drop code mentions."""
+    """When classic SPDX-License-Identifier with colon exists, keep declaration only."""
     scancode_file_list = [{
         "path": "sample.c",
         "type": "file",
