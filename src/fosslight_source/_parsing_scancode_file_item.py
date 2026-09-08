@@ -19,7 +19,10 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 REMOVE_LICENSE = ["warranty-disclaimer"]
 find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 SPDX_LICENSE_IDENTIFIER_PATTERN = re.compile(
-    r'SPDX[-\s]+License[-\s]+Identifier(?:\s*[:,-]\s*|\s+)([^\r\n]+)',
+    # Require : , or - after Identifier. Bare whitespace is rejected so that
+    # messages like 'Misplaced SPDX-License-Identifier tag - use line ...'
+    # are not treated as license declarations.
+    r'SPDX[-\s]+License[-\s]+Identifier\s*[:,-]\s*([^\r\n]+)',
     re.IGNORECASE,
 )
 # Android Soong license_kinds string, e.g. "SPDX-license-identifier-BSD"
@@ -82,6 +85,17 @@ def _file_has_other_license(matches: list) -> bool:
     for matched_lic in matches or []:
         license_expression = matched_lic.get("license_expression") or ""
         if _expression_has_other_license(license_expression):
+            return True
+    return False
+
+
+def _file_has_spdx_declared_license(matches: list) -> bool:
+    """True if any non-unknown-spdx match has a recoverable SPDX-License-Identifier."""
+    for matched_lic in matches or []:
+        expr = (matched_lic.get("license_expression") or "").lower()
+        if KEYWORD_SCANCODE_UNKNOWN in expr:
+            continue
+        if _extract_spdx_declared_expression(matched_lic.get("matched_text") or ""):
             return True
     return False
 
@@ -575,6 +589,7 @@ def parsing_scancode(
                 for lic in licenses or []:
                     all_matches.extend(lic.get("matches") or [])
                 has_other_license_in_file = _file_has_other_license(all_matches)
+                has_spdx_declared_license = _file_has_spdx_declared_license(all_matches)
                 suppress_unknown_license_reference = (
                     _should_suppress_unknown_license_reference(
                         all_matches, has_other_license_in_file
@@ -592,6 +607,16 @@ def parsing_scancode(
                                 if declared:
                                     found_lic_list = declared
                                     resolved_unknown_spdx = True
+                                elif has_spdx_declared_license:
+                                    # File already has SPDX declarations; drop unrestorable
+                                    # unknown-spdx noise (e.g. misplaced-tag messages).
+                                    tokens = [
+                                        t for t in split_spdx_expression(found_lic_list)
+                                        if KEYWORD_SCANCODE_UNKNOWN not in t.lower()
+                                    ]
+                                    if not tokens:
+                                        continue
+                                    found_lic_list = " AND ".join(tokens)
                             for found_lic in split_spdx_expression(found_lic_list):
                                 if found_lic:
                                     found_lic = found_lic.strip()
@@ -609,6 +634,8 @@ def parsing_scancode(
                                         if declared:
                                             found_lic = declared
                                             resolved_unknown_spdx = True
+                                        elif has_spdx_declared_license:
+                                            continue
                                     found_lic = _strip_license_ref_prefix(found_lic)
                                     found_lic = _normalize_license_token(found_lic) or found_lic
                                     if not found_lic:

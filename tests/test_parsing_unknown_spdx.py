@@ -21,7 +21,6 @@ from fosslight_source._parsing_scancode_file_item import (
         ("// SPDX-License-Identifier: MIT", "MIT"),
         ("// SPDX-License-Identifier-MIT", "MIT"),
         ("// SPDX-License-Identifier, MIT", "MIT"),
-        ("// SPDX-License-Identifier MIT", "MIT"),
         ('        "SPDX-license-identifier-BSD",', "BSD"),
         ('        "SPDX-license-identifier-OFL", // by exception only', "OFL"),
         ("/* SPDX-License-Identifier: MIT */", "MIT"),
@@ -39,6 +38,20 @@ from fosslight_source._parsing_scancode_file_item import (
 )
 def test_extract_spdx_declared_expression(matched_text, expected):
     assert _extract_spdx_declared_expression(matched_text) == expected
+
+
+@pytest.mark.parametrize(
+    "matched_text",
+    [
+        "// SPDX-License-Identifier MIT",
+        (
+            '\t\t\t     "Misplaced SPDX-License-Identifier tag - use line '
+            '$checklicenseline instead " . $herecurr);'
+        ),
+    ],
+)
+def test_extract_spdx_rejects_whitespace_only_separator(matched_text):
+    assert _extract_spdx_declared_expression(matched_text) == ""
 
 
 def test_declared_licenses_strips_licenseref_per_token():
@@ -238,7 +251,7 @@ def test_unknown_license_reference_suppressed_by_other_license_in_same_file():
     success, results, _messages, license_list = parsing_scancode(scancode_file_list)
 
     assert success is True
-    assert results[0].licenses == ["MIT", "Apache-2.0"]
+    assert results[0].licenses == ["Apache-2.0", "MIT"]
     assert results[0].comment == "MIT OR Apache-2.0"
     assert all(
         item.license != "unknown-license-reference"
@@ -499,12 +512,46 @@ def test_android_bp_soong_license_kinds_without_line_comment_in_license():
 
     assert success is True
     licenses = results[0].licenses
+    # unknown-license-reference has no URL and other licenses exist → suppressed
     assert licenses == [
         "Apache-2.0",
         "BSD",
         "MIT",
         "OFL",
-        "unknown-license-reference",
     ]
     assert all("//" not in lic for lic in results[0].licenses)
     assert all('"' not in lic for lic in results[0].licenses)
+
+
+def test_ignore_unknown_spdx_when_file_has_spdx_declaration():
+    """tag.pl-like: real SPDX tag present → ignore misplaced unknown-spdx match."""
+    scancode_file_list = [{
+        "path": "tag.pl",
+        "type": "file",
+        "detected_license_expression": "gpl-2.0 AND unknown-spdx",
+        "license_detections": [
+            {
+                "matches": [{
+                    "license_expression": "gpl-2.0",
+                    "matched_text": "# SPDX-License-Identifier: GPL-2.0",
+                }],
+            },
+            {
+                "matches": [{
+                    "license_expression": "unknown-spdx",
+                    "matched_text": (
+                        '\t\t\t     "Misplaced SPDX-License-Identifier tag - use line '
+                        '$checklicenseline instead " . $herecurr);'
+                    ),
+                }],
+            },
+        ],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["GPL-2.0"]
+    assert all("unknown" not in lic.lower() for lic in results[0].licenses)
+    assert all("tag" not in lic.lower() for lic in results[0].licenses)
