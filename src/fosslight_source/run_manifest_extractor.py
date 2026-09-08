@@ -6,6 +6,7 @@ import os
 import json
 import re
 import logging
+from typing import Optional
 from fosslight_util.get_pom_license import get_license_from_pom
 import fosslight_util.constant as constant
 
@@ -111,6 +112,11 @@ def get_licenses_from_composer_json(file_path: str) -> list[str]:
     return unique
 
 
+def _is_setup_cfg_license_file_ref(value: str) -> bool:
+    """True when setup.cfg license points at a LICENSE file name, not an SPDX id."""
+    return value.strip().upper() == 'LICENSE'
+
+
 def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
     try:
         import configparser
@@ -119,6 +125,9 @@ def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
         if parser.has_section('metadata'):
             license_value = parser.get('metadata', 'license', fallback='').strip()
             if license_value:
+                # license = LICENSE is a file reference; treat as empty (clears ScanCode on merge).
+                if _is_setup_cfg_license_file_ref(license_value):
+                    return []
                 return _split_spdx_expression(license_value)
     except Exception as ex:
         logger.info(f"Failed to parse setup.cfg with configparser for {file_path}: {ex}")
@@ -137,6 +146,8 @@ def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
         if (len(val) >= 2) and ((val[0] == val[-1]) and val[0] in ('"', "'")):
             val = val[1:-1].strip()
         if not val:
+            return []
+        if _is_setup_cfg_license_file_ref(val):
             return []
         return _split_spdx_expression(val)
     except Exception as ex:
@@ -372,10 +383,15 @@ def get_licenses_from_huggingface_metadata(file_path: str) -> list[str]:
     return licenses
 
 
-def get_manifest_licenses(file_path: str) -> list[str]:
-    # Android.bp licenses come from ScanCode; manifest merge only sets is_manifest_file.
+def get_manifest_licenses(file_path: str) -> Optional[list[str]]:
+    """Extract licenses from a manifest file.
+
+    Returns:
+        list[str]: licenses to apply in merge (empty list clears ScanCode licenses).
+        None: marker-only manifest; merge sets is_manifest_file and keeps ScanCode licenses.
+    """
     if os.path.basename(file_path).lower() == 'android.bp':
-        return []
+        return None
     if file_path.endswith('.pom'):
         try:
             pom_licenses = get_license_from_pom(group_id='', artifact_id='', version='', pom_path=file_path, check_parent=True)
@@ -433,3 +449,4 @@ def get_manifest_licenses(file_path: str) -> list[str]:
         except Exception as ex:
             logger.info(f"Failed to extract license from huggingface_hub_metadata.json {file_path}: {ex}")
             return []
+    return []

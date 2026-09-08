@@ -13,7 +13,7 @@ def test_scenario1_android_bp_keeps_scancode_licenses():
 
     merged, _, _, _ = merge_results(
         scancode_result=[scancode_item],
-        manifest_licenses={"Android.bp": []},
+        manifest_licenses={"Android.bp": None},
     )
 
     assert len(merged) == 1
@@ -21,10 +21,11 @@ def test_scenario1_android_bp_keeps_scancode_licenses():
     assert merged[0].licenses == ["Apache-2.0", "BSD", "MIT", "OFL", "unknown-license-reference"]
 
 
-def test_scenario2_package_json_manifest_fail_keeps_scancode_licenses():
-    """package.json manifest extraction fails but ScanCode row exists: manifest flag only."""
+def test_scenario2_package_json_empty_clears_scancode_licenses():
+    """package.json empty manifest licenses overwrite/clear ScanCode licenses."""
     scancode_item = SourceItem("app/package.json")
     scancode_item.licenses = ["Apache-2.0"]
+    scancode_item.download_location = ["https://example.com/app"]
 
     merged, _, _, _ = merge_results(
         scancode_result=[scancode_item],
@@ -33,7 +34,23 @@ def test_scenario2_package_json_manifest_fail_keeps_scancode_licenses():
 
     assert len(merged) == 1
     assert merged[0].is_manifest_file is True
-    assert merged[0].licenses == ["Apache-2.0"]
+    assert merged[0].licenses == []
+
+
+def test_scenario2_pyproject_license_file_clears_scancode_licenses():
+    """pyproject.toml license={file=...} yields []; ScanCode licenses are cleared."""
+    scancode_item = SourceItem("tornado/pyproject.toml")
+    scancode_item.licenses = ["Apache-2.0"]
+    scancode_item.download_location = ["https://example.com/tornado"]
+
+    merged, _, _, _ = merge_results(
+        scancode_result=[scancode_item],
+        manifest_licenses={"tornado/pyproject.toml": []},
+    )
+
+    assert len(merged) == 1
+    assert merged[0].is_manifest_file is True
+    assert merged[0].licenses == []
 
 
 def test_scenario3_android_bp_from_spdx_marks_manifest_without_new_row():
@@ -43,7 +60,7 @@ def test_scenario3_android_bp_from_spdx_marks_manifest_without_new_row():
 
     merged, _, _, _ = merge_results(
         scancode_result=[spdx_item],
-        manifest_licenses={"module/Android.bp": []},
+        manifest_licenses={"module/Android.bp": None},
     )
 
     assert len(merged) == 1
@@ -56,7 +73,7 @@ def test_scenario3_android_bp_not_in_result_no_row_non_ui():
     """Android.bp absent from merge result: no row in non-UI mode."""
     merged_non_ui, _, _, _ = merge_results(
         scancode_result=[],
-        manifest_licenses={"module/Android.bp": []},
+        manifest_licenses={"module/Android.bp": None},
         ui_mode=False,
     )
     assert merged_non_ui == []
@@ -66,7 +83,7 @@ def test_scenario3_android_bp_not_in_result_ui_keeps_empty_row():
     """Android.bp absent from merge result: UI mode still creates manifest row."""
     merged_ui, _, _, _ = merge_results(
         scancode_result=[],
-        manifest_licenses={"module/Android.bp": []},
+        manifest_licenses={"module/Android.bp": None},
         ui_mode=True,
     )
 
