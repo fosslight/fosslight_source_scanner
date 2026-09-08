@@ -111,6 +111,11 @@ def get_licenses_from_composer_json(file_path: str) -> list[str]:
     return unique
 
 
+def _is_setup_cfg_license_file_ref(value: str) -> bool:
+    """True when setup.cfg license points at a LICENSE file name, not an SPDX id."""
+    return value.strip().upper() == 'LICENSE'
+
+
 def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
     try:
         import configparser
@@ -119,6 +124,9 @@ def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
         if parser.has_section('metadata'):
             license_value = parser.get('metadata', 'license', fallback='').strip()
             if license_value:
+                # license = LICENSE is a file reference; treat as not found (keep ScanCode).
+                if _is_setup_cfg_license_file_ref(license_value):
+                    return []
                 return _split_spdx_expression(license_value)
     except Exception as ex:
         logger.info(f"Failed to parse setup.cfg with configparser for {file_path}: {ex}")
@@ -137,6 +145,8 @@ def get_licenses_from_setup_cfg(file_path: str) -> list[str]:
         if (len(val) >= 2) and ((val[0] == val[-1]) and val[0] in ('"', "'")):
             val = val[1:-1].strip()
         if not val:
+            return []
+        if _is_setup_cfg_license_file_ref(val):
             return []
         return _split_spdx_expression(val)
     except Exception as ex:
