@@ -6,6 +6,7 @@ import os
 import json
 import re
 import logging
+from typing import Optional
 from fosslight_util.get_pom_license import get_license_from_pom
 import fosslight_util.constant as constant
 
@@ -382,11 +383,15 @@ def get_licenses_from_huggingface_metadata(file_path: str) -> list[str]:
     return licenses
 
 
-def get_manifest_licenses(file_path: str) -> list[str]:
-    # Empty return is applied as-is in merge (clears ScanCode licenses), except Android.bp
-    # which is a marker only and keeps ScanCode licenses.
+def get_manifest_licenses(file_path: str) -> Optional[list[str]]:
+    """Extract licenses from a manifest file.
+
+    Returns:
+        list[str]: licenses to apply in merge (empty list clears ScanCode licenses).
+        None: marker-only manifest; merge sets is_manifest_file and keeps ScanCode licenses.
+    """
     if os.path.basename(file_path).lower() == 'android.bp':
-        return []
+        return None
     if file_path.endswith('.pom'):
         try:
             pom_licenses = get_license_from_pom(group_id='', artifact_id='', version='', pom_path=file_path, check_parent=True)
@@ -444,3 +449,4 @@ def get_manifest_licenses(file_path: str) -> list[str]:
         except Exception as ex:
             logger.info(f"Failed to extract license from huggingface_hub_metadata.json {file_path}: {ex}")
             return []
+    return []

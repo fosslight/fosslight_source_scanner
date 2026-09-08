@@ -454,18 +454,19 @@ def merge_results(
                 scancode_result.append(new_result_item)
     if manifest_licenses:
         for file_name, licenses in manifest_licenses.items():
-            valid_licenses = [lic.strip() for lic in licenses if isinstance(lic, str) and lic.strip()]
-            is_android_bp = os.path.basename(str(file_name)).lower() == "android.bp"
+            # None: marker-only (keep ScanCode). list (incl. []): overwrite with extracted result.
+            keep_scancode_licenses = licenses is None
+            license_list = [] if keep_scancode_licenses else licenses
+            valid_licenses = [
+                lic.strip() for lic in license_list if isinstance(lic, str) and lic.strip()
+            ]
             item = _get_or_append_source_item(
                 scancode_result, file_name, append=bool(valid_licenses) or ui_mode
             )
             if item is None:
                 continue
             item.is_manifest_file = True
-            # Android.bp is a marker only: keep ScanCode licenses.
-            # All other manifests always apply extracted licenses, including empty,
-            # so a blank/unresolved manifest license clears ScanCode licenses.
-            if is_android_bp:
+            if keep_scancode_licenses:
                 continue
             item.licenses = []
             if valid_licenses:
@@ -724,7 +725,9 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> tuple[dict, di
 
     - Traverse files with exclusions applied
     - spdx_downloads: {rel_path: [download_urls]}
-    - manifest_licenses: {rel_path: [license_names]} (empty list if extraction failed)
+    - manifest_licenses: {rel_path: list[str] | None}
+        - list (incl. []): overwrite ScanCode licenses with this result
+        - None: marker-only; keep ScanCode licenses
 
     :return: (spdx_downloads, manifest_licenses)
     """
@@ -744,7 +747,8 @@ def metadata_collector(path_to_scan: str, excluded_files: set) -> tuple[dict, di
                 spdx_downloads[rel_path_file] = downloads
 
             if is_manifest_file(file_path):
-                manifest_licenses[rel_path_file] = get_manifest_licenses(file_path) or []
+                # Preserve None (marker-only); do not coerce with `or []`.
+                manifest_licenses[rel_path_file] = get_manifest_licenses(file_path)
 
     return spdx_downloads, manifest_licenses
 

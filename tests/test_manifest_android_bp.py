@@ -18,10 +18,10 @@ def test_is_manifest_file_recognizes_android_bp():
     assert is_manifest_file("/tmp/module/package.json") is True
 
 
-def test_get_manifest_licenses_returns_empty_for_android_bp(tmp_path):
+def test_get_manifest_licenses_returns_none_for_android_bp(tmp_path):
     android_bp = tmp_path / "Android.bp"
     android_bp.write_text('license { name: "test_license" }', encoding="utf-8")
-    assert get_manifest_licenses(str(android_bp)) == []
+    assert get_manifest_licenses(str(android_bp)) is None
 
 
 def test_metadata_collector_adds_android_bp_without_license_extraction(tmp_path):
@@ -34,7 +34,7 @@ def test_metadata_collector_adds_android_bp_without_license_extraction(tmp_path)
         spdx_downloads, manifest_licenses = metadata_collector(str(tmp_path), set())
 
     assert spdx_downloads == {}
-    assert manifest_licenses == {"Android.bp": [], "package.json": ["MIT"]}
+    assert manifest_licenses == {"Android.bp": None, "package.json": ["MIT"]}
     assert mock_get.call_count == 2
 
 
@@ -44,7 +44,7 @@ def test_merge_results_sets_manifest_flag_without_overwriting_scancode_licenses(
 
     merged, _, _, _ = merge_results(
         scancode_result=[scancode_item],
-        manifest_licenses={"carrois-gothic-sc/Android.bp": []},
+        manifest_licenses={"carrois-gothic-sc/Android.bp": None},
     )
 
     assert len(merged) == 1
@@ -55,7 +55,7 @@ def test_merge_results_sets_manifest_flag_without_overwriting_scancode_licenses(
 def test_merge_results_skips_android_bp_not_in_scancode_result():
     merged, _, _, _ = merge_results(
         scancode_result=[],
-        manifest_licenses={"module/Android.bp": []},
+        manifest_licenses={"module/Android.bp": None},
     )
 
     assert merged == []

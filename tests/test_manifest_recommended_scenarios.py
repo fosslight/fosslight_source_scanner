@@ -13,7 +13,7 @@ def test_scenario1_android_bp_keeps_scancode_licenses():
 
     merged, _, _, _ = merge_results(
         scancode_result=[scancode_item],
-        manifest_licenses={"Android.bp": []},
+        manifest_licenses={"Android.bp": None},
     )
 
     assert len(merged) == 1
@@ -60,7 +60,7 @@ def test_scenario3_android_bp_from_spdx_marks_manifest_without_new_row():
 
     merged, _, _, _ = merge_results(
         scancode_result=[spdx_item],
-        manifest_licenses={"module/Android.bp": []},
+        manifest_licenses={"module/Android.bp": None},
     )
 
     assert len(merged) == 1
@@ -73,7 +73,7 @@ def test_scenario3_android_bp_not_in_result_no_row_non_ui():
     """Android.bp absent from merge result: no row in non-UI mode."""
     merged_non_ui, _, _, _ = merge_results(
         scancode_result=[],
-        manifest_licenses={"module/Android.bp": []},
+        manifest_licenses={"module/Android.bp": None},
         ui_mode=False,
     )
     assert merged_non_ui == []
@@ -83,7 +83,7 @@ def test_scenario3_android_bp_not_in_result_ui_keeps_empty_row():
     """Android.bp absent from merge result: UI mode still creates manifest row."""
     merged_ui, _, _, _ = merge_results(
         scancode_result=[],
-        manifest_licenses={"module/Android.bp": []},
+        manifest_licenses={"module/Android.bp": None},
         ui_mode=True,
     )
 
