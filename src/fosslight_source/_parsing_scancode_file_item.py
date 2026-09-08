@@ -19,7 +19,10 @@ logger = logging.getLogger(constant.LOGGER_NAME)
 REMOVE_LICENSE = ["warranty-disclaimer"]
 find_word = re.compile(rb"SPDX-PackageDownloadLocation\s*:\s*(\S+)", re.IGNORECASE)
 SPDX_LICENSE_IDENTIFIER_PATTERN = re.compile(
-    r'SPDX[-\s]+License[-\s]+Identifier(?:\s*[:,-]\s*|\s+)([^\r\n]+)',
+    # Require : , or - after Identifier. Bare whitespace is rejected so that
+    # messages like 'Misplaced SPDX-License-Identifier tag - use line ...'
+    # are not treated as license declarations.
+    r'SPDX[-\s]+License[-\s]+Identifier\s*[:,-]\s*([^\r\n]+)',
     re.IGNORECASE,
 )
 # Android Soong license_kinds string, e.g. "SPDX-license-identifier-BSD"
@@ -84,6 +87,59 @@ def _file_has_other_license(matches: list) -> bool:
         if _expression_has_other_license(license_expression):
             return True
     return False
+
+
+def _matched_text_has_spdx_license_identifier(matched_txt: str) -> bool:
+    """True for classic SPDX-License-Identifier with a colon. Soong dash form does not count."""
+    return bool(
+        re.search(
+            r'SPDX[-\s]+License[-\s]+Identifier\s*:\s*\S',
+            matched_txt or "",
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _is_spdx_declaration_line(matched_txt: str) -> bool:
+    """
+    True when matched_text is (mostly) an SPDX declaration line, not code that
+    merely mentions SPDX-License-Identifier (e.g. sed replacements).
+    """
+    if not _extract_spdx_declared_expression(matched_txt):
+        return False
+    stripped = re.sub(r"""^[\s"'#/\*-]+""", "", (matched_txt or "").strip())
+    return bool(
+        re.match(
+            r"SPDX[-\s]+License[-\s]+Identifier\s*[:,-]",
+            stripped,
+            flags=re.IGNORECASE,
+        )
+    )
+
+
+def _file_has_spdx_license_identifier(matches: list) -> bool:
+    """True if any match is a classic SPDX-License-Identifier declaration line (colon form)."""
+    return any(
+        _is_spdx_declaration_line(m.get("matched_text") or "")
+        and _matched_text_has_spdx_license_identifier(m.get("matched_text") or "")
+        for m in (matches or [])
+    )
+
+
+def _file_has_spdx_declared_license(matches: list) -> bool:
+    """True if any match has a recoverable SPDX declaration (incl. Soong kinds)."""
+    for matched_lic in matches or []:
+        if _extract_spdx_declared_expression(matched_lic.get("matched_text") or ""):
+            return True
+    return False
+
+
+def _filter_spdx_declaration_matches(matches: list) -> list:
+    """Keep only matches that are SPDX declaration lines (not code mentions)."""
+    return [
+        matched_lic for matched_lic in (matches or [])
+        if _is_spdx_declaration_line(matched_lic.get("matched_text") or "")
+    ]
 
 
 def _matched_text_has_http_url(matched_text: str) -> bool:
@@ -574,53 +630,86 @@ def parsing_scancode(
                 all_matches = []
                 for lic in licenses or []:
                     all_matches.extend(lic.get("matches") or [])
-                has_other_license_in_file = _file_has_other_license(all_matches)
+                # SPDX priority: if the file has SPDX-License-Identifier (:/,/-),
+                # keep only matches that are SPDX declarations (drop body rule hits).
+                prefer_spdx_declarations = _file_has_spdx_license_identifier(all_matches)
+                matches_to_process = (
+                    _filter_spdx_declaration_matches(all_matches)
+                    if prefer_spdx_declarations
+                    else list(all_matches or [])
+                )
+                has_other_license_in_file = _file_has_other_license(matches_to_process)
+                has_spdx_declared_license = _file_has_spdx_declared_license(all_matches)
                 suppress_unknown_license_reference = (
                     _should_suppress_unknown_license_reference(
-                        all_matches, has_other_license_in_file
+                        matches_to_process, has_other_license_in_file
                     )
                 )
-                for lic in licenses or []:
-                    matched_lic_list = lic.get("matches", [])
-                    for matched_lic in matched_lic_list:
-                        found_lic_list = matched_lic.get("license_expression", "")
-                        matched_txt = matched_lic.get("matched_text", "")
-                        if found_lic_list:
-                            found_lic_list = found_lic_list.lower()
-                            if KEYWORD_SCANCODE_UNKNOWN in found_lic_list:
+                spdx_declared_expressions: list[str] = []
+                for matched_lic in matches_to_process:
+                    found_lic_list = matched_lic.get("license_expression", "")
+                    matched_txt = matched_lic.get("matched_text", "")
+                    if prefer_spdx_declarations:
+                        declared = _extract_spdx_declared_expression(matched_txt)
+                        if not declared:
+                            continue
+                        found_lic_list = declared
+                        spdx_declared_expressions.append(declared)
+                        resolved_unknown_spdx = True
+                    elif found_lic_list:
+                        found_lic_list = found_lic_list.lower()
+                        if KEYWORD_SCANCODE_UNKNOWN in found_lic_list:
+                            declared = _extract_spdx_declared_expression(matched_txt)
+                            if declared:
+                                found_lic_list = declared
+                                resolved_unknown_spdx = True
+                            elif has_spdx_declared_license:
+                                # File already has SPDX declarations; drop unrestorable
+                                # unknown-spdx noise (e.g. misplaced-tag messages).
+                                tokens = [
+                                    t for t in split_spdx_expression(found_lic_list)
+                                    if KEYWORD_SCANCODE_UNKNOWN not in t.lower()
+                                ]
+                                if not tokens:
+                                    continue
+                                found_lic_list = " AND ".join(tokens)
+                    else:
+                        continue
+
+                    for found_lic in split_spdx_expression(found_lic_list):
+                        if found_lic:
+                            found_lic = found_lic.strip()
+                            if found_lic in REMOVE_LICENSE:
+                                continue
+                            if (
+                                KEYWORD_UNKNOWN_LICENSE_REFERENCE in found_lic.lower()
+                                and not _should_keep_unknown_license_reference(
+                                    matched_txt, has_other_license_in_file
+                                )
+                            ):
+                                continue
+                            if (
+                                not prefer_spdx_declarations
+                                and KEYWORD_SCANCODE_UNKNOWN in found_lic.lower()
+                            ):
                                 declared = _extract_spdx_declared_expression(matched_txt)
                                 if declared:
-                                    found_lic_list = declared
+                                    found_lic = declared
                                     resolved_unknown_spdx = True
-                            for found_lic in split_spdx_expression(found_lic_list):
-                                if found_lic:
-                                    found_lic = found_lic.strip()
-                                    if found_lic in REMOVE_LICENSE:
-                                        continue
-                                    if (
-                                        KEYWORD_UNKNOWN_LICENSE_REFERENCE in found_lic.lower()
-                                        and not _should_keep_unknown_license_reference(
-                                            matched_txt, has_other_license_in_file
-                                        )
-                                    ):
-                                        continue
-                                    if KEYWORD_SCANCODE_UNKNOWN in found_lic.lower():
-                                        declared = _extract_spdx_declared_expression(matched_txt)
-                                        if declared:
-                                            found_lic = declared
-                                            resolved_unknown_spdx = True
-                                    found_lic = _strip_license_ref_prefix(found_lic)
-                                    found_lic = _normalize_license_token(found_lic) or found_lic
-                                    if not found_lic:
-                                        continue
-                                    if matched_txt:
-                                        lic_matched_key = found_lic + matched_txt
-                                        if lic_matched_key in license_list:
-                                            license_list[lic_matched_key].set_files(file_path)
-                                        else:
-                                            lic_info = MatchedLicense(found_lic, "", matched_txt, file_path)
-                                            license_list[lic_matched_key] = lic_info
-                                    license_detected.append(found_lic)
+                                elif has_spdx_declared_license:
+                                    continue
+                            found_lic = _strip_license_ref_prefix(found_lic)
+                            found_lic = _normalize_license_token(found_lic) or found_lic
+                            if not found_lic:
+                                continue
+                            if matched_txt:
+                                lic_matched_key = found_lic + matched_txt
+                                if lic_matched_key in license_list:
+                                    license_list[lic_matched_key].set_files(file_path)
+                                else:
+                                    lic_info = MatchedLicense(found_lic, "", matched_txt, file_path)
+                                    license_list[lic_matched_key] = lic_info
+                            license_detected.append(found_lic)
                 result_item.licenses = license_detected
                 file_ext = os.path.splitext(file_path)[1].lower()
                 is_source_file = file_ext and file_ext in SOURCE_EXTENSIONS
@@ -635,29 +724,43 @@ def parsing_scancode(
                 )
 
                 if len(license_detected) > 1:
-                    detected_expression = file.get("detected_license_expression", "") or ""
-                    detected_expression_spdx = file.get("detected_license_expression_spdx", "") or ""
-                    if (
-                        resolved_unknown_spdx
-                        or KEYWORD_SCANCODE_UNKNOWN in detected_expression.lower()
-                        or "licenseref-scancode-unknown-spdx" in detected_expression_spdx.lower()
-                        or suppress_unknown_license_reference
-                    ):
-                        # Prefer non-SPDX expression so unknown-spdx tokens map cleanly.
-                        # Comment only for dual-license style expressions that include OR.
-                        source_expression = detected_expression or detected_expression_spdx
-                        if source_expression and "OR" in source_expression.upper():
-                            result_item.comment = build_comment_from_detected_expression(
-                                source_expression,
-                                all_matches,
-                                suppress_unknown_license_reference,
-                            )
+                    if prefer_spdx_declarations:
+                        # Comment from SPDX declarations only (ignore ScanCode aggregate).
+                        for declared in spdx_declared_expressions:
+                            if "OR" in declared.upper():
+                                tokens, ops = split_spdx_expression_with_ops(declared)
+                                norms = [
+                                    _normalize_license_token(token) or token
+                                    for token in tokens
+                                ]
+                                result_item.comment = _omit_parens_for_two_license_expression(
+                                    join_licenses_with_ops(norms, ops)
+                                )
+                                break
                     else:
-                        license_expression = detected_expression_spdx or detected_expression
-                        if license_expression and "OR" in license_expression:
-                            result_item.comment = _omit_parens_for_two_license_expression(
-                                license_expression
-                            )
+                        detected_expression = file.get("detected_license_expression", "") or ""
+                        detected_expression_spdx = file.get("detected_license_expression_spdx", "") or ""
+                        if (
+                            resolved_unknown_spdx
+                            or KEYWORD_SCANCODE_UNKNOWN in detected_expression.lower()
+                            or "licenseref-scancode-unknown-spdx" in detected_expression_spdx.lower()
+                            or suppress_unknown_license_reference
+                        ):
+                            # Prefer non-SPDX expression so unknown-spdx tokens map cleanly.
+                            # Comment only for dual-license style expressions that include OR.
+                            source_expression = detected_expression or detected_expression_spdx
+                            if source_expression and "OR" in source_expression.upper():
+                                result_item.comment = build_comment_from_detected_expression(
+                                    source_expression,
+                                    matches_to_process,
+                                    suppress_unknown_license_reference,
+                                )
+                        else:
+                            license_expression = detected_expression_spdx or detected_expression
+                            if license_expression and "OR" in license_expression:
+                                result_item.comment = _omit_parens_for_two_license_expression(
+                                    license_expression
+                                )
 
                 scancode_file_item.append(result_item)
             except Exception as ex:
