@@ -645,36 +645,32 @@ def parsing_scancode(
                         matches_to_process, has_other_license_in_file
                     )
                 )
+                # Resolved expressions from SPDX-declaration matches only (for comment).
+                # Prefer-SPDX filters matches; matched_text extraction is only for unknown-spdx.
                 spdx_declared_expressions: list[str] = []
                 for matched_lic in matches_to_process:
                     found_lic_list = matched_lic.get("license_expression", "")
                     matched_txt = matched_lic.get("matched_text", "")
-                    if prefer_spdx_declarations:
-                        declared = _extract_spdx_declared_expression(matched_txt)
-                        if not declared:
-                            continue
-                        found_lic_list = declared
-                        spdx_declared_expressions.append(declared)
-                        resolved_unknown_spdx = True
-                    elif found_lic_list:
-                        found_lic_list = found_lic_list.lower()
-                        if KEYWORD_SCANCODE_UNKNOWN in found_lic_list:
-                            declared = _extract_spdx_declared_expression(matched_txt)
-                            if declared:
-                                found_lic_list = declared
-                                resolved_unknown_spdx = True
-                            elif has_spdx_declared_license:
-                                # File already has SPDX declarations; drop unrestorable
-                                # unknown-spdx noise (e.g. misplaced-tag messages).
-                                tokens = [
-                                    t for t in split_spdx_expression(found_lic_list)
-                                    if KEYWORD_SCANCODE_UNKNOWN not in t.lower()
-                                ]
-                                if not tokens:
-                                    continue
-                                found_lic_list = " AND ".join(tokens)
-                    else:
+                    if not found_lic_list:
                         continue
+                    found_lic_list = found_lic_list.lower()
+                    if KEYWORD_SCANCODE_UNKNOWN in found_lic_list:
+                        declared = _extract_spdx_declared_expression(matched_txt)
+                        if declared:
+                            found_lic_list = declared
+                            resolved_unknown_spdx = True
+                        elif has_spdx_declared_license:
+                            # File already has SPDX declarations; drop unrestorable
+                            # unknown-spdx noise (e.g. misplaced-tag messages).
+                            tokens = [
+                                t for t in split_spdx_expression(found_lic_list)
+                                if KEYWORD_SCANCODE_UNKNOWN not in t.lower()
+                            ]
+                            if not tokens:
+                                continue
+                            found_lic_list = " AND ".join(tokens)
+                    if prefer_spdx_declarations:
+                        spdx_declared_expressions.append(found_lic_list)
 
                     for found_lic in split_spdx_expression(found_lic_list):
                         if found_lic:
@@ -688,10 +684,7 @@ def parsing_scancode(
                                 )
                             ):
                                 continue
-                            if (
-                                not prefer_spdx_declarations
-                                and KEYWORD_SCANCODE_UNKNOWN in found_lic.lower()
-                            ):
+                            if KEYWORD_SCANCODE_UNKNOWN in found_lic.lower():
                                 declared = _extract_spdx_declared_expression(matched_txt)
                                 if declared:
                                     found_lic = declared

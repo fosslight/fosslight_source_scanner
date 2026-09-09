@@ -606,3 +606,27 @@ def test_spdx_priority_drops_body_rule_matches():
     assert success is True
     assert results[0].licenses == ["GPL-2.0"]
     assert results[0].comment == ""
+
+
+def test_prefer_spdx_uses_license_expression_not_matched_text_trailer():
+    """Known license keeps ScanCode expression; HTML trailer in matched_text is ignored."""
+    scancode_file_list = [{
+        "path": "index.html",
+        "type": "file",
+        "detected_license_expression": "apache-2.0",
+        "detected_license_expression_spdx": "Apache-2.0",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "apache-2.0",
+                "license_expression_spdx": "Apache-2.0",
+                "matched_text": "  SPDX-License-Identifier: Apache-2.0</p>",
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["Apache-2.0"]
+    assert all("</p>" not in lic for lic in results[0].licenses)
