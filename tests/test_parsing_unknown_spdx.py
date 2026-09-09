@@ -142,10 +142,11 @@ def test_unknown_spdx_comment_preserves_and_or_from_detected_expression():
 
     assert success is True
     # Classic SPDX-License-Identifier with colon present → SPDX priority drops
-    # non-declaration gpl-2.0 match
+    # non-declaration gpl-2.0 match from licenses; comment still uses detected expression
+    # so filtered findings remain visible for review.
     assert results[0].licenses == ["DApache-2.0", "NEW"]
     assert "unknown-license-reference" not in [lic.lower() for lic in results[0].licenses]
-    assert results[0].comment == "NEW OR DApache-2.0"
+    assert results[0].comment == "NEW OR DApache-2.0 AND GPL-2.0"
 
 
 def test_unknown_license_reference_suppressed_when_same_matched_text_has_other_license():
@@ -630,3 +631,25 @@ def test_prefer_spdx_uses_license_expression_not_matched_text_trailer():
     assert success is True
     assert results[0].licenses == ["Apache-2.0"]
     assert all("</p>" not in lic for lic in results[0].licenses)
+
+
+def test_mixed_unknown_spdx_preserves_known_tokens():
+    """unknown-spdx AND mit with a shorter declared id must keep MIT."""
+    scancode_file_list = [{
+        "path": "mixed.c",
+        "type": "file",
+        "detected_license_expression": "unknown-spdx AND mit",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "unknown-spdx AND mit",
+                "matched_text": "# SPDX-License-Identifier: Apache-2.0",
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["Apache-2.0", "MIT"]
+    assert results[0].comment == ""
