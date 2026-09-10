@@ -446,12 +446,44 @@ def _dedupe_detected_comment_expressions(expressions: list[str]) -> list[str]:
     return kept
 
 
-def build_detected_comment_from_dropped_matches(dropped_matches: list) -> str:
-    """Build ``Detected: a, b OR c`` from matches dropped by SPDX priority."""
-    displays = [
-        _display_expression_for_detected_comment(match)
-        for match in (dropped_matches or [])
+def _expression_covered_by_reported_licenses(
+    expression: str, reported_licenses: list
+) -> bool:
+    """
+    True when expression is already represented in License column values.
+
+    Matches the whole expression, or every AND/OR token, case-insensitively.
+    """
+    reported = {
+        (lic or "").strip().lower()
+        for lic in (reported_licenses or [])
+        if (lic or "").strip()
+    }
+    if not expression or not reported:
+        return False
+    expr = expression.strip()
+    if expr.lower() in reported:
+        return True
+    tokens = [
+        token.strip().lower()
+        for token in split_spdx_expression(expr)
+        if token and token.strip()
     ]
+    return bool(tokens) and all(token in reported for token in tokens)
+
+
+def build_detected_comment_from_dropped_matches(
+    dropped_matches: list, reported_licenses: list | None = None
+) -> str:
+    """Build ``Detected: a, b OR c`` from matches dropped by SPDX priority."""
+    displays = []
+    for match in (dropped_matches or []):
+        display = _display_expression_for_detected_comment(match)
+        if not display:
+            continue
+        if _expression_covered_by_reported_licenses(display, reported_licenses or []):
+            continue
+        displays.append(display)
     deduped = _dedupe_detected_comment_expressions(displays)
     if not deduped:
         return ""
@@ -840,7 +872,7 @@ def parsing_scancode(
                         match for match in all_matches if id(match) not in process_ids
                     ]
                     detected_comment = build_detected_comment_from_dropped_matches(
-                        dropped_matches
+                        dropped_matches, result_item.licenses
                     )
                     if detected_comment:
                         result_item.comment = detected_comment
