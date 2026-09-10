@@ -703,6 +703,73 @@ def test_dedupe_detected_comment_examples(dropped_exprs, expected_comment):
     assert build_detected_comment_from_dropped_matches(dropped) == expected_comment
 
 
+def test_detected_comment_excludes_licenses_already_in_license_column():
+    from fosslight_source._parsing_scancode_file_item import (
+        build_detected_comment_from_dropped_matches,
+    )
+    dropped = [
+        {
+            "license_expression": "apache-2.0",
+            "license_expression_spdx": "Apache-2.0",
+            "matched_text": "Licensed under the Apache License, Version 2.0",
+        },
+        {
+            "license_expression": "mit",
+            "license_expression_spdx": "MIT",
+            "matched_text": "Permission is hereby granted",
+        },
+    ]
+    assert (
+        build_detected_comment_from_dropped_matches(dropped, ["Apache-2.0"])
+        == "Detected: MIT"
+    )
+    assert build_detected_comment_from_dropped_matches(dropped, ["Apache-2.0", "MIT"]) == ""
+
+
+def test_readme_spdx_apache_does_not_repeat_in_detected_comment():
+    """Body apache-2.0 match dropped by SPDX priority must not echo License column."""
+    scancode_file_list = [{
+        "path": "README.md",
+        "type": "file",
+        "detected_license_expression": "apache-2.0",
+        "detected_license_expression_spdx": "Apache-2.0",
+        "license_detections": [
+            {
+                "matches": [{
+                    "license_expression": "apache-2.0",
+                    "license_expression_spdx": "Apache-2.0",
+                    "matched_text": "SPDX-License-Identifier: Apache-2.0",
+                }],
+            },
+            {
+                "matches": [
+                    {
+                        "license_expression": "apache-2.0",
+                        "license_expression_spdx": "Apache-2.0",
+                        "matched_text": (
+                            'Licensed under the Apache License, Version 2.0 '
+                            '(the "License"); you may not use this file except '
+                            "in compliance with the License."
+                        ),
+                    },
+                    {
+                        "license_expression": "apache-2.0",
+                        "license_expression_spdx": "Apache-2.0",
+                        "matched_text": "SPDX-License-Identifier: Apache-2.0",
+                    },
+                ],
+            },
+        ],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["Apache-2.0"]
+    assert results[0].comment == ""
+
+
 def test_spdx_priority_detected_comment_uses_spdx_ids():
     """Dropped body matches use license_expression_spdx in Detected comment."""
     scancode_file_list = [{
