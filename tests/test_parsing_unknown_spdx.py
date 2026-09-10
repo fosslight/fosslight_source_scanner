@@ -142,10 +142,10 @@ def test_unknown_spdx_comment_preserves_and_or_from_detected_expression():
 
     assert success is True
     # Classic SPDX-License-Identifier with colon present → SPDX priority drops
-    # non-declaration gpl-2.0 match
+    # non-declaration matches from licenses; dropped findings go to Detected comment.
     assert results[0].licenses == ["DApache-2.0", "NEW"]
     assert "unknown-license-reference" not in [lic.lower() for lic in results[0].licenses]
-    assert results[0].comment == "NEW OR DApache-2.0"
+    assert results[0].comment == "Detected: unknown-license-reference, gpl-2.0"
 
 
 def test_unknown_license_reference_suppressed_when_same_matched_text_has_other_license():
@@ -605,4 +605,150 @@ def test_spdx_priority_drops_body_rule_matches():
 
     assert success is True
     assert results[0].licenses == ["GPL-2.0"]
+    # Body singles covered by OR expression are dropped; Detected keeps the OR form.
+    assert results[0].comment == "Detected: gpl-2.0 OR bsd-simplified"
+
+
+def test_prefer_spdx_uses_license_expression_not_matched_text_trailer():
+    """Known license keeps ScanCode expression; HTML trailer in matched_text is ignored."""
+    scancode_file_list = [{
+        "path": "index.html",
+        "type": "file",
+        "detected_license_expression": "apache-2.0",
+        "detected_license_expression_spdx": "Apache-2.0",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "apache-2.0",
+                "license_expression_spdx": "Apache-2.0",
+                "matched_text": "  SPDX-License-Identifier: Apache-2.0</p>",
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["Apache-2.0"]
+    assert all("</p>" not in lic for lic in results[0].licenses)
+
+
+def test_mixed_unknown_spdx_preserves_known_tokens():
+    """unknown-spdx AND mit with a shorter declared id must keep MIT."""
+    scancode_file_list = [{
+        "path": "mixed.c",
+        "type": "file",
+        "detected_license_expression": "unknown-spdx AND mit",
+        "license_detections": [{
+            "matches": [{
+                "license_expression": "unknown-spdx AND mit",
+                "matched_text": "# SPDX-License-Identifier: Apache-2.0",
+            }],
+        }],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["Apache-2.0", "MIT"]
     assert results[0].comment == ""
+
+
+@pytest.mark.parametrize(
+    "dropped_exprs, expected_comment",
+    [
+        (
+            [
+                ("bsd-simplified", "BSD-2-Clause"),
+                ("gpl-2.0 OR bsd-simplified", "GPL-2.0-only OR BSD-2-Clause"),
+            ],
+            "Detected: GPL-2.0-only OR BSD-2-Clause",
+        ),
+        (
+            [
+                ("gpl-2.0", "GPL-2.0"),
+                ("gpl-2.0 OR bsd-simplified", "GPL-2.0-only OR BSD-2-Clause"),
+            ],
+            "Detected: GPL-2.0, GPL-2.0-only OR BSD-2-Clause",
+        ),
+        (
+            [
+                ("gpl-3.0", "GPL-3.0"),
+                ("apache-2.0", "Apache-2.0"),
+                ("gpl-2.0 OR bsd-simplified", "GPL-2.0-only OR BSD-2-Clause"),
+            ],
+            "Detected: GPL-3.0, Apache-2.0, GPL-2.0-only OR BSD-2-Clause",
+        ),
+        (
+            [
+                ("unknown-spdx", "LicenseRef-scancode-unknown-spdx"),
+            ],
+            "Detected: unknown-spdx",
+        ),
+    ],
+)
+def test_dedupe_detected_comment_examples(dropped_exprs, expected_comment):
+    from fosslight_source._parsing_scancode_file_item import (
+        build_detected_comment_from_dropped_matches,
+    )
+    dropped = [
+        {
+            "license_expression": expr,
+            "license_expression_spdx": spdx,
+            "matched_text": "body",
+        }
+        for expr, spdx in dropped_exprs
+    ]
+    assert build_detected_comment_from_dropped_matches(dropped) == expected_comment
+
+
+def test_spdx_priority_detected_comment_uses_spdx_ids():
+    """Dropped body matches use license_expression_spdx in Detected comment."""
+    scancode_file_list = [{
+        "path": "tag.pl",
+        "type": "file",
+        "detected_license_expression": (
+            "gpl-2.0 AND bsd-simplified AND (gpl-2.0 OR bsd-simplified) AND unknown-spdx"
+        ),
+        "license_detections": [
+            {
+                "matches": [{
+                    "license_expression": "gpl-2.0",
+                    "license_expression_spdx": "GPL-2.0-only",
+                    "matched_text": "# SPDX-License-Identifier: GPL-2.0",
+                }],
+            },
+            {
+                "matches": [
+                    {
+                        "license_expression": "bsd-simplified",
+                        "license_expression_spdx": "BSD-2-Clause",
+                        "matched_text": "not $spdx_license =~ /GPL-2\\.0.*BSD-2-Clause/",
+                    },
+                    {
+                        "license_expression": "gpl-2.0 OR bsd-simplified",
+                        "license_expression_spdx": "GPL-2.0-only OR BSD-2-Clause",
+                        "matched_text": "licensed (GPL-2.0-only OR BSD-2-Clause)",
+                    },
+                    {
+                        "license_expression": "unknown-spdx",
+                        "license_expression_spdx": "LicenseRef-scancode-unknown-spdx",
+                        "matched_text": (
+                            '"Misplaced SPDX-License-Identifier tag - use line '
+                            '$checklicenseline instead "'
+                        ),
+                    },
+                ],
+            },
+        ],
+        "copyrights": [],
+    }]
+
+    success, results, _messages, _ = parsing_scancode(scancode_file_list)
+
+    assert success is True
+    assert results[0].licenses == ["GPL-2.0"]
+    assert results[0].comment == (
+        "Detected: GPL-2.0-only OR BSD-2-Clause, unknown-spdx"
+    )
