@@ -31,6 +31,7 @@ SOONG_SPDX_LICENSE_KIND_PATTERN = re.compile(
     re.IGNORECASE,
 )
 LICENSE_REF_PREFIX_PATTERN = re.compile(r'^LicenseRef-', re.IGNORECASE)
+LICENSE_REF_SCANCODE_PREFIX_PATTERN = re.compile(r'LicenseRef-scancode-', re.IGNORECASE)
 # Trailing closers from comments and quoted lists, e.g. "MIT */", "MIT -->", or '"MIT",'.
 SPDX_DECLARATION_TRAILER_PATTERN = re.compile(r'\s*(?:\*/|-->|["\']\s*,?)\s*$')
 SPDX_DECLARATION_LINE_COMMENT_PATTERN = re.compile(r'\s//.*$')
@@ -42,6 +43,7 @@ HTTP_URL_PATTERN = re.compile(r'https?://', re.IGNORECASE)
 SPDX_REPLACE_WORDS = ["(", ")"]
 KEY_AND_OR = re.compile(r"(?<=\s)(?:and|or)(?=\s)", re.IGNORECASE)
 KEY_AND_OR_CAPTURE = re.compile(r"(?<=\s)(and|or)(?=\s)", re.IGNORECASE)
+DETECTED_COMMENT_PREFIX = "Detected: "
 # GPL, LGPL, AGPL, GFDL
 GPL_LICENSE_PATTERN = re.compile(r'((a|l)?gpl|gfdl)', re.IGNORECASE)
 FSF_IN_COPYRIGHT = "free software foundation"
@@ -395,6 +397,65 @@ def _extract_soong_license_kind(matched_txt: str) -> str:
 
 def _strip_license_ref_prefix(token: str) -> str:
     return LICENSE_REF_PREFIX_PATTERN.sub('', (token or "").strip())
+
+
+def _display_expression_for_detected_comment(match: dict) -> str:
+    """
+    Prefer license_expression_spdx; strip LicenseRef-scancode- for display.
+    Falls back to license_expression when SPDX form is absent.
+    """
+    spdx = (match.get("license_expression_spdx") or "").strip()
+    expr = (match.get("license_expression") or "").strip()
+    value = spdx or expr
+    if not value:
+        return ""
+    return LICENSE_REF_SCANCODE_PREFIX_PATTERN.sub("", value).strip()
+
+
+def _dedupe_detected_comment_expressions(expressions: list[str]) -> list[str]:
+    """
+    Drop exact duplicates, then drop a value if it appears as an AND/OR token
+    of another remaining value (e.g. BSD-2-Clause covered by
+    ``GPL-2.0-only OR BSD-2-Clause``).
+    """
+    unique: list[str] = []
+    for expr in expressions:
+        expr = (expr or "").strip()
+        if not expr:
+            continue
+        if any(expr.lower() == kept.lower() for kept in unique):
+            continue
+        unique.append(expr)
+
+    kept: list[str] = []
+    for idx, candidate in enumerate(unique):
+        others = [unique[j] for j in range(len(unique)) if j != idx]
+        candidate_lower = candidate.lower()
+        covered = False
+        for other in others:
+            other_tokens = [
+                token.lower()
+                for token in split_spdx_expression(other)
+                if token and token.strip()
+            ]
+            if candidate_lower in other_tokens:
+                covered = True
+                break
+        if not covered:
+            kept.append(candidate)
+    return kept
+
+
+def build_detected_comment_from_dropped_matches(dropped_matches: list) -> str:
+    """Build ``Detected: a, b OR c`` from matches dropped by SPDX priority."""
+    displays = [
+        _display_expression_for_detected_comment(match)
+        for match in (dropped_matches or [])
+    ]
+    deduped = _dedupe_detected_comment_expressions(displays)
+    if not deduped:
+        return ""
+    return DETECTED_COMMENT_PREFIX + ", ".join(deduped)
 
 
 def _extract_spdx_declared_expression(matched_txt: str) -> str:
@@ -768,9 +829,22 @@ def parsing_scancode(
                     )
                 )
 
-                # Comment from ScanCode detected expression (not SPDX matched_text extraction),
-                # so filtered body findings remain visible for review when prefer_spdx is on.
-                if len(license_detected) > 1:
+                # Comment:
+                # - If SPDX priority dropped body matches, always record them as
+                #   ``Detected: ...`` (OR unrelated).
+                # - Else, for multi-license OR expressions, rebuild from detected_*.
+                dropped_matches = []
+                if prefer_spdx_declarations:
+                    process_ids = {id(match) for match in matches_to_process}
+                    dropped_matches = [
+                        match for match in all_matches if id(match) not in process_ids
+                    ]
+                    detected_comment = build_detected_comment_from_dropped_matches(
+                        dropped_matches
+                    )
+                    if detected_comment:
+                        result_item.comment = detected_comment
+                if not result_item.comment and len(license_detected) > 1:
                     detected_expression = file.get("detected_license_expression", "") or ""
                     detected_expression_spdx = file.get("detected_license_expression_spdx", "") or ""
                     if (
