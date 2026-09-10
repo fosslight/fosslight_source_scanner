@@ -1,5 +1,19 @@
 # Changelog
 
+## v2.3.12 (10/09/2026)
+## Changes
+## 🐛 Hotfixes
+
+- fix(scancode): use matched_text only for unknown-spdx @soimkim (#319)
+- fix(scancode): tighten unknown-spdx restoration rules @soimkim (#318)
+- fix(manifest): keep scancode licenses when manifest empty @soimkim (#317)
+
+## 🔧 Maintenance
+
+- Omit Detected licenses already in License @soimkim (#320)
+
+---
+
 ## v2.3.11 (07/09/2026)
 ## Changes
 ## 🚀 Features
@@ -322,21 +336,3 @@
 - Remove files from Scancode @soimkim (#231)
 - Replace list to set @soimkim (#230)
 - Replace exclude function to fosslight_util @soimkim (#229)
-
----
-
-## v2.2.0 (09/01/2026)
-## Changes
-- Print comment only if OR is included @soimkim (#227)
-
-## 🚀 Features
-
-- Add KB to Scanner Type @soimkim (#221)
-
-## 🐛 Hotfixes
-
-- Remove source files from license text @soimkim (#228)
-
-## 🔧 Maintenance
-
-- Remove duplication in skipped path @soimkim (#226)
