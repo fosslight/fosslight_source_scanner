@@ -872,7 +872,7 @@ def parsing_scancode(
                         match for match in all_matches if id(match) not in process_ids
                     ]
                     detected_comment = build_detected_comment_from_dropped_matches(
-                        dropped_matches, license_detected
+                        dropped_matches, result_item.licenses
                     )
                     if detected_comment:
                         result_item.comment = detected_comment
