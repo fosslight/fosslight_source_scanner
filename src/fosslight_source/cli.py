@@ -275,7 +275,8 @@ def create_report_file(
         # if need_license and output_extension == _json_ext and "scanoss_reference" in sheet_list:
         #     del sheet_list["scanoss_reference"]
         result = write_output_file(
-            combined_path_and_file, output_extension, scan_item, hide_header="", format=output_format
+            combined_path_and_file, output_extension, scan_item, hide_header="", format=output_format,
+            scanner_covers=[scan_item.cover]
         )
         results.append(result)
     for success, msg, result_file in results:
