@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.3.13 (17/09/2026)
+## Changes
+## 🚀 Features
+
+- fix(cyclonedx): update source BOM metadata @JustinWonjaePark (#322)
+
+## 🔧 Maintenance
+
+- chore(deps): raise scancode-toolkit floor to 32.5.0 @soimkim (#321)
+
+---
+
 ## v2.3.12 (10/09/2026)
 ## Changes
 ## 🐛 Hotfixes
@@ -326,13 +338,3 @@
 
 - Add license extraction for package.json and setup.py,cfg @JustinWonjaePark (#233)
 - Add manifest extractor @JustinWonjaePark (#232)
-
----
-
-## v2.2.1 (14/01/2026)
-## Changes
-## 🔧 Maintenance
-
-- Remove files from Scancode @soimkim (#231)
-- Replace list to set @soimkim (#230)
-- Replace exclude function to fosslight_util @soimkim (#229)
