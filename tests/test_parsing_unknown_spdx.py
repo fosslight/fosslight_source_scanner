@@ -107,8 +107,8 @@ def test_unknown_spdx_in_compound_expression_splits_and_or():
     success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
-    assert results[0].licenses == ["GPL-2.0", "MIT-like"]
-    assert results[0].comment == "GPL-2.0 OR MIT-like"
+    assert results[0].licenses == ["GPL-2.0-only", "MIT-like"]
+    assert results[0].comment == "GPL-2.0-only OR MIT-like"
 
 
 def test_unknown_spdx_comment_preserves_and_or_from_detected_expression():
@@ -171,7 +171,7 @@ def test_unknown_license_reference_suppressed_when_same_matched_text_has_other_l
     success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
-    assert results[0].licenses == ["GPL-2.0"]
+    assert results[0].licenses == ["GPL-2.0-only"]
 
 
 @pytest.mark.parametrize(
@@ -381,7 +381,7 @@ def test_build_comment_from_detected_expression_helper():
         matches,
         _should_suppress_unknown_license_reference(matches, has_other_license),
     )
-    assert comment == "NEW OR DApache-2.0 AND GPL-2.0"
+    assert comment == "NEW OR DApache-2.0 AND GPL-2.0-only"
 
 
 def test_comment_without_parens_uses_operator_before_kept_token():
@@ -554,7 +554,7 @@ def test_ignore_unknown_spdx_when_file_has_spdx_declaration():
     success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
-    assert results[0].licenses == ["GPL-2.0"]
+    assert results[0].licenses == ["GPL-2.0-only"]
     assert all("unknown" not in lic.lower() for lic in results[0].licenses)
     assert all("tag" not in lic.lower() for lic in results[0].licenses)
 
@@ -604,7 +604,7 @@ def test_spdx_priority_drops_body_rule_matches():
     success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
-    assert results[0].licenses == ["GPL-2.0"]
+    assert results[0].licenses == ["GPL-2.0-only"]
     # Body singles covered by OR expression are dropped; Detected keeps the OR form.
     assert results[0].comment == "Detected: gpl-2.0 OR bsd-simplified"
 
@@ -852,7 +852,7 @@ def test_spdx_priority_detected_comment_uses_spdx_ids():
     success, results, _messages, _ = parsing_scancode(scancode_file_list)
 
     assert success is True
-    assert results[0].licenses == ["GPL-2.0"]
+    assert results[0].licenses == ["GPL-2.0-only"]
     assert results[0].comment == (
         "Detected: GPL-2.0-only OR BSD-2-Clause, unknown-spdx"
     )
