@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.14 (01/10/2026)
+## Changes
+## 🔧 Maintenance
+
+- fix(licenses): remove license suffixes from replacement list @JustinWonjaePark (#323)
+
+---
+
 ## v2.3.13 (17/09/2026)
 ## Changes
 ## 🚀 Features
@@ -329,12 +337,3 @@
 - Fix logging @JustinWonjaePark (#238)
 - Replace exclusion to FL Util @soimkim (#235)
 - Remove duplicated exclude logic for all mode @dd-jy (#240)
-
----
-
-## v2.2.2 (19/01/2026)
-## Changes
-## 🚀 Features
-
-- Add license extraction for package.json and setup.py,cfg @JustinWonjaePark (#233)
-- Add manifest extractor @JustinWonjaePark (#232)
