@@ -12,7 +12,7 @@ import fosslight_util.constant as constant
 from fosslight_util.oss_item import FileItem, OssItem, get_checksum_sha1
 
 logger = logging.getLogger(constant.LOGGER_NAME)
-replace_word = ["-only", "-old-style", "-or-later", "licenseref-scancode-", "licenseref-"]
+replace_word = ["licenseref-scancode-", "licenseref-"]
 _notice_filename = ['licen[cs]e[s]?', 'notice[s]?', 'legal', 'copyright[s]?', 'copying*', 'patent[s]?', 'unlicen[cs]e', 'eula',
                     '[a,l]?gpl[-]?[1-3]?[.,-,_]?[0-1]?', 'mit', 'bsd[-]?[0-4]?', 'bsd[-]?[0-4][-]?clause[s]?',
                     'apache[-,_]?[1-2]?[.,-,_]?[0-2]?']
