@@ -22,7 +22,12 @@ from fosslight_util.correct import correct_with_yaml
 from fosslight_util.parsing_yaml import SUPPORT_OSS_INFO_FILES
 from .run_scancode import run_scan
 from fosslight_util.exclude import get_excluded_paths
-from ._exclude import EXCLUDE_FILENAME_SOURCE, is_excluded_source_filename
+from ._exclude import (
+    DEFAULT_SKIP_SMALL_FILE_SIZE,
+    EXCLUDE_FILENAME_SOURCE,
+    is_excluded_source_filename,
+    is_file_size_at_most,
+)
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
@@ -89,11 +94,11 @@ def main() -> None:
     parser.add_argument('--hide_progress', action='store_true', required=False)
     parser.add_argument('--kb_url', type=str, required=False, default="")
     parser.add_argument('--kb_token', type=str, required=False, default="")
+    parser.add_argument('--skip-small-file-size', type=int, default=DEFAULT_SKIP_SMALL_FILE_SIZE)
     parser.add_argument('--no_merge', action='store_true', required=False)
     parser.add_argument('--ui', action='store_true', required=False)
 
     args = parser.parse_args()
-
     if args.help:
         print_help_msg_source_scanner()
     if args.version:
@@ -118,6 +123,8 @@ def main() -> None:
     correct_filepath = path_to_scan
     if args.correct_fpath:
         correct_filepath = ''.join(args.correct_fpath)
+    if args.skip_small_file_size < 0:
+        parser.error('--skip-small-file-size must be zero or greater')
     hide_progress = args.hide_progress
     kb_url = args.kb_url
     kb_token = args.kb_token
@@ -132,7 +139,8 @@ def main() -> None:
                               print_matched_text, formats, time_out, correct_mode, correct_filepath,
                               selected_scanner, path_to_exclude, hide_progress=hide_progress,
                               kb_url=kb_url, kb_token=kb_token,
-                              merge_by_folder=merge_by_folder, ui_mode=ui_mode)
+                              merge_by_folder=merge_by_folder, ui_mode=ui_mode,
+                              skip_small_file_size=args.skip_small_file_size)
 
         _result_log["Scan Result"] = result[1]
         try:
@@ -352,6 +360,7 @@ def _collect_kb_file_hashes(
     path_to_scan: str,
     excluded_files: set,
     hide_progress: bool,
+    skip_small_file_size: int = DEFAULT_SKIP_SMALL_FILE_SIZE,
 ) -> tuple[list[str], list[tuple[SourceItem, str]]]:
     """Collect MD5 hashes from scancode results and walk targets, plus (extra_item, md5) candidates.
 
@@ -362,6 +371,13 @@ def _collect_kb_file_hashes(
     extra_candidates: list[tuple[SourceItem, str]] = []
 
     for item in scancode_result:
+        item_path = item.source_name_or_path
+        if not os.path.isabs(item_path):
+            item_path = os.path.join(path_to_scan, item_path)
+        if is_file_size_at_most(item_path, skip_small_file_size):
+            # An empty cached hash means this item is checked and not KB-eligible.
+            item._cached_kb_md5 = ""
+            continue
         if item.is_license_text or is_notice_file(item.source_name_or_path):
             continue
         if item.download_location:
@@ -384,6 +400,8 @@ def _collect_kb_file_hashes(
         if (rel_path in scancode_paths or rel_path in excluded_files
                 or is_excluded_source_filename(rel_path) or is_notice_file(file_path)):
             continue
+        if is_file_size_at_most(file_path, skip_small_file_size):
+            continue
         extra_item = SourceItem(rel_path)
         md5_hash, _wfp = extra_item._get_hash(path_to_scan)
         if md5_hash:
@@ -398,7 +416,7 @@ def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
     excluded_files: set = None, hide_progress: bool = False, kb_url: str = "", kb_token: str = "",
-    ui_mode: bool = False
+    ui_mode: bool = False, skip_small_file_size: int = DEFAULT_SKIP_SMALL_FILE_SIZE
 ) -> tuple[list, Optional[str], int, int]:
 
     """
@@ -420,6 +438,7 @@ def merge_results(
     :param kb_url: KB API base URL.
     :param kb_token: KB API bearer token.
     :param ui_mode: if False, drop items with no download location and no license.
+    :param skip_small_file_size: maximum file size skipped for KB; 0 disables this filter.
     :return: (merged_result, kb failure message, requested file_hash count, returned match count).
     """
     if excluded_files is None:
@@ -479,7 +498,7 @@ def merge_results(
     extra_candidates: list[tuple[SourceItem, str]] = []
     if run_kb:
         file_hashes, extra_candidates = _collect_kb_file_hashes(
-            scancode_result, path_to_scan, excluded_files, hide_progress
+            scancode_result, path_to_scan, excluded_files, hide_progress, skip_small_file_size
         )
         if file_hashes:
             kb_result = fetch_origin_urls_via_scan_job(file_hashes, kb_url, kb_token)
@@ -568,7 +587,7 @@ def run_scanners(
     selected_scanner: str = ALL_MODE, path_to_exclude: list = [],
     all_exclude_mode: tuple = (), hide_progress: bool = False,
     kb_url: str = "", kb_token: str = "", merge_by_folder: bool = True,
-    ui_mode: bool = False
+    ui_mode: bool = False, skip_small_file_size: int = DEFAULT_SKIP_SMALL_FILE_SIZE
 ) -> Tuple[bool, str, 'ScannerItem', list, list]:
     """
     Run Scancode and scanoss.py for the given path.
@@ -582,6 +601,7 @@ def run_scanners(
     :param format: output format (excel, csv, opossum).
     :param kb_url: KB API base URL. If empty, read KB_URL environment variable, then use default.
     :param kb_token: KB API bearer token. If empty, read KB_TOKEN environment variable.
+    :param skip_small_file_size: Skip files at or below this size for KB and SCANOSS; 0 disables.
     :return success: success or failure of scancode.
     :return result_log["Scan Result"]:
     :return merged_result: merged scan result of scancode and scanoss.
@@ -657,7 +677,8 @@ def run_scanners(
                 scanoss_result, scanoss_skipped = run_scanoss_py(
                     path_to_scan, output_path, formats, True, num_cores,
                     excluded_path_with_default_exclusion, excluded_files,
-                    write_json_file, hide_progress, timeout=time_out
+                    write_json_file, hide_progress, timeout=time_out,
+                    skip_small_file_size=skip_small_file_size,
                 )
 
             run_kb_msg = ""
@@ -674,6 +695,7 @@ def run_scanners(
                     path_to_scan, run_kb, manifest_licenses, excluded_files,
                     hide_progress, kb_url, kb_token,
                     ui_mode=ui_mode,
+                    skip_small_file_size=skip_small_file_size,
                 )
                 if kb_status_message:
                     run_kb_msg = f"KB({kb_url}) {kb_status_message}"

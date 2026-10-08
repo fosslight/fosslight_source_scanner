@@ -47,6 +47,9 @@ _HELP_MESSAGE_SOURCE_SCANNER = f"""
     --kb_token <token>     KB bearer token (priority: parameter > KB_TOKEN env)
                            HTTPS uses the OS certificate store. Set KB_SSL_VERIFY=false
                            only if certificate verification must be skipped.
+    --skip-small-file-size <bytes>
+                               Skip files at or below this size for KB and SCANOSS
+                               (default: 150; use 0 to disable)
 
     💡 Examples
     ────────────────────────────────────────────────────────────────────
