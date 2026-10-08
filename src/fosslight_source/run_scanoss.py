@@ -10,6 +10,7 @@ import logging
 import json
 from typing import Tuple
 import fosslight_util.constant as constant
+from ._exclude import DEFAULT_SKIP_SMALL_FILE_SIZE
 from ._parsing_scanoss_file import parsing_scan_result  # scanoss
 from ._parsing_scanoss_file import parsing_extra_info  # scanoss
 from scanoss.scanner import Scanner, ScanType
@@ -63,6 +64,11 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     try:
         logger.debug(f"|---Running SCANOSS on {path_to_scan}")
         scanoss_settings = ScanossSettings()
+        scanoss_settings.data = {
+            "settings": {"skip": {"sizes": {"scanning": [
+                {"patterns": ["**"], "min": DEFAULT_SKIP_SMALL_FILE_SIZE + 1}
+            ]}}}
+        }
         scanner = Scanner(
             ignore_cert_errors=True,
             skip_folders=list(path_to_exclude) if path_to_exclude else [],

@@ -1,9 +1,13 @@
 # Copyright (c) 2026 LG Electronics Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-"""Source-scanner filename excludes (not applied to dependency discovery)."""
+"""Source-scanner exclusion helpers (not applied to dependency discovery)."""
+
+import os
 
 from fosslight_util.exclude import is_excluded_filename
+
+DEFAULT_SKIP_SMALL_FILE_SIZE = 150
 
 # Build/package config noise for license scans.
 EXCLUDE_FILENAME_SOURCE = frozenset({
@@ -19,3 +23,11 @@ EXCLUDE_FILENAME_SOURCE = frozenset({
 
 def is_excluded_source_filename(file_path: str) -> bool:
     return is_excluded_filename(file_path, EXCLUDE_FILENAME_SOURCE)
+
+
+def is_small_file(file_path: str) -> bool:
+    """Return whether a file is at or below the KB/SCANOSS size threshold."""
+    try:
+        return os.path.getsize(file_path) <= DEFAULT_SKIP_SMALL_FILE_SIZE
+    except OSError:
+        return False

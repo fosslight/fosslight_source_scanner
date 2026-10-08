@@ -22,7 +22,7 @@ from fosslight_util.correct import correct_with_yaml
 from fosslight_util.parsing_yaml import SUPPORT_OSS_INFO_FILES
 from .run_scancode import run_scan
 from fosslight_util.exclude import get_excluded_paths
-from ._exclude import EXCLUDE_FILENAME_SOURCE, is_excluded_source_filename
+from ._exclude import EXCLUDE_FILENAME_SOURCE, is_excluded_source_filename, is_small_file
 from .run_scanoss import run_scanoss_py
 from .run_scanoss import get_scanoss_extra_info
 import yaml
@@ -93,7 +93,6 @@ def main() -> None:
     parser.add_argument('--ui', action='store_true', required=False)
 
     args = parser.parse_args()
-
     if args.help:
         print_help_msg_source_scanner()
     if args.version:
@@ -362,6 +361,13 @@ def _collect_kb_file_hashes(
     extra_candidates: list[tuple[SourceItem, str]] = []
 
     for item in scancode_result:
+        item_path = item.source_name_or_path
+        if not os.path.isabs(item_path):
+            item_path = os.path.join(path_to_scan, item_path)
+        if is_small_file(item_path):
+            # An empty cached hash means this item is checked and not KB-eligible.
+            item._cached_kb_md5 = ""
+            continue
         if item.is_license_text or is_notice_file(item.source_name_or_path):
             continue
         if item.download_location:
@@ -383,6 +389,8 @@ def _collect_kb_file_hashes(
         rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
         if (rel_path in scancode_paths or rel_path in excluded_files
                 or is_excluded_source_filename(rel_path) or is_notice_file(file_path)):
+            continue
+        if is_small_file(file_path):
             continue
         extra_item = SourceItem(rel_path)
         md5_hash, _wfp = extra_item._get_hash(path_to_scan)

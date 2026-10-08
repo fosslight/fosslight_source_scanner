@@ -63,7 +63,7 @@ class SourceItem(FileItem):
         self.checksum = get_checksum_sha1(value)
         self.kb_origin_url = ""  # URL from OSS KB
         self.kb_evidence = ""   # Evidence from KB API (exact_match or code snippet)
-        self._cached_kb_md5 = ""  # MD5 precomputed for KB lookup (set by _collect_kb_file_hashes)
+        self._cached_kb_md5: str | None = None  # None: not checked; empty: checked but no KB hash
 
     def __del__(self) -> None:
         pass
@@ -192,8 +192,9 @@ class SourceItem(FileItem):
             item = OssItem(self.oss_name, self.oss_version, self.licenses)
             if kb_origin_urls and not self.is_license_text:
                 md5_hash = self._cached_kb_md5
-                if not md5_hash:
+                if md5_hash is None:
                     md5_hash, _wfp = self._get_hash(path_to_scan)
+                    self._cached_kb_md5 = md5_hash
                 if md5_hash:
                     origin_url = kb_origin_urls.get(md5_hash, "")
                     if origin_url:

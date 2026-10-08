@@ -47,7 +47,6 @@ _HELP_MESSAGE_SOURCE_SCANNER = f"""
     --kb_token <token>     KB bearer token (priority: parameter > KB_TOKEN env)
                            HTTPS uses the OS certificate store. Set KB_SSL_VERIFY=false
                            only if certificate verification must be skipped.
-
     💡 Examples
     ────────────────────────────────────────────────────────────────────
     # Scan current directory
