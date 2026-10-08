@@ -25,11 +25,9 @@ def is_excluded_source_filename(file_path: str) -> bool:
     return is_excluded_filename(file_path, EXCLUDE_FILENAME_SOURCE)
 
 
-def is_file_size_at_most(file_path: str, size_limit: int) -> bool:
-    """Return whether a file is at or below a positive size limit."""
-    if size_limit <= 0:
-        return False
+def is_small_file(file_path: str) -> bool:
+    """Return whether a file is at or below the KB/SCANOSS size threshold."""
     try:
-        return os.path.getsize(file_path) <= size_limit
+        return os.path.getsize(file_path) <= DEFAULT_SKIP_SMALL_FILE_SIZE
     except OSError:
         return False

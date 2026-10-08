@@ -33,8 +33,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
                    called_by_cli: bool = False, num_threads: int = -1,
                    path_to_exclude: list = [], excluded_files: set = None,
                    write_json_file: bool = False, hide_progress: bool = False,
-                   timeout: int = 120,
-                   skip_small_file_size: int = DEFAULT_SKIP_SMALL_FILE_SIZE) -> Tuple[list, bool]:
+                   timeout: int = 120) -> Tuple[list, bool]:
     """
     Run scanoss.py for the given path.
 
@@ -44,7 +43,6 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     :param called_by_cli: if not called by cli, initialize logger.
     :param write_json_file: if requested, keep the raw files.
     :param timeout: timeout in seconds for SCANOSS API request.
-    :param skip_small_file_size: Skip files at or below this size; 0 disables the additional size filter.
     :return scanoss_file_list: list of ScanItem (scanned result by files).
     """
 
@@ -66,6 +64,11 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     try:
         logger.debug(f"|---Running SCANOSS on {path_to_scan}")
         scanoss_settings = ScanossSettings()
+        scanoss_settings.data = {
+            "settings": {"skip": {"sizes": {"scanning": [
+                {"patterns": ["**"], "min": DEFAULT_SKIP_SMALL_FILE_SIZE + 1}
+            ]}}}
+        }
         scanner = Scanner(
             ignore_cert_errors=True,
             skip_folders=list(path_to_exclude) if path_to_exclude else [],
@@ -73,8 +76,6 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10,
             scanoss_settings=scanoss_settings,
-            # SCANOSS treats skip_size as the inclusive minimum accepted size.
-            skip_size=skip_small_file_size + 1 if skip_small_file_size > 0 else 0,
             timeout=timeout,
             retry=0
         )
