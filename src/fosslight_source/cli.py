@@ -361,16 +361,15 @@ def _collect_kb_file_hashes(
     extra_candidates: list[tuple[SourceItem, str]] = []
 
     for item in scancode_result:
+        if item.is_license_text or item.download_location or is_notice_file(item.source_name_or_path):
+            item._cached_kb_md5 = ""
+            continue
         item_path = item.source_name_or_path
         if not os.path.isabs(item_path):
             item_path = os.path.join(path_to_scan, item_path)
         if is_small_file(item_path):
             # An empty cached hash means this item is checked and not KB-eligible.
             item._cached_kb_md5 = ""
-            continue
-        if item.is_license_text or is_notice_file(item.source_name_or_path):
-            continue
-        if item.download_location:
             continue
         md5_hash, _wfp = item._get_hash(path_to_scan)
         if md5_hash:

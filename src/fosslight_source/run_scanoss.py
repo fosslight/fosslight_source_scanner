@@ -64,14 +64,10 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
     try:
         logger.debug(f"|---Running SCANOSS on {path_to_scan}")
         scanoss_settings = ScanossSettings()
-        scanoss_settings.data = {
-            "settings": {"skip": {"sizes": {"scanning": [
-                {"patterns": ["**"], "min": DEFAULT_SKIP_SMALL_FILE_SIZE + 1}
-            ]}}}
-        }
         scanner = Scanner(
             ignore_cert_errors=True,
             skip_folders=list(path_to_exclude) if path_to_exclude else [],
+            skip_size=DEFAULT_SKIP_SMALL_FILE_SIZE + 1,
             scan_output=output_json_file,
             scan_options=ScanType.SCAN_SNIPPETS.value,
             nb_threads=num_threads if num_threads > 0 else 10,
