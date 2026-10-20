@@ -44,6 +44,7 @@ dependencies = [
     "tomli; python_version < '3.11'",
     "tqdm",
     "truststore",
+    "pluggy<1.7.0",
 ]
 
 [project.optional-dependencies]
