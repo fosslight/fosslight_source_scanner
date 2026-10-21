@@ -37,10 +37,7 @@ from fosslight_util.time import current_timestamp_utc, format_running_time, time
 from fosslight_util.oss_item import ScannerItem
 from typing import Optional, Tuple
 import shutil
-from ._merge import (
-    _add_pre_merge_sheet,
-    merge_results_by_folder
-)
+from fosslight_util.merge import _add_pre_merge_sheet, merge_results_by_folder
 
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
