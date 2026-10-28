@@ -5,7 +5,6 @@
 
 import sys
 import os
-import platform
 import time
 import warnings
 import logging
@@ -171,16 +170,11 @@ def create_report_file(
         # If -o does not contains file name, set default name
         while len(output_files) < len(output_extensions):
             output_files.append(None)
-        to_remove = []  # elements of spdx format on windows that should be removed
         for i, output_extension in enumerate(output_extensions):
             if output_files[i] is None or output_files[i] == "":
                 if formats:
                     if formats[i].startswith('spdx'):
-                        if platform.system() == 'Windows':
-                            logger.warning(f'{formats[i]} is not supported on Windows.Please remove {formats[i]} from format.')
-                            to_remove.append(i)
-                        else:
-                            output_files[i] = f"fosslight_spdx_src_{name_time}"
+                        output_files[i] = f"fosslight_spdx_src_{name_time}"
                     elif formats[i].startswith('cyclonedx'):
                         output_files[i] = f'fosslight_cyclonedx_src_{name_time}'
                     else:
@@ -193,14 +187,6 @@ def create_report_file(
                         output_files[i] = f"fosslight_opossum_src_{name_time}"
                     else:
                         output_files[i] = f"fosslight_report_src_{name_time}"
-        for index in sorted(to_remove, reverse=True):
-            # remove elements of spdx format on windows
-            del output_files[index]
-            del output_extensions[index]
-            del formats[index]
-        if len(output_extensions) < 1:
-            sys.exit(0)
-
     if not correct_filepath:
         correct_filepath = path_to_scan
 
@@ -258,6 +244,31 @@ def create_report_file(
         else:
             scan_item = correct_item
             logger.info("Success to correct with yaml.")
+
+    if license_list and any(output_format.startswith("spdx") for output_format in formats):
+        matched_texts_by_file = {}
+        for matched_license in license_list.values():
+            if not matched_license.matched_text:
+                continue
+            for matched_path in matched_license.files:
+                path_key = os.path.normcase(os.path.normpath(matched_path.replace("\\", "/")))
+                matched_texts_by_file.setdefault(path_key, []).append(matched_license)
+
+        for file_item in scan_item.file_items.get(PKG_NAME, []):
+            path_key = os.path.normcase(os.path.normpath(file_item.source_name_or_path.replace("\\", "/")))
+            for oss_item in file_item.oss_items:
+                if oss_item.exclude:
+                    continue
+                for license_name in oss_item.license:
+                    for matched_license in matched_texts_by_file.get(path_key, []):
+                        declares_license = re.search(
+                            r"(?:SPDX[-\s]+License[-\s]+Identifier\s*:\s*|\blicense\s*=\s*['\"]\s*)"
+                            + re.escape(license_name) + r"(?=[,'\"\s]|$)",
+                            matched_license.matched_text, re.IGNORECASE,
+                        )
+                        if matched_license.license.casefold() == license_name.casefold() or declares_license:
+                            oss_item.license_texts.setdefault(license_name, matched_license.matched_text)
+                            break
 
     finish_time = current_timestamp_utc()
     scan_item.set_cover_finish_time(finish_time)
@@ -652,9 +663,12 @@ def run_scanners(
             if not selected_scanner:
                 selected_scanner = ALL_MODE
             if selected_scanner in ['scancode', ALL_MODE]:
+                need_matched_license = print_matched_text or any(
+                    output_format.startswith("spdx") for output_format in formats
+                )
                 success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(
                     path_to_scan, output_file_name, write_json_file, num_cores, True,
-                    print_matched_text, formats, called_by_cli, time_out, correct_mode,
+                    need_matched_license, formats, called_by_cli, time_out, correct_mode,
                     correct_filepath, path_to_exclude,
                     hide_progress=hide_progress,
                     ui_mode=ui_mode,
