@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Stable order for multi-value License / Copyright cells."""
 
-from fosslight_source._merge import _get_top_merge_values
+from fosslight_util.merge import _get_top_merge_values
 from fosslight_source._scan_item import SourceItem
 
 
