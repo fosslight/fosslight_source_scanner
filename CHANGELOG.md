@@ -1,5 +1,13 @@
 # Changelog
 
+## v2.3.15 (15/10/2026)
+## Changes
+## 🔧 Maintenance
+
+- feat(KB/SCANOSS): skip small files @JustinWonjaePark (#324)
+
+---
+
 ## v2.3.14 (01/10/2026)
 ## Changes
 ## 🔧 Maintenance
@@ -319,21 +327,3 @@
 
 - Update help message @bjk7119 (#241)
 - Update temporary directory name @soimkim (#242)
-
----
-
-## v2.2.3 (23/01/2026)
-## Changes
-- Fix tox.ini @JustinWonjaePark (#237)
-
-## 🐛 Hotfixes
-
-- Use hidden dir for intermeditate to fix scan count @JustinWonjaePark (#234)
-
-## 🔧 Maintenance
-
-- Update Scanner Info sheet and fix bug related to temp directory @JustinWonjaePark (#236)
-- Take UNLICENSED expression from npmjs @JustinWonjaePark (#239)
-- Fix logging @JustinWonjaePark (#238)
-- Replace exclusion to FL Util @soimkim (#235)
-- Remove duplicated exclude logic for all mode @dd-jy (#240)
