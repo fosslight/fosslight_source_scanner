@@ -17,6 +17,7 @@ from scanoss.scanner import Scanner, ScanType
 from scanoss.scanoss_settings import ScanossSettings
 import io
 import contextlib
+from . import _diagnostics as diagnostics
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -75,6 +76,9 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             timeout=timeout,
             retry=0
         )
+        diagnostics.record("scanoss_config", threads=num_threads if num_threads > 0 else 10, timeout=timeout,
+                           skip_size=DEFAULT_SKIP_SMALL_FILE_SIZE + 1,
+                           endpoint=diagnostics.safe_url(scanner.scanoss_api.url))
 
         # Check API connectivity & API Limit using dummy WFP POST
         try:
@@ -86,6 +90,7 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
                 headers=scanner.scanoss_api.headers,
                 timeout=5
             )
+            diagnostics.record("scanoss_ping", status=ping_response.status_code)
             if ping_response.status_code != 200:
                 response_text = ping_response.text.lower()
                 is_limit = ping_response.status_code in [429, 503]
@@ -98,10 +103,12 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
                 else:
                     logger.debug(f"[SCANOSS] API is not ready: HTTP {ping_response.status_code}")
                 scanoss_skipped = True
+                diagnostics.record("scanoss_skipped", reason="http_status", status=ping_response.status_code)
                 return scanoss_file_list, scanoss_skipped
         except Exception as ping_error:
             logger.debug(f"[SCANOSS] Connection failed to {scanner.scanoss_api.url}: {ping_error}")
             scanoss_skipped = True
+            diagnostics.record("scanoss_skipped", reason="connection_error", error_type=type(ping_error).__name__)
             return scanoss_file_list, scanoss_skipped
 
         with contextlib.redirect_stdout(output_buffer), contextlib.redirect_stderr(output_buffer):
@@ -163,5 +170,6 @@ def run_scanoss_py(path_to_scan: str, output_path: str = "", format: list = [],
             os.remove(output_wfp_file)
 
     logger.info(f"|---Number of files detected with SCANOSS: {(len(scanoss_file_list))}")
+    diagnostics.record("scanoss_complete", skipped=scanoss_skipped, items=len(scanoss_file_list))
 
     return scanoss_file_list, scanoss_skipped

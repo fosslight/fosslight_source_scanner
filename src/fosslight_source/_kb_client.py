@@ -13,6 +13,7 @@ import urllib.request
 from typing import Dict, List, NamedTuple, Optional
 
 import fosslight_util.constant as constant
+from . import _diagnostics as diagnostics
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 
@@ -67,9 +68,16 @@ def _kb_request(
     if kb_token:
         request.add_header("Authorization", f"Bearer {kb_token}")
 
-    with urllib.request.urlopen(request, timeout=timeout, context=create_kb_ssl_context()) as response:
-        body = response.read().decode()
-        return json.loads(body) if body else {}
+    diagnostics.record("kb_http_request", method=method, endpoint=diagnostics.safe_url(request.full_url), timeout=timeout)
+    try:
+        with urllib.request.urlopen(request, timeout=timeout, context=create_kb_ssl_context()) as response:
+            diagnostics.record("kb_http_response", method=method, status=getattr(response, "status", None))
+            body = response.read().decode()
+            return json.loads(body) if body else {}
+    except (urllib.error.URLError, OSError, ValueError) as error:
+        diagnostics.record("kb_http_error", method=method, error_type=type(error).__name__,
+                           status=getattr(error, "code", None))
+        raise
 
 
 def _estimate_job_wait_timeout(file_hash_count: int) -> float:
@@ -153,6 +161,7 @@ def fetch_origin_urls_via_scan_job(
     """
     unique_hashes = list(dict.fromkeys(h for h in file_hashes if h))
     requested_count = len(unique_hashes)
+    diagnostics.record("kb_request", input_count=len(file_hashes), unique_count=requested_count, file_hashes=unique_hashes)
     if not unique_hashes:
         return _kb_scan_job_result({}, None, 0)
 
@@ -200,6 +209,7 @@ def fetch_origin_urls_via_scan_job(
         f"KB scan job created: job_id={job_id}, total={created.get('total', fallback_count)}, "
         f"accepted={accepted}, skipped={skipped}"
     )
+    diagnostics.record("kb_job_created", job_id=job_id, accepted=accepted, skipped=skipped)
     if skipped:
         logger.warning(f"KB scan job rate-limited: {skipped} file_hash(es) skipped by server")
     if accepted == 0:
@@ -241,7 +251,11 @@ def fetch_origin_urls_via_scan_job(
             continue
 
         job_status = status.get("status", "")
+        diagnostics.record("kb_job_status", job_id=job_id, status=job_status,
+                           total=status.get("total"), failed=status.get("failed"),
+                           errors=diagnostics.error_summary(status.get("message")))
         if job_status == "completed":
+            diagnostics.record_kb_response(job_id, status, unique_hashes)
             for row in status.get("results", []):
                 if not isinstance(row, dict):
                     continue
@@ -255,6 +269,7 @@ def fetch_origin_urls_via_scan_job(
             return _kb_scan_job_result(origin_urls, None, requested_count)
 
         if job_status == "failed":
+            diagnostics.record_kb_response(job_id, status, unique_hashes)
             failure_message = _scan_job_failure_message(status)
             if failure_message:
                 logger.warning(f"KB scan job failed: job_id={job_id}, message={failure_message}")

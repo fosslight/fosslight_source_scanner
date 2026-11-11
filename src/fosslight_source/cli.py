@@ -30,13 +30,14 @@ import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, resolve_kb_config, is_notice_file, is_manifest_file
-from ._kb_client import create_kb_ssl_context, fetch_origin_urls_via_scan_job
+from ._kb_client import create_kb_ssl_context, fetch_origin_urls_via_scan_job, kb_ssl_verify_enabled
 from fosslight_util.cover import dump_result_log
 from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
 from fosslight_util.oss_item import ScannerItem
 from typing import Optional, Tuple
 import shutil
 from fosslight_util.merge import _add_pre_merge_sheet, merge_results_by_folder
+from . import _diagnostics as diagnostics
 
 
 SRC_SHEET_NAME = 'SRC_FL_Source'
@@ -241,6 +242,7 @@ def create_report_file(
         else:
             scan_item = correct_item
             logger.info("Success to correct with yaml.")
+        diagnostics.record("correction", success=success)
 
     if license_list and any(output_format.startswith("spdx") for output_format in formats):
         matched_texts_by_file = {}
@@ -270,11 +272,13 @@ def create_report_file(
     finish_time = current_timestamp_utc()
     scan_item.set_cover_finish_time(finish_time)
 
+    diagnostics.record_items("before_folder_merge", scan_item.file_items.get(PKG_NAME, []))
     if merged_result and merge_by_folder:
         _add_pre_merge_sheet(scan_item, PRE_MERGE_SHEET_NAME, get_header_row(SRC_SHEET_NAME), PKG_NAME)
         _merge_start = time.time()
         scan_item.file_items[PKG_NAME] = merge_results_by_folder(scan_item.file_items[PKG_NAME])
         logger.debug(f"[TIMING] merge_results_by_folder: {time.time() - _merge_start:.4f}s")
+    diagnostics.record_items("after_folder_merge", scan_item.file_items.get(PKG_NAME, []))
 
     combined_paths_and_files = [os.path.join(output_path, file) for file in output_files]
     results = []
@@ -285,6 +289,7 @@ def create_report_file(
             combined_path_and_file, output_extension, scan_item, hide_header="", format=output_format,
             scanner_covers=[scan_item.cover]
         )
+        diagnostics.record("output", format=output_format, success=result[0], file=os.path.basename(result[2]))
         results.append(result)
     for success, msg, result_file in results:
         final_result_file = result_file.replace(output_path, final_output_path)
@@ -371,6 +376,10 @@ def _collect_kb_file_hashes(
     for item in scancode_result:
         if item.is_license_text or item.download_location or is_notice_file(item.source_name_or_path):
             item._cached_kb_md5 = ""
+            reason = "license_text" if item.is_license_text else (
+                "download_present" if item.download_location else "notice_filename"
+            )
+            diagnostics.record_kb_target(item.source_name_or_path, reason, source="merged_result")
             continue
         item_path = item.source_name_or_path
         if not os.path.isabs(item_path):
@@ -378,8 +387,11 @@ def _collect_kb_file_hashes(
         if is_small_file(item_path):
             # An empty cached hash means this item is checked and not KB-eligible.
             item._cached_kb_md5 = ""
+            diagnostics.record_kb_target(item.source_name_or_path, "small_file", source="merged_result")
             continue
         md5_hash, _wfp = item._get_hash(path_to_scan)
+        diagnostics.record_kb_target(item.source_name_or_path, "eligible" if md5_hash else "hash_unavailable",
+                                     md5=md5_hash, source="merged_result")
         if md5_hash:
             item._cached_kb_md5 = md5_hash
             file_hashes.append(md5_hash)
@@ -396,11 +408,18 @@ def _collect_kb_file_hashes(
         rel_path = os.path.relpath(file_path, abs_path_to_scan).replace("\\", "/")
         if (rel_path in scancode_paths or rel_path in excluded_files
                 or is_excluded_source_filename(rel_path) or is_notice_file(file_path)):
+            reason = "already_in_results" if rel_path in scancode_paths else (
+                "excluded" if rel_path in excluded_files or is_excluded_source_filename(rel_path) else "notice_filename"
+            )
+            diagnostics.record_kb_target(rel_path, reason, source="walk")
             continue
         if is_small_file(file_path):
+            diagnostics.record_kb_target(rel_path, "small_file", source="walk")
             continue
         extra_item = SourceItem(rel_path)
         md5_hash, _wfp = extra_item._get_hash(path_to_scan)
+        diagnostics.record_kb_target(rel_path, "eligible" if md5_hash else "hash_unavailable",
+                                     md5=md5_hash, source="walk")
         if md5_hash:
             extra_item._cached_kb_md5 = md5_hash
             file_hashes.append(md5_hash)
@@ -439,6 +458,8 @@ def merge_results(
     """
     if excluded_files is None:
         excluded_files = set()
+    diagnostics.record_items("scancode", scancode_result)
+    diagnostics.record_items("scanoss", scanoss_result)
 
     # Merge ScanOSS into ScanCode results.
     # When ScanCode already detected a license for the same file, keep that license
@@ -487,6 +508,7 @@ def merge_results(
             if valid_licenses:
                 item.licenses = valid_licenses
 
+    diagnostics.record_items("before_kb", scancode_result)
     kb_origin_urls: dict[str, str] = {}
     kb_status_message: Optional[str] = None
     kb_requested_count = 0
@@ -502,6 +524,8 @@ def merge_results(
             kb_status_message = kb_result.failure_message
             kb_requested_count = kb_result.requested_count
             kb_returned_count = kb_result.returned_count
+    diagnostics.record("kb_summary", enabled=run_kb, requested=kb_requested_count, returned=kb_returned_count,
+                       errors=diagnostics.error_summary(kb_status_message))
 
     for item in scancode_result:
         item.set_oss_item(path_to_scan, kb_origin_urls=kb_origin_urls)
@@ -513,13 +537,22 @@ def merge_results(
             extra_item.set_oss_item(path_to_scan, kb_origin_urls=kb_origin_urls)
             if extra_item.download_location:
                 scancode_result.append(extra_item)
+            else:
+                diagnostics.record("result_drop", stage="kb_extra", path=extra_item.source_name_or_path,
+                                   md5=_md5_hash, reason="no_usable_origin_url")
 
     if not ui_mode:
+        if diagnostics.enabled():
+            for item in scancode_result:
+                if _has_empty_download_and_license(item):
+                    diagnostics.record("result_drop", stage="filter", path=item.source_name_or_path,
+                                       reason="empty_download_and_license")
         scancode_result[:] = [
             item for item in scancode_result
             if not _has_empty_download_and_license(item)
         ]
 
+    diagnostics.record_items("after_kb_filter", scancode_result)
     return scancode_result, kb_status_message, kb_requested_count, kb_returned_count
 
 
@@ -659,6 +692,16 @@ def run_scanners(
 
             if not selected_scanner:
                 selected_scanner = ALL_MODE
+            if diagnostics.enabled():
+                diagnostics.record_runtime(
+                    scanner=selected_scanner, formats=formats, timeout=time_out, requested_cores=num_cores,
+                    merge_by_folder=merge_by_folder, ui_mode=ui_mode, correct_mode=correct_mode,
+                    raw_results=write_json_file, matched_text=print_matched_text,
+                    kb_url=diagnostics.safe_url(kb_url), kb_ssl_verify=kb_ssl_verify_enabled(), exclusions=path_to_exclude,
+                    effective_exclusions=excluded_path_with_default_exclusion,
+                    scanned_files=cnt_file_except_skipped,
+                )
+                diagnostics.record_inputs(path_to_scan, set(excluded_files or ()))
             if selected_scanner in ['scancode', ALL_MODE]:
                 need_matched_license = print_matched_text or any(
                     output_format.startswith("spdx") for output_format in formats
@@ -711,6 +754,7 @@ def run_scanners(
             result_log[RESULT_KEY] = f"Format error. {msg}"
             success = False
 
+        diagnostics.record("run_complete", success=success)
         publish_temp_output = True
     finally:
         publish_ok = _finalize_temp_output(output_path, final_output_path, publish_temp_output, logger)

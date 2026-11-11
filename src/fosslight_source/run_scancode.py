@@ -21,6 +21,7 @@ from fosslight_util.exclude import (
     EXCLUDE_FILE_EXTENSION,
     PACKAGE_DIRECTORY,
 )
+from . import _diagnostics as diagnostics
 
 logger = logging.getLogger(constant.LOGGER_NAME)
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -314,7 +315,10 @@ def run_scan(
                     "quiet": hide_progress
                 }
                 _apply_scancode_unset_workaround(kwargs)
+                diagnostics.record("scancode_config", processes=num_cores, timeout=time_out,
+                                   max_in_memory=max_in_memory, ignore=list(ignore_tuple), only_findings=not ui_mode)
                 rc, results = cli.run_scan(path_to_scan, **kwargs)
+                diagnostics.record("scancode_complete", success=bool(rc))
                 if not rc:
                     msg = "Source code analysis failed."
                     success = False
@@ -326,6 +330,12 @@ def run_scan(
                             _result_log["Error_files"] = error_msg
                             msg = "Failed to analyze :" + error_msg
                     if "files" in results:
+                        if diagnostics.enabled():
+                            for index, file in enumerate(results["files"]):
+                                diagnostics.record("scancode_file", index=index, path=file.get("path", ""),
+                                                   type=file.get("type"), binary=file.get("is_binary"),
+                                                   license_text_percentage=file.get("percentage_of_license_text"),
+                                                   errors=diagnostics.error_summary(file.get("scan_errors")))
                         rc, result_list, parsing_msg, license_list = parsing_file_item(
                             results["files"], has_error, need_license, ui_mode=ui_mode
                         )
