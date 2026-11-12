@@ -9,6 +9,9 @@ import logging
 import os
 import platform
 import sys
+import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
@@ -34,6 +37,17 @@ def record(event: str, **fields) -> None:
         logger.debug("[DIAGNOSTIC] %s", json.dumps(
             {"schema": 1, "event": event, **fields}, ensure_ascii=True, sort_keys=True,
         ))
+
+
+@contextmanager
+def timing(stage: str) -> Iterator[None]:
+    started = time.perf_counter()
+    try:
+        yield
+    finally:
+        seconds = time.perf_counter() - started
+        logger.debug("[TIMING] %s: %.4fs", stage, seconds)
+        record("timing", stage=stage, seconds=seconds)
 
 
 def text_digest(value: str) -> str:

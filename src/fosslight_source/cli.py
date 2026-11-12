@@ -515,11 +515,13 @@ def merge_results(
     kb_returned_count = 0
     extra_candidates: list[tuple[SourceItem, str]] = []
     if run_kb:
-        file_hashes, extra_candidates = _collect_kb_file_hashes(
-            scancode_result, path_to_scan, excluded_files, hide_progress
-        )
+        with diagnostics.timing("kb_hashing"):
+            file_hashes, extra_candidates = _collect_kb_file_hashes(
+                scancode_result, path_to_scan, excluded_files, hide_progress
+            )
         if file_hashes:
-            kb_result = fetch_origin_urls_via_scan_job(file_hashes, kb_url, kb_token)
+            with diagnostics.timing("kb_lookup"):
+                kb_result = fetch_origin_urls_via_scan_job(file_hashes, kb_url, kb_token)
             kb_origin_urls = kb_result.origin_urls
             kb_status_message = kb_result.failure_message
             kb_requested_count = kb_result.requested_count
@@ -706,13 +708,14 @@ def run_scanners(
                 need_matched_license = print_matched_text or any(
                     output_format.startswith("spdx") for output_format in formats
                 )
-                success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(
-                    path_to_scan, output_file_name, write_json_file, num_cores, True,
-                    need_matched_license, formats, called_by_cli, time_out, correct_mode,
-                    correct_filepath, path_to_exclude,
-                    hide_progress=hide_progress,
-                    ui_mode=ui_mode,
-                )
+                with diagnostics.timing("scancode"):
+                    success, result_log[RESULT_KEY], scancode_result, license_list = run_scan(
+                        path_to_scan, output_file_name, write_json_file, num_cores, True,
+                        need_matched_license, formats, called_by_cli, time_out, correct_mode,
+                        correct_filepath, path_to_exclude,
+                        hide_progress=hide_progress,
+                        ui_mode=ui_mode,
+                    )
             excluded_files = set(excluded_files) if excluded_files else set()
             if selected_scanner in ['scanoss', ALL_MODE]:
                 scanoss_result, scanoss_skipped = run_scanoss_py(
@@ -725,7 +728,9 @@ def run_scanners(
             if selected_scanner in SCANNER_TYPE:
                 run_kb = True if selected_scanner in ['kb', ALL_MODE] else False
                 if run_kb:
-                    if not check_kb_server_reachable(kb_url, kb_token):
+                    with diagnostics.timing("kb_health"):
+                        kb_reachable = check_kb_server_reachable(kb_url, kb_token)
+                    if not kb_reachable:
                         run_kb = False
                         run_kb_msg = f"KB({kb_url}) Unreachable"
 
