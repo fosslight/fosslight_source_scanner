@@ -134,6 +134,11 @@ class KbScanJobResult(NamedTuple):
     returned_count: int
 
 
+class _KbScanJobDetails(NamedTuple):
+    result: KbScanJobResult
+    unmatched_hashes: frozenset[str]
+
+
 def _kb_scan_job_result(
     origin_urls: Dict[str, str],
     failure_message: Optional[str],
@@ -144,6 +149,17 @@ def _kb_scan_job_result(
         failure_message=failure_message,
         requested_count=requested_count,
         returned_count=len(origin_urls),
+    )
+
+
+def _kb_scan_job_details(
+    origin_urls: Dict[str, str],
+    failure_message: Optional[str],
+    requested_count: int,
+    unmatched_hashes: frozenset[str] = frozenset(),
+) -> _KbScanJobDetails:
+    return _KbScanJobDetails(
+        _kb_scan_job_result(origin_urls, failure_message, requested_count), unmatched_hashes,
     )
 
 
@@ -159,11 +175,18 @@ def fetch_origin_urls_via_scan_job(
     :param kb_token: KB API bearer token.
     :return: origin URLs, optional failure message, and requested/returned file_hash counts.
     """
+    return _fetch_origin_urls_with_misses(file_hashes, kb_url, kb_token).result
+
+
+def _fetch_origin_urls_with_misses(
+    file_hashes: List[str], kb_url: str, kb_token: str,
+) -> _KbScanJobDetails:
     unique_hashes = list(dict.fromkeys(h for h in file_hashes if h))
+    requested_hashes = set(unique_hashes)
     requested_count = len(unique_hashes)
     diagnostics.record("kb_request", input_count=len(file_hashes), unique_count=requested_count, file_hashes=unique_hashes)
     if not unique_hashes:
-        return _kb_scan_job_result({}, None, 0)
+        return _kb_scan_job_details({}, None, 0)
 
     create_payload = {"file_hashes": unique_hashes}
     try:
@@ -173,31 +196,31 @@ def fetch_origin_urls_via_scan_job(
         if not failure_message:
             failure_message = f"HTTP {e.code} {e.reason}"
         logger.warning(f"KB scan job create failed: {failure_message}")
-        return _kb_scan_job_result({}, failure_message, requested_count)
+        return _kb_scan_job_details({}, failure_message, requested_count)
     except urllib.error.URLError as e:
         failure_message = str(e)
         logger.warning(f"KB scan job create failed: {failure_message}")
-        return _kb_scan_job_result({}, failure_message, requested_count)
+        return _kb_scan_job_details({}, failure_message, requested_count)
     except Exception as e:
         failure_message = str(e)
         logger.warning(f"KB scan job create failed: {failure_message}")
-        return _kb_scan_job_result({}, failure_message, requested_count)
+        return _kb_scan_job_details({}, failure_message, requested_count)
 
     failure_message = _scan_job_failure_message(created)
     if failure_message:
         logger.warning(f"KB scan job create failed: {failure_message}")
-        return _kb_scan_job_result({}, failure_message, requested_count)
+        return _kb_scan_job_details({}, failure_message, requested_count)
 
     if str(created.get("status", "")).lower() == "failed":
         failure_message = "scan job create failed"
         logger.warning(f"KB scan job create failed: {failure_message}")
-        return _kb_scan_job_result({}, failure_message, requested_count)
+        return _kb_scan_job_details({}, failure_message, requested_count)
 
     job_id = created.get("job_id", "")
     if not job_id:
         failure_message = "scan job create response missing job_id"
         logger.warning(f"KB scan job create failed: {failure_message}")
-        return _kb_scan_job_result({}, failure_message, requested_count)
+        return _kb_scan_job_details({}, failure_message, requested_count)
 
     fallback_count = len(unique_hashes)
     accepted = _coerce_count(
@@ -218,7 +241,7 @@ def fetch_origin_urls_via_scan_job(
             if skipped
             else "scan job accepted no file_hashes"
         )
-        return _kb_scan_job_result({}, failure_message, requested_count)
+        return _kb_scan_job_details({}, failure_message, requested_count)
 
     deadline = time.monotonic() + _estimate_job_wait_timeout(accepted)
     interval = _SCAN_JOB_POLL_INTERVAL_SEC
@@ -230,11 +253,11 @@ def fetch_origin_urls_via_scan_job(
         except urllib.error.HTTPError as e:
             if e.code == 404:
                 logger.warning(f"KB scan job not found: {job_id}")
-                return _kb_scan_job_result(origin_urls, "scan job not found", requested_count)
+                return _kb_scan_job_details(origin_urls, "scan job not found", requested_count)
             failure_message = _scan_job_failure_message(_parse_http_error_body(e))
             if failure_message:
                 logger.warning(f"KB scan job status failed: {failure_message}")
-                return _kb_scan_job_result(origin_urls, failure_message, requested_count)
+                return _kb_scan_job_details(origin_urls, failure_message, requested_count)
             logger.warning(f"KB scan job status failed: HTTP {e.code}")
             time.sleep(interval)
             interval = min(interval * 1.5, _SCAN_JOB_POLL_MAX_INTERVAL_SEC)
@@ -256,17 +279,29 @@ def fetch_origin_urls_via_scan_job(
                            errors=diagnostics.error_summary(status.get("message")))
         if job_status == "completed":
             diagnostics.record_kb_response(job_id, status, unique_hashes)
+            unmatched_hashes = set()
+            error_hashes = set()
             for row in status.get("results", []):
                 if not isinstance(row, dict):
                     continue
                 file_hash = row.get("file_hash", "")
                 if row.get("success") and row.get("output") and file_hash:
                     origin_urls[file_hash] = row["output"]
+                if isinstance(file_hash, str) and file_hash in requested_hashes:
+                    if row.get("error") or row.get("message"):
+                        error_hashes.add(file_hash)
+                    elif row.get("success") is False:
+                        unmatched_hashes.add(file_hash)
             logger.info(
                 f"KB scan job completed: job_id={job_id}, "
                 f"matched={len(origin_urls)}, failed={status.get('failed', 0)}"
             )
-            return _kb_scan_job_result(origin_urls, None, requested_count)
+            eligible_misses = (
+                frozenset(unmatched_hashes - origin_urls.keys() - error_hashes)
+                if not skipped and not status.get("error") and not status.get("message")
+                else frozenset()
+            )
+            return _kb_scan_job_details(origin_urls, None, requested_count, eligible_misses)
 
         if job_status == "failed":
             diagnostics.record_kb_response(job_id, status, unique_hashes)
@@ -275,10 +310,10 @@ def fetch_origin_urls_via_scan_job(
                 logger.warning(f"KB scan job failed: job_id={job_id}, message={failure_message}")
             else:
                 logger.warning(f"KB scan job failed: job_id={job_id}")
-            return _kb_scan_job_result(origin_urls, failure_message or "scan job failed", requested_count)
+            return _kb_scan_job_details(origin_urls, failure_message or "scan job failed", requested_count)
 
         time.sleep(interval)
         interval = min(interval * 1.5, _SCAN_JOB_POLL_MAX_INTERVAL_SEC)
 
     logger.warning(f"KB scan job timed out: job_id={job_id}")
-    return _kb_scan_job_result(origin_urls, "scan job timed out", requested_count)
+    return _kb_scan_job_details(origin_urls, "scan job timed out", requested_count)

@@ -123,6 +123,50 @@ class SourceItem(FileItem):
             logger.debug(f"Failed to compute MD5 for {self.source_name_or_path}: {e}")
         return md5_hex, wfp
 
+    def _get_line_ending_fallback_hash(self, path_to_scan: str) -> tuple[str, str]:
+        from ._scancode_ignore_binaries import is_binary
+
+        file_path = self.source_name_or_path
+        if not os.path.isabs(file_path):
+            file_path = os.path.join(path_to_scan, file_path)
+        try:
+            if is_binary(file_path):
+                return "", "binary"
+            original_hash = hashlib.md5()
+            alternate_hash = hashlib.md5()
+            has_lf = has_crlf = False
+            pending_cr = b""
+            with open(file_path, "rb") as source:
+                for chunk in iter(lambda: source.read(65536), b""):
+                    original_hash.update(chunk)
+                    if b"\x00" in chunk:
+                        return "", "unsupported_encoding"
+                    data = pending_cr + chunk
+                    pending_cr = b"\r" if data.endswith(b"\r") else b""
+                    if pending_cr:
+                        data = data[:-1]
+                    crlf_count = data.count(b"\r\n")
+                    has_crlf = has_crlf or crlf_count > 0
+                    has_lf = has_lf or data.count(b"\n") > crlf_count
+                    normalized = data.replace(b"\r\n", b"\n")
+                    if b"\r" in normalized:
+                        return "", "bare_cr"
+                    if has_lf and has_crlf:
+                        return "", "mixed_line_endings"
+                    alternate_hash.update(normalized if has_crlf else data.replace(b"\n", b"\r\n"))
+            if pending_cr:
+                return "", "bare_cr"
+            if original_hash.hexdigest() != self._cached_kb_md5:
+                logger.warning("Skipping KB line-ending fallback: input changed: %s", self.source_name_or_path)
+                return "", "input_changed"
+            if not has_lf and not has_crlf:
+                return "", "no_line_endings"
+            return alternate_hash.hexdigest(), "crlf_to_lf" if has_crlf else "lf_to_crlf"
+        except OSError as error:
+            logger.warning("Cannot read KB line-ending fallback input %s: %s",
+                           self.source_name_or_path, type(error).__name__)
+            return "", "read_error"
+
     def _apply_kb_origin_url(self, origin_url: str) -> tuple[str, str, str]:
         """Apply KB origin URL and return (oss_name, oss_version, download_url)."""
         self.kb_origin_url = origin_url

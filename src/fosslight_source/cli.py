@@ -30,7 +30,9 @@ import argparse
 from .run_spdx_extractor import get_spdx_downloads
 from .run_manifest_extractor import get_manifest_licenses
 from ._scan_item import SourceItem, resolve_kb_config, is_notice_file, is_manifest_file
-from ._kb_client import create_kb_ssl_context, fetch_origin_urls_via_scan_job, kb_ssl_verify_enabled
+from ._kb_client import (
+    _fetch_origin_urls_with_misses, create_kb_ssl_context, fetch_origin_urls_via_scan_job, kb_ssl_verify_enabled,
+)
 from fosslight_util.cover import dump_result_log
 from fosslight_util.time import current_timestamp_utc, format_running_time, timestamp_for_filename
 from fosslight_util.oss_item import ScannerItem
@@ -428,6 +430,52 @@ def _collect_kb_file_hashes(
     return file_hashes, extra_candidates
 
 
+def _lookup_line_ending_fallback(
+    items: list[SourceItem], path_to_scan: str, unmatched_hashes: frozenset[str],
+    requested_hashes: list[str], origin_urls: dict[str, str], kb_url: str, kb_token: str,
+) -> tuple[dict[str, str], Optional[str]]:
+    alternate_hashes: dict[str, str] = {}
+    with diagnostics.timing("kb_fallback_hashing"):
+        for item in items:
+            original_hash = item._cached_kb_md5
+            if not original_hash or original_hash not in unmatched_hashes or original_hash in alternate_hashes:
+                continue
+            if original_hash in origin_urls:
+                continue
+            alternate_hash, reason = item._get_line_ending_fallback_hash(path_to_scan)
+            diagnostics.record("kb_fallback_candidate", path=item.source_name_or_path, md5=original_hash,
+                               alternate_md5=alternate_hash, reason=reason)
+            if alternate_hash and alternate_hash != original_hash:
+                alternate_hashes[original_hash] = alternate_hash
+
+    already_requested = set(requested_hashes)
+    extra_hashes = list(dict.fromkeys(
+        value for value in alternate_hashes.values() if value not in already_requested
+    ))
+    extra_urls: dict[str, str] = {}
+    failure_message = None
+    if extra_hashes:
+        with diagnostics.timing("kb_fallback_lookup"):
+            result = fetch_origin_urls_via_scan_job(extra_hashes, kb_url, kb_token)
+        extra_urls = result.origin_urls
+        if result.failure_message:
+            failure_message = f"line-ending fallback: {result.failure_message}"
+            logger.warning("KB line-ending fallback failed: %s", result.failure_message)
+
+    matched_urls = {}
+    for original_hash, alternate_hash in alternate_hashes.items():
+        origin_url = origin_urls.get(alternate_hash) or extra_urls.get(alternate_hash)
+        if origin_url:
+            matched_urls[original_hash] = origin_url
+            diagnostics.record("kb_fallback_applied", md5=original_hash, alternate_md5=alternate_hash,
+                               origin_url=diagnostics.safe_url(origin_url))
+    logger.info("KB line-ending fallback: candidates=%d, requested=%d, matched=%d",
+                len(alternate_hashes), len(extra_hashes), len(matched_urls))
+    diagnostics.record("kb_fallback_summary", candidates=len(alternate_hashes), requested=len(extra_hashes),
+                       matched=len(matched_urls), errors=diagnostics.error_summary(failure_message))
+    return matched_urls, failure_message
+
+
 def merge_results(
     scancode_result: list = [], scanoss_result: list = [], spdx_downloads: dict = {},
     path_to_scan: str = "", run_kb: bool = False, manifest_licenses: dict = {},
@@ -513,6 +561,7 @@ def merge_results(
     kb_status_message: Optional[str] = None
     kb_requested_count = 0
     kb_returned_count = 0
+    fallback_origin_urls: dict[str, str] = {}
     extra_candidates: list[tuple[SourceItem, str]] = []
     if run_kb:
         with diagnostics.timing("kb_hashing"):
@@ -521,22 +570,36 @@ def merge_results(
             )
         if file_hashes:
             with diagnostics.timing("kb_lookup"):
-                kb_result = fetch_origin_urls_via_scan_job(file_hashes, kb_url, kb_token)
+                kb_details = _fetch_origin_urls_with_misses(file_hashes, kb_url, kb_token)
+            kb_result = kb_details.result
             kb_origin_urls = kb_result.origin_urls
             kb_status_message = kb_result.failure_message
             kb_requested_count = kb_result.requested_count
             kb_returned_count = kb_result.returned_count
+            if kb_details.unmatched_hashes and not kb_status_message:
+                fallback_origin_urls, fallback_failure = _lookup_line_ending_fallback(
+                    scancode_result + [item for item, _ in extra_candidates], path_to_scan,
+                    kb_details.unmatched_hashes, file_hashes, kb_origin_urls, kb_url, kb_token,
+                )
+                kb_origin_urls.update(fallback_origin_urls)
+                kb_returned_count = len(kb_origin_urls)
+                if fallback_failure:
+                    kb_status_message = fallback_failure
     diagnostics.record("kb_summary", enabled=run_kb, requested=kb_requested_count, returned=kb_returned_count,
                        errors=diagnostics.error_summary(kb_status_message))
 
     for item in scancode_result:
         item.set_oss_item(path_to_scan, kb_origin_urls=kb_origin_urls)
+        if item._cached_kb_md5 in fallback_origin_urls and item.kb_origin_url:
+            item.kb_evidence = "line_ending_fallback"
 
     # Add OSSItem for files in path_to_scan that are not in scancode_result
     # when KB returns an origin URL for their MD5 hash (skip excluded_files)
     if run_kb:
         for extra_item, _md5_hash in extra_candidates:
             extra_item.set_oss_item(path_to_scan, kb_origin_urls=kb_origin_urls)
+            if _md5_hash in fallback_origin_urls and extra_item.kb_origin_url:
+                extra_item.kb_evidence = "line_ending_fallback"
             if extra_item.download_location:
                 scancode_result.append(extra_item)
             else:
